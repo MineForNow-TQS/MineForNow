@@ -12,10 +12,10 @@
 
 | Nome do Aluno | Número de Aluno | Email | Função Atribuída (se aplicável) |
 | :--- | :--- | :--- | :--- |
-| Ana Pereira | 19905 | ana.c.pereira@ua.pt | *(Ex: Product Owner)* |
-| Daniel Nunes | 120161 | daniel.f.nunes@ua.pt | *(Ex: DevOps Master)* |
-| Diego Aguilar | 117122 | diegoaguilar@ua.pt | *(Ex: QA Engineer)* |
-| Vitalie | 107054 | vitalie@ua.pt | *(Ex: Team Coordinator)* |
+| Ana Pereira | 19905 | ana.c.pereira@ua.pt | *Product Owner* |
+| Daniel Nunes | 120161 | daniel.f.nunes@ua.pt | *DevOps Master* |
+| Diego Aguilar | 117122 | diegoaguilar@ua.pt | *QA Engineer* |
+| Vitalie Bologa | 107054 | vitalie@ua.pt | *Team Coordinator* |
 
 > Funções por definir
 
