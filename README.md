@@ -16,9 +16,6 @@
 | Daniel Nunes | 120161 | daniel.f.nunes@ua.pt | *DevOps Master* |
 | Diego Aguilar | 117122 | diegoaguilar@ua.pt | *QA Engineer* |
 | Vitalie Bologa | 107054 | vitalie@ua.pt | *Team Coordinator* |
-
-> Funções por definir
-
 ---
 
 ### 3. Project Bookmarks: Links para Recursos Relevantes
