@@ -18,9 +18,10 @@ public class CarController {
     @GetMapping
     public List<Car> getAllCars() {
         return Arrays.asList(
-            new Car(1L, "Fiat", "500", "Lisboa", 35.0, "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2"),
-            new Car(2L, "Tesla", "Model 3", "Porto", 85.0, "https://images.unsplash.com/photo-1560958089-b8a1929cea89"),
-            new Car(3L, "Renault", "Clio", "Faro", 25.0, "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb")
+            new Car()
+            //new Car(1L, "Fiat", "500", "Lisboa", 35.0, "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2"),
+            //new Car(2L, "Tesla", "Model 3", "Porto", 85.0, "https://images.unsplash.com/photo-1560958089-b8a1929cea89"),
+            //new Car(3L, "Renault", "Clio", "Faro", 25.0, "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb")
         );
     }
 }
