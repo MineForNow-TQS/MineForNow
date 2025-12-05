@@ -12,6 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 @WebMvcTest(CarController.class)
 class CarControllerTest {
 
@@ -19,6 +21,7 @@ class CarControllerTest {
     private MockMvc mvc;
 
     @Test
+    @Requirement("SCRUM-49")
     void whenGetCars_thenReturnJsonArray() throws Exception {
         mvc.perform(get("/api/cars")
                 .contentType(MediaType.APPLICATION_JSON))
