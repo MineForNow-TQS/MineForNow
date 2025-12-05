@@ -74,7 +74,7 @@ jobs:
           token=$(echo $token | tr -d '"')
 
           # 2. Encontrar o relatório
-          REPORT_FILE=$(find backend/target/surefire-reports -name "TEST-*.xml" | head -n 1)
+          REPORT_FILE=$(find target/surefire-reports -name "TEST-*.xml" | head -n 1)
           
           if [ -z "$REPORT_FILE" ]; then
             echo "ERRO: Nenhum relatório XML encontrado!"
