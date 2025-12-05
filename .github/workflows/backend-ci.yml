@@ -32,12 +32,13 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      # 1. Compila e corre os testes
+      # 1. Compila e corre os testes (Corre sempre)
       - name: Build and Test with Maven
         run: mvn -B clean verify
 
-      # 2. Análise do SonarCloud
+      # 2. Análise do SonarCloud (SÓ corre se NÃO for o Dependabot)
       - name: SonarCloud Scan
+        if: github.actor != 'dependabot[bot]'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -60,9 +61,9 @@ jobs:
           echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
           echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
 
-      # 4. Envia resultados para o Jira (Xray)
+      # 4. Envia resultados para o Jira (Xray) (SÓ corre se NÃO for o Dependabot)
       - name: Push results to Xray on Jira Cloud
-        if: always()
+        if: always() && github.actor != 'dependabot[bot]'
         run: |
           # Procura o ficheiro XML correto
           REPORT_FILE=$(find target/surefire-reports -name "TEST-*.xml" | head -n 1)
