@@ -70,20 +70,23 @@ jobs:
           # 1. Obter o Token de Autenticação
           token=$(curl -H "Content-Type: application/json" -X POST --data "{ \"client_id\": \"${{ secrets.XRAY_CLIENT_ID }}\",\"client_secret\": \"${{ secrets.XRAY_CLIENT_SECRET }}\" }" https://xray.cloud.getxray.app/api/v2/authenticate)
           
-          # Remover aspas do token (o curl devolve "token_string")
+          # Remover aspas do token
           token=$(echo $token | tr -d '"')
 
-          # 2. Encontrar o relatório
-          REPORT_FILE=$(find target/ -name "TEST-*.xml" | head -n 1)
+          # 2. Encontrar o relatório DO XRAY (Especificamente o que tem 'junit' no nome)
+          # Usamos -maxdepth 1 para garantir que só procura na raiz do target e não em subpastas
+          REPORT_FILE=$(find target -maxdepth 1 -name "*junit*.xml" | head -n 1)
           
           if [ -z "$REPORT_FILE" ]; then
-            echo "ERRO: Nenhum relatório XML encontrado!"
+            echo "ERRO: Relatório Xray (TEST-junit-jupiter.xml) não encontrado na raiz do target!"
+            echo "Conteúdo da pasta target:"
+            ls -la target/
             exit 1
           fi
           
-          echo "Importing file: $REPORT_FILE"
+          echo "Ficheiro Xray encontrado: $REPORT_FILE"
           
-          # 3. Importar usando o Token (Bearer Auth)
+          # 3. Importar usando o Token
           curl -H "Content-Type: text/xml" \
                -H "Authorization: Bearer $token" \
                --data "@$REPORT_FILE" \
