@@ -47,9 +47,22 @@ jobs:
       # -----------------------------------------
 
       - name: Push results to Xray on Jira Cloud
-        if: always() # Executa este passo mesmo que os testes falhem
+        if: always()
         run: |
+          # 1. Procura o ficheiro XML correto, não importa o nome
+          REPORT_FILE=$(find target/surefire-reports -name "TEST-*.xml" | head -n 1)
+          
+          # 2. Confirma se encontrou
+          if [ -z "$REPORT_FILE" ]; then
+            echo "ERRO: Nenhum relatório XML encontrado!"
+            ls -R target/
+            exit 1
+          fi
+          
+          echo "Ficheiro encontrado: $REPORT_FILE"
+          
+          # 3. Envia para o Xray (usando os seus Secrets configurados)
           curl -H "Content-Type: multipart/form-data" \
             -u "${{ secrets.XRAY_CLIENT_ID }}:${{ secrets.XRAY_CLIENT_SECRET }}" \
-            -F "file=@target/surefire-reports/TEST-com.minefornow.backend.BackendApplicationTests.xml" \
+            -F "file=@$REPORT_FILE" \
             "https://xray.cloud.getxray.app/api/v2/import/execution/junit?projectKey=SCRUM&testPlanKey=${{ secrets.XRAY_TEST_PLAN_KEY }}"
