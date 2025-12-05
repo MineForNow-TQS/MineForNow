@@ -17,6 +17,7 @@ export default function AddCar() {
         year: '',
         type: 'citadino',
         mileage: '',
+        license_plate: '',
         fuel_type: 'gasoline',
         transmission: 'automatic',
         seats: '',
@@ -135,7 +136,7 @@ export default function AddCar() {
                                 </select>
                             </div>
 
-                            <div className="col-span-2">
+                            <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
                                     Quilometragem (km) <span className="text-red-500">*</span>
                                 </label>
@@ -144,6 +145,20 @@ export default function AddCar() {
                                     type="number"
                                     value={formData.mileage}
                                     onChange={handleChange}
+                                    required
+                                    className="bg-white border-slate-300"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    Matrícula <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    name="license_plate"
+                                    value={formData.license_plate}
+                                    onChange={handleChange}
+                                    placeholder="Ex: AA-00-BB"
                                     required
                                     className="bg-white border-slate-300"
                                 />
