@@ -1,10 +1,14 @@
-name: Basic CI Pipeline
+name: Backend CI
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "develop" ]
+    paths:
+      - 'backend/**' 
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "develop" ]
+    paths:
+      - 'backend/**'
 
 jobs:
   build:
