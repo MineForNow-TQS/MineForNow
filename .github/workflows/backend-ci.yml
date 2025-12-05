@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main", "develop" ]
     paths:
-      - 'backend/**' 
+      - 'backend/**'
   pull_request:
     branches: [ "main", "develop" ]
     paths:
@@ -28,3 +28,20 @@ jobs:
       - name: Build backend with Maven
         working-directory: backend
         run: mvn -B clean verify
+
+      - name: Push results to Xray on Jira Cloud
+        if: always()
+        working-directory: backend
+        env:
+          XRAYCLOUD_CLIENT_ID: ${{ secrets.XRAYCLOUD_CLIENT_ID }}
+          XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
+          XRAYCLOUD_TEST_PLAN_KEY: ${{ vars.XRAYCLOUD_TEST_PLAN_KEY }}
+          REVISION: ${{ github.ref_name }}
+          TEST_ENVIRONMENT: java21
+        run: |
+          mvn -B xray:import-results \
+          -Dxray.clientId=${{ env.XRAYCLOUD_CLIENT_ID }} \
+          -Dxray.clientSecret=${{ env.XRAYCLOUD_CLIENT_SECRET }} \
+          -Dxray.testEnvironment=${{ env.TEST_ENVIRONMENT }} \
+          -Dxray.testPlanKey=${{ env.XRAYCLOUD_TEST_PLAN_KEY }} \
+          -Dxray.revision=${{ env.REVISION }}
