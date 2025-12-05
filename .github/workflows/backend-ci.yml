@@ -25,9 +25,26 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      - name: Build backend with Maven
+      - name: Build and Test with Maven
         working-directory: backend
+        # O 'verify' aqui vai falhar automaticamente se a coverage for < 80%
+        # por causa da regra <check> no pom.xml
         run: mvn -B clean verify
+
+      # --- GERA UM RELATÓRIO VISUAL NO GITHUB ---
+      - name: Generate JaCoCo Badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          generate-branches-badge: true
+          jacoco-csv-file: backend/target/site/jacoco-merged-test-coverage-report/jacoco.csv
+
+      - name: Log coverage percentage
+        run: |
+          echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
+          echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
+
+      # ------
 
       - name: Push results to Xray on Jira Cloud
         if: always()
