@@ -14,6 +14,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,12 +30,9 @@ jobs:
           cache: 'maven'
 
       - name: Build and Test with Maven
-        working-directory: backend
-        # O 'verify' aqui vai falhar automaticamente se a coverage for < 80%
-        # por causa da regra <check> no pom.xml
         run: mvn -B clean verify
 
-      # --- GERA UM RELATÓRIO VISUAL NO GITHUB ---
+      # --- GERA O RELATÓRIO VISUAL NO GITHUB ---
       - name: Generate JaCoCo Badge
         id: jacoco
         uses: cicirello/jacoco-badge-generator@v2
@@ -43,22 +44,12 @@ jobs:
         run: |
           echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
           echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
-
-      # ------
+      # -----------------------------------------
 
       - name: Push results to Xray on Jira Cloud
-        if: always()
-        working-directory: backend
-        env:
-          XRAYCLOUD_CLIENT_ID: ${{ secrets.XRAYCLOUD_CLIENT_ID }}
-          XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
-          XRAYCLOUD_TEST_PLAN_KEY: ${{ vars.XRAYCLOUD_TEST_PLAN_KEY }}
-          REVISION: ${{ github.ref_name }}
-          TEST_ENVIRONMENT: java21
+        if: always() # Executa este passo mesmo que os testes falhem
         run: |
-          mvn -B xray:import-results \
-          -Dxray.clientId=${{ env.XRAYCLOUD_CLIENT_ID }} \
-          -Dxray.clientSecret=${{ env.XRAYCLOUD_CLIENT_SECRET }} \
-          -Dxray.testEnvironment=${{ env.TEST_ENVIRONMENT }} \
-          -Dxray.testPlanKey=${{ env.XRAYCLOUD_TEST_PLAN_KEY }} \
-          -Dxray.revision=${{ env.REVISION }}
+          curl -H "Content-Type: multipart/form-data" \
+            -u "${{ secrets.XRAY_CLIENT_ID }}:${{ secrets.XRAY_CLIENT_SECRET }}" \
+            -F "file=@target/surefire-reports/TEST-com.minefornow.backend.BackendApplicationTests.xml" \
+            "https://xray.cloud.getxray.app/api/v2/import/execution/junit?projectKey=SCRUM&testPlanKey=${{ secrets.XRAY_TEST_PLAN_KEY }}"
