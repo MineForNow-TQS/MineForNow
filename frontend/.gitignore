@@ -72,7 +72,6 @@ coverage/
 .stylelintcache
 
 # Package manager locks (keep only one)
-# package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
