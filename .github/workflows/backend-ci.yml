@@ -14,6 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Define que todos os comandos correm automaticamente dentro da pasta 'backend'
     defaults:
       run:
         working-directory: backend
@@ -21,6 +22,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Importante para o SonarCloud analisar o histórico corretamente
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
@@ -29,10 +32,22 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
+      # 1. Compila e corre os testes
       - name: Build and Test with Maven
         run: mvn -B clean verify
 
-      # --- GERA O RELATÓRIO VISUAL NO GITHUB ---
+      # 2. Análise do SonarCloud
+      - name: SonarCloud Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=MineForNow-TQS_MineForNow \
+            -Dsonar.organization=minefornow-tqs \
+            -Dsonar.host.url=https://sonarcloud.io
+
+      # 3. Gera o Relatório Visual (Badge)
       - name: Generate JaCoCo Badge
         id: jacoco
         uses: cicirello/jacoco-badge-generator@v2
@@ -44,15 +59,14 @@ jobs:
         run: |
           echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
           echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
-      # -----------------------------------------
 
+      # 4. Envia resultados para o Jira (Xray)
       - name: Push results to Xray on Jira Cloud
         if: always()
         run: |
-          # 1. Procura o ficheiro XML correto, não importa o nome
+          # Procura o ficheiro XML correto
           REPORT_FILE=$(find target/surefire-reports -name "TEST-*.xml" | head -n 1)
           
-          # 2. Confirma se encontrou
           if [ -z "$REPORT_FILE" ]; then
             echo "ERRO: Nenhum relatório XML encontrado!"
             ls -R target/
@@ -61,7 +75,6 @@ jobs:
           
           echo "Ficheiro encontrado: $REPORT_FILE"
           
-          # 3. Envia para o Xray (usando os seus Secrets configurados)
           curl -H "Content-Type: multipart/form-data" \
             -u "${{ secrets.XRAY_CLIENT_ID }}:${{ secrets.XRAY_CLIENT_SECRET }}" \
             -F "file=@$REPORT_FILE" \
