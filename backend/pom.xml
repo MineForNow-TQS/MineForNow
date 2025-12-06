@@ -17,6 +17,8 @@
     <properties>
         <java.version>21</java.version>
         <sonar.organization>minefornow-tqs</sonar.organization>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.exclusions>**/MinefornowApplication.java</sonar.coverage.exclusions>
         
         <selenium-java.version>4.26.0</selenium-java.version>
         <selenium-jupiter.version>5.0.1</selenium-jupiter.version>
@@ -96,12 +98,33 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
             </plugin>
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.36</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -124,6 +147,9 @@
                         <configuration>
                             <dataFile>${unit.coverage.file}</dataFile>
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report</outputDirectory>
+                            <excludes>
+                                <exclude>**/MinefornowApplication.class</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
 
@@ -159,6 +185,9 @@
                         <configuration>
                             <dataFile>${merged.coverage.file}</dataFile>
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <excludes>
+                                <exclude>**/MinefornowApplication.class</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
 
@@ -168,6 +197,9 @@
                         <goals><goal>check</goal></goals>
                         <configuration>
                             <dataFile>${merged.coverage.file}</dataFile>
+                            <excludes>
+                                <exclude>**/MinefornowApplication.class</exclude>
+                            </excludes>
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
