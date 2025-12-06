@@ -13,6 +13,8 @@ export default function Cars() {
     const [sortBy, setSortBy] = useState('price_asc');
     const [filters, setFilters] = useState({
         city: searchParams.get('city') || '',
+        pickupDate: searchParams.get('pickup') || '',
+        returnDate: searchParams.get('dropoff') || '',
         type: '',
         fuel_type: '',
         transmission: '',
@@ -41,10 +43,12 @@ export default function Cars() {
         }));
     };
 
-    const { data, isLoading } = useQuery(['cars', filters.city, filters.type, filters.fuel_type, filters.transmission, filters.seats, filters.minRating], async () => {
+    const { data, isLoading } = useQuery(['cars', filters.city, filters.pickupDate, filters.returnDate, filters.type, filters.fuel_type, filters.transmission, filters.seats, filters.minRating], async () => {
         // Enviar filtros sem minPrice e maxPrice para o backend
         const backendFilters = {
             city: filters.city,
+            pickupDate: filters.pickupDate,
+            returnDate: filters.returnDate,
             type: filters.type,
             fuel_type: filters.fuel_type,
             transmission: filters.transmission,
