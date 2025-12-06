@@ -1,5 +1,29 @@
 // Base URL do backend
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
+// Adaptador: Converte dados do backend (camelCase) para o formato do frontend (snake_case)
+const adaptVehicleFromBackend = (vehicle) => ({
+  id: vehicle.id,
+  brand: vehicle.brand,
+  model: vehicle.model,
+  year: vehicle.year,
+  type: vehicle.type,
+  fuel_type: vehicle.fuelType,
+  transmission: vehicle.transmission,
+  seats: vehicle.seats,
+  doors: vehicle.doors,
+  air_conditioning: vehicle.hasAC,
+  gps: vehicle.hasGPS,
+  bluetooth: vehicle.hasBluetooth,
+  price_per_day: vehicle.pricePerDay,
+  location: vehicle.exactLocation,
+  city: vehicle.city,
+  description: vehicle.description,
+  images: vehicle.imageUrl ? [vehicle.imageUrl] : [],
+  image_url: vehicle.imageUrl,
+  license_plate: vehicle.licensePlate,
+  mileage: vehicle.mileage,
+});
 
 export const carService = {
   // Listar todos os carros com filtros opcionais
@@ -12,10 +36,10 @@ export const carService = {
         params.append('city', filters.city);
       }
       if (filters.pickupDate) {
-        params.append('pickupDate', filters.pickupDate);
+        params.append('pickup', filters.pickupDate);
       }
       if (filters.returnDate) {
-        params.append('returnDate', filters.returnDate);
+        params.append('dropoff', filters.returnDate);
       }
 
       const url = `${API_BASE_URL}/vehicles/search${params.toString() ? '?' + params.toString() : ''}`;
@@ -26,6 +50,9 @@ export const carService = {
       }
       
       let cars = await response.json();
+      
+      // Adaptar dados do backend para o formato do frontend
+      cars = cars.map(adaptVehicleFromBackend);
 
       // Aplicar filtros adicionais do frontend (tipo, combustível, etc.)
       if (filters.type) {
@@ -45,9 +72,6 @@ export const carService = {
       }
       if (filters.owner_id) {
         cars = cars.filter(car => car.owner_id === filters.owner_id);
-      }
-      if (filters.status) {
-        cars = cars.filter(car => car.status === filters.status);
       }
 
       return { data: cars };
@@ -70,7 +94,7 @@ export const carService = {
       }
       
       const car = await response.json();
-      return { data: car };
+      return { data: adaptVehicleFromBackend(car) };
     } catch (error) {
       console.error('Erro ao buscar carro:', error);
       throw error;
