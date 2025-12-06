@@ -6,5 +6,4 @@ import tqs.backend.model.Vehicle;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
-    // Exemplo futuro: List<Vehicle> findByCity(String city);
 }

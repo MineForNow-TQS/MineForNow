@@ -17,7 +17,7 @@ public class MinefornowApplication {
 
     @Bean
     public CommandLineRunner demo(VehicleRepository repository) {
-        return (args) -> {
+        return args -> {
             Vehicle fiat = Vehicle.builder()
                 .brand("Fiat")
                 .model("500")
