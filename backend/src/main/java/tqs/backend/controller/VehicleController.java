@@ -44,13 +44,17 @@ public class VehicleController {
             return vehicleRepository.findAvailableVehicles(city, pickup, dropoff);
         }
 
+        // Se só tiver datas (sem cidade), filtra por disponibilidade em todas as cidades
+        if (pickup != null && dropoff != null) {
+            return vehicleRepository.findAvailableVehiclesByDates(pickup, dropoff);
+        }
+
         // Se só tiver cidade, filtra por cidade
         if (city != null) {
             return vehicleRepository.findByCityContainingIgnoreCase(city);
         }
 
-        // Se só tiver datas (sem cidade), retorna todos os veículos
-        // (pode ser melhorado para filtrar por datas em todas as cidades)
+        // Se não tiver filtros, retorna todos
         return vehicleRepository.findAll();
     }
 }

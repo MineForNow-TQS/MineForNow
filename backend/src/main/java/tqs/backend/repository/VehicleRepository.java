@@ -26,4 +26,14 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
             @Param("city") String city,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    // Pesquisa por disponibilidade (apenas datas, sem filtro de cidade)
+    @Query("SELECT v FROM Vehicle v WHERE " +
+           "v.id NOT IN (" +
+           "    SELECT b.vehicle.id FROM Booking b WHERE " +
+           "    (:startDate <= b.returnDate AND :endDate >= b.pickupDate)" +
+           ")")
+    List<Vehicle> findAvailableVehiclesByDates(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }
