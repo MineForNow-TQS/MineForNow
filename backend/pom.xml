@@ -257,11 +257,18 @@
                         <exclude>**/*IT.java</exclude>
                         <exclude>**/cucumber/**</exclude>
                     </excludes>
-                    <testFailureIgnore>false</testFailureIgnore>
+                    <properties>
+                        <configurationParameters>
+                            junit.jupiter.extensions.autodetection.enabled = true
+                        </configurationParameters>
+                    </properties>
                     <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
-                        <disable>true</disable>
+                        <disable>false</disable>
+                        <version>3.0</version>
+                        <usePhrasedTestSuiteClassName>true</usePhrasedTestSuiteClassName>
+                        <usePhrasedTestCaseClassName>true</usePhrasedTestCaseClassName>
+                        <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
                     </statelessTestsetReporter>
-                    <useFile>false</useFile>
                 </configuration>
             </plugin>
             

@@ -55,7 +55,7 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    @Requirement("SCRUM-51") // Subtask Backend
+    @Requirement("SCRUM-49")
     void whenSearchByCity_thenReturnCorrectVehicles() {
         List<Vehicle> found = vehicleRepository.findByCityContainingIgnoreCase("Lisboa");
         
@@ -64,7 +64,7 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    @Requirement("SCRUM-51") // Subtask Backend
+    @Requirement("SCRUM-49")
     void whenSearchAvailability_andDatesDoNotOverlap_thenReturnVehicle() {
         // Pesquisa para datas ANTES da reserva (10 a 15 Dezembro)
         List<Vehicle> available = vehicleRepository.findAvailableVehicles(
@@ -78,7 +78,7 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    @Requirement("SCRUM-51") // Subtask Backend
+    @Requirement("SCRUM-49")
     void whenSearchAvailability_andDatesOverlap_thenReturnEmpty() {
         // Pesquisa COLIDE com a reserva (22 a 23 Dezembro)
         List<Vehicle> available = vehicleRepository.findAvailableVehicles(

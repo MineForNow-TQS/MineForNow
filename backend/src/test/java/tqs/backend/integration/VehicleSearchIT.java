@@ -28,7 +28,7 @@ class VehicleSearchIT {
     private TestRestTemplate restTemplate;
 
     @Test
-    @Requirement("SCRUM-52") // Subtask QA
+    @Requirement("SCRUM-49")
     void whenSearchLisbon_thenReturnsMercedesAndFerrari() {
         // Teste real contra a BD populada pelo MinefornowApplication
         String url = "http://localhost:" + randomServerPort + "/api/vehicles/search?city=Lisboa";
@@ -49,7 +49,7 @@ class VehicleSearchIT {
     }
 
     @Test
-    @Requirement("SCRUM-52") // Subtask QA
+    @Requirement("SCRUM-49")
     void whenSearchLisbonWithConflictDates_thenMercedesIsMissing() {
         // Sabemos que o Mercedes tem reserva criada no MinefornowApplication para:
         // Hoje + 10 dias até Hoje + 15 dias.
