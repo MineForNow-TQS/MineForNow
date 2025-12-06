@@ -29,7 +29,7 @@ export default function HeroSearch() {
         const params = new URLSearchParams();
         if (location) params.set('city', location);
         if (pickupDate) params.set('pickup', pickupDate);
-        if (returnDate) params.set('return', returnDate);
+        if (returnDate) params.set('dropoff', returnDate);
         
         navigate('/cars?' + params.toString());
     };

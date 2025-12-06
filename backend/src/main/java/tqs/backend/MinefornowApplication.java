@@ -27,61 +27,61 @@ public class MinefornowApplication {
             // --- CARRO 1: Fiat 500 (Cascais) ---
             // Vídeo: 40€, Gasolina, Automática, 4 Lugares, 3 Portas
             Vehicle fiat = new Vehicle(
-                null, "Fiat", "500", 2021, "Citadino", "AA-01-AA", 15000, 
+                null, "Fiat", "500", 2023, "Citadino", "AA-01-AA", 5000, 
                 "Gasolina", "Automática", 4, 3, true, true, true, 
                 "Cascais", "Estação de Comboios", 40.0, 
                 "Fiat 500 charmoso e compacto, ideal para passeios na cidade e estacionamento fácil.", 
-                "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2" // Azul claro
+                "/Images/photo-1549317661-bd32c8ce0db2.jpeg"
             );
 
             // --- CARRO 2: Nissan Juke (Coimbra) ---
             // Vídeo: 42€, Gasolina, Manual, 5 Lugares, 5 Portas
             Vehicle nissan = new Vehicle(
-                null, "Nissan", "Juke", 2020, "SUV", "BB-02-BB", 42000, 
-                "Gasolina", "Manual", 5, 5, true, true, true, 
+                null, "Nissan", "Juke", 2020, "SUV", "BB-02-BB", 45000, 
+                "Gasolina", "Manual", 5, 5, true, false, true, 
                 "Coimbra", "Centro da Cidade", 42.0, 
-                "SUV compacto com design arrojado, perfeito para viagens confortáveis.", 
-                "https://images.unsplash.com/photo-1567818735868-e71b99932e29" // Exemplo SUV
+                "Nissan Juke, um crossover compacto e distinto, perfeito para o dia a dia e pequenas aventuras.", 
+                "/Images/photo-1609521263047-f8f205293f24.jpeg"
             );
 
             // --- CARRO 3: Tesla Model 3 (Faro) ---
             // Vídeo: 85€, Elétrico, Automática, 5 Lugares, 4 Portas
             Vehicle tesla = new Vehicle(
-                null, "Tesla", "Model 3", 2023, "Sedan", "CC-03-CC", 5000, 
+                null, "Tesla", "Model 3", 2023, "Sedan", "CC-03-CC", 10000, 
                 "Elétrico", "Automática", 5, 4, true, true, true, 
                 "Faro", "Aeroporto de Faro", 85.0, 
-                "Tecnologia de ponta e condução silenciosa. Autonomia excelente para o Algarve.", 
-                "https://images.unsplash.com/photo-1560958089-b8a1929cea89" // Branco
+                "Tesla Model 3 elétrico, tecnologia de ponta e sustentável.", 
+                "/Images/photo-1560958089-b8a1929cea89.jpeg"
             );
 
             // --- CARRO 4: Mercedes-Benz AMG GT (Lisboa) ---
             // Vídeo: 850€, Gasolina, Automática, 2 Lugares, 2 Portas
             Vehicle mercedes = new Vehicle(
-                null, "Mercedes-Benz", "AMG GT", 2021, "Desportivo", "DD-04-DD", 8000, 
+                null, "Mercedes-Benz", "AMG GT", 2021, "Desportivo", "DD-04-DD", 18000, 
                 "Gasolina", "Automática", 2, 2, true, true, true, 
                 "Lisboa", "Avenida da Liberdade", 850.0, 
-                "Performance pura e luxo inigualável. Uma experiência de condução inesquecível.", 
-                "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8" // Cinzento
+                "Mercedes-AMG GT de luxo. Design deslumbrante e performance inigualável. Perfeito para uma experiência exclusiva.", 
+                "/Images/photo-1617814076367-b759c7d7e738.jpeg"
             );
 
             // --- CARRO 5: Ferrari Roma (Lisboa) ---
             // Vídeo: 950€, Gasolina, Automática, 4 Lugares (2+2), 2 Portas
             Vehicle ferrari = new Vehicle(
-                null, "Ferrari", "Roma", 2024, "Desportivo", "EE-05-EE", 1200, 
-                "Gasolina", "Automática", 4, 2, true, true, true, 
+                null, "Ferrari", "Roma", 2024, "Desportivo", "EE-05-EE", 1000, 
+                "Gasolina", "Automática", 2, 2, true, true, true, 
                 "Lisboa", "Parque das Nações", 950.0, 
-                "Elegância intemporal e potência Ferrari. O Grand Tourer definitivo.", 
-                "https://images.unsplash.com/photo-1592198084033-aade902d1aae" // Vermelho
+                "Ferrari Roma desportivo de luxo, uma experiência de condução inesquecível.", 
+                "/Images/photo-1606220838315-056192d5e927.jpeg"
             );
 
             // --- CARRO 6: Mercedes-Benz AMG GT R (Porto) ---
             // Vídeo: 1100€, Gasolina, Automática, 2 Lugares, 2 Portas
             Vehicle mercedesGTR = new Vehicle(
-                null, "Mercedes-Benz", "AMG GT R", 2022, "Desportivo", "FF-06-FF", 2500, 
+                null, "Mercedes-Benz", "AMG GT R", 2022, "Desportivo", "FF-06-FF", 10000, 
                 "Gasolina", "Automática", 2, 2, true, true, true, 
                 "Porto", "Foz do Douro", 1100.0, 
-                "A besta do Inferno Verde. Performance de pista para a estrada.", 
-                "https://images.unsplash.com/photo-1617788138017-80ad40651399" // Cinzento escuro
+                "Mercedes-AMG GT R, a máquina de performance definitiva. Edição especial com detalhes amarelos.", 
+                "/Images/photo-1618843479313-40f8afb4b4d8.jpeg"
             );
 
             // Salvar Veículos

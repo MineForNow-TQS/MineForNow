@@ -30,16 +30,27 @@ public class VehicleController {
     // NOVO ENDPOINT: /api/vehicles/search?city=Lisboa&pickup=2025-12-10&dropoff=2025-12-12
     @GetMapping("/search")
     public List<Vehicle> searchVehicles(
-            @RequestParam String city,
+            @RequestParam(required = false) String city,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate pickup,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dropoff) {
 
-        if (pickup != null && dropoff != null) {
-            // Se tiver datas, filtra por disponibilidade
+        // Se não houver nenhum filtro, retorna todos os veículos
+        if (city == null && pickup == null && dropoff == null) {
+            return vehicleRepository.findAll();
+        }
+
+        // Se tiver datas e cidade, filtra por disponibilidade
+        if (city != null && pickup != null && dropoff != null) {
             return vehicleRepository.findAvailableVehicles(city, pickup, dropoff);
-        } else {
-            // Se só tiver cidade, filtra só por cidade
+        }
+
+        // Se só tiver cidade, filtra por cidade
+        if (city != null) {
             return vehicleRepository.findByCityContainingIgnoreCase(city);
         }
+
+        // Se só tiver datas (sem cidade), retorna todos os veículos
+        // (pode ser melhorado para filtrar por datas em todas as cidades)
+        return vehicleRepository.findAll();
     }
 }
