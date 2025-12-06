@@ -86,4 +86,65 @@ class VehicleControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }
+
+    @Test
+    @Requirement("SCRUM-49")
+    void givenNoFilters_whenSearch_thenReturnsAllVehicles() throws Exception {
+        Vehicle car1 = new Vehicle();
+        car1.setBrand("Toyota");
+        car1.setCity("Lisboa");
+
+        Vehicle car2 = new Vehicle();
+        car2.setBrand("Honda");
+        car2.setCity("Porto");
+
+        given(vehicleRepository.findAll())
+                .willReturn(Arrays.asList(car1, car2));
+
+        mvc.perform(get("/api/vehicles/search")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].brand", is("Toyota")))
+                .andExpect(jsonPath("$[1].brand", is("Honda")));
+    }
+
+    @Test
+    @Requirement("SCRUM-49")
+    void givenDatesOnly_whenSearch_thenReturnsAvailableVehicles() throws Exception {
+        Vehicle car = new Vehicle();
+        car.setBrand("Nissan");
+        car.setModel("Leaf");
+
+        given(vehicleRepository.findAvailableVehiclesByDates(any(LocalDate.class), any(LocalDate.class)))
+                .willReturn(Arrays.asList(car));
+
+        mvc.perform(get("/api/vehicles/search")
+                .param("pickup", "2025-12-10")
+                .param("dropoff", "2025-12-12")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].brand", is("Nissan")));
+    }
+
+    @Test
+    @Requirement("SCRUM-49")
+    void givenGetAllVehicles_thenReturnsList() throws Exception {
+        Vehicle car1 = new Vehicle();
+        car1.setBrand("Mercedes");
+        
+        Vehicle car2 = new Vehicle();
+        car2.setBrand("BMW");
+
+        given(vehicleRepository.findAll())
+                .willReturn(Arrays.asList(car1, car2));
+
+        mvc.perform(get("/api/vehicles")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].brand", is("Mercedes")))
+                .andExpect(jsonPath("$[1].brand", is("BMW")));
+    }
 }
