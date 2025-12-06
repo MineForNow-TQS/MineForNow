@@ -112,3 +112,8 @@ $RECYCLE.BIN/
 # Storybook
 storybook-static/
 .storybook-out/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
