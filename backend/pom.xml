@@ -17,6 +17,7 @@
     <properties>
         <java.version>21</java.version>
         <sonar.organization>minefornow-tqs</sonar.organization>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         
         <selenium-java.version>4.26.0</selenium-java.version>
         <selenium-jupiter.version>5.0.1</selenium-jupiter.version>
@@ -118,6 +119,10 @@
                             <version>1.18.36</version>
                         </path>
                     </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
@@ -141,6 +146,9 @@
                         <configuration>
                             <dataFile>${unit.coverage.file}</dataFile>
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report</outputDirectory>
+                            <excludes>
+                                <exclude>**/MinefornowApplication.class</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
 
@@ -176,6 +184,9 @@
                         <configuration>
                             <dataFile>${merged.coverage.file}</dataFile>
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <excludes>
+                                <exclude>**/MinefornowApplication.class</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
 
@@ -185,6 +196,9 @@
                         <goals><goal>check</goal></goals>
                         <configuration>
                             <dataFile>${merged.coverage.file}</dataFile>
+                            <excludes>
+                                <exclude>**/MinefornowApplication.class</exclude>
+                            </excludes>
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
