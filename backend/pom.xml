@@ -18,6 +18,7 @@
         <java.version>21</java.version>
         <sonar.organization>minefornow-tqs</sonar.organization>
         <sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.exclusions>**/MinefornowApplication.java</sonar.coverage.exclusions>
         
         <selenium-java.version>4.26.0</selenium-java.version>
         <selenium-jupiter.version>5.0.1</selenium-jupiter.version>
