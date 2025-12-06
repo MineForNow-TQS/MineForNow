@@ -302,7 +302,9 @@
                 <version>0.7.4</version>
                 <configuration>
                     <cloud>true</cloud>
+                    <projectKey>SCRUM</projectKey>
                     <reportFormat>junit</reportFormat>
+                    <reportFile>target/TEST-junit-jupiter.xml</reportFile>
                 </configuration>
             </plugin>
         </plugins>
