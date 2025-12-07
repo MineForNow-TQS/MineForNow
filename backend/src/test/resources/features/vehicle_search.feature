@@ -1,5 +1,5 @@
 # language: pt
-@SCRUM-120
+@SCRUM-49
 Funcionalidade: Pesquisa de Veículos por Disponibilidade
   Como um utilizador da plataforma MineForNow
   Quero pesquisar veículos por cidade e datas
