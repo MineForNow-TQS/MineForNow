@@ -305,23 +305,6 @@
                     <projectKey>SCRUM</projectKey>
                     <reportFormat>junit</reportFormat>
                     <reportFile>target/TEST-junit-jupiter.xml</reportFile>
-                    <testExecInfoJson>
-                        {
-                            "fields": {
-                                "summary": "Test Execution for ${project.version}",
-                                "description": "Automated test execution from CI/CD pipeline"
-                            }
-                        }
-                    </testExecInfoJson>
-                    <testInfoJson>
-                        {
-                            "fields": {
-                                "project": {
-                                    "key": "SCRUM"
-                                }
-                            }
-                        }
-                    </testInfoJson>
                 </configuration>
             </plugin>
         </plugins>
