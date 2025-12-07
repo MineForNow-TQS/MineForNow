@@ -1,5 +1,7 @@
 package tqs.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 
     @Id
@@ -27,6 +30,7 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @JsonIgnore // NÃO serializar password no JSON (segurança)
     @Column(nullable = false)
     private String password; // Em produção, usar BCrypt
 

@@ -23,6 +23,10 @@ const adaptVehicleFromBackend = (vehicle) => ({
   image_url: vehicle.imageUrl,
   license_plate: vehicle.licensePlate,
   mileage: vehicle.mileage,
+  display_name: vehicle.displayName,
+  formatted_price: vehicle.formattedPrice,
+  owner_name: vehicle.ownerName,
+  owner_email: vehicle.ownerEmail,
 });
 
 export const carService = {
