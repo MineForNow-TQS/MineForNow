@@ -48,4 +48,8 @@ public class VehicleDetailDTO {
     // --- Campos Calculados/Formatados ---
     private String displayName; // ex: "Fiat 500 2020"
     private String formattedPrice; // ex: "25.00 €/dia"
+
+    // --- Informações do Proprietário ---
+    private String ownerName; // Nome do proprietário do veículo
+    private String ownerEmail; // Email do proprietário
 }

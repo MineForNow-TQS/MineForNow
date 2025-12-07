@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.backend.dto.VehicleDetailDTO;
+import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.VehicleRepository;
 
@@ -31,11 +32,20 @@ class VehicleServiceTest {
     private VehicleService vehicleService;
 
     private Vehicle testVehicle;
+    private User testOwner;
 
     @BeforeEach
     void setUp() {
+        testOwner = User.builder()
+                .id(1L)
+                .email("owner@minefornow.com")
+                .name("João Silva")
+                .role(User.UserRole.OWNER)
+                .build();
+
         testVehicle = Vehicle.builder()
                 .id(1L)
+                .owner(testOwner)
                 .brand("Fiat")
                 .model("500")
                 .year(2020)
@@ -122,5 +132,22 @@ class VehicleServiceTest {
         // Assert
         assertThat(result).isPresent();
         assertThat(result.get().getFormattedPrice()).isEqualTo("N/A");
+    }
+
+    @Test
+    @Requirement("SCRUM-12")
+    @DisplayName("Quando veículo tem owner, deve retornar ownerName e ownerEmail no DTO")
+    void whenVehicleHasOwner_thenDTOContainsOwnerInfo() {
+        // Arrange
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+
+        // Act
+        Optional<VehicleDetailDTO> result = vehicleService.getVehicleById(1L);
+
+        // Assert
+        assertThat(result).isPresent();
+        VehicleDetailDTO dto = result.get();
+        assertThat(dto.getOwnerName()).isEqualTo("João Silva");
+        assertThat(dto.getOwnerEmail()).isEqualTo("owner@minefornow.com");
     }
 }

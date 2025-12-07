@@ -12,7 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import tqs.backend.dto.VehicleDetailDTO;
+import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
+import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,16 +37,30 @@ class VehicleGetByIdIT {
     @Autowired
     private VehicleRepository vehicleRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private String baseUrl;
     private Vehicle savedVehicle;
+    private User testOwner;
 
     @BeforeEach
     void setUp() {
         baseUrl = "http://localhost:" + port + "/api/vehicles";
         vehicleRepository.deleteAll();
+        userRepository.deleteAll();
+
+        // Criar owner de teste
+        testOwner = userRepository.save(User.builder()
+                .email("testowner@test.com")
+                .name("Test Owner")
+                .password("test123")
+                .role(User.UserRole.OWNER)
+                .build());
 
         // Criar veículo de teste no banco
         savedVehicle = Vehicle.builder()
+                .owner(testOwner)
                 .brand("Mercedes")
                 .model("Classe A")
                 .year(2022)

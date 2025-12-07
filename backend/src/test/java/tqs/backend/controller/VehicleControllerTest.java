@@ -1,5 +1,6 @@
 package tqs.backend.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -8,8 +9,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
+import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
+import tqs.backend.service.VehicleService;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -36,12 +41,35 @@ class VehicleControllerTest {
     @MockBean
     private VehicleRepository vehicleRepository;
 
+    @MockBean
+    private VehicleService vehicleService;
+
+    @MockBean
+    private BookingRepository bookingRepository;
+
+    @MockBean
+    private UserRepository userRepository;
+
+    private User testOwner;
+
+    @BeforeEach
+    void setUp() {
+        testOwner = User.builder()
+                .id(1L)
+                .email("owner@test.com")
+                .name("Test Owner")
+                .role(User.UserRole.OWNER)
+                .build();
+    }
+
     @Test
     @Requirement("SCRUM-49") // História Principal
     void givenCityOnly_whenSearch_thenReturnsVehicles() throws Exception {
-        Vehicle car = new Vehicle();
-        car.setBrand("Ferrari");
-        car.setCity("Lisboa");
+        Vehicle car = Vehicle.builder()
+                .owner(testOwner)
+                .brand("Ferrari")
+                .city("Lisboa")
+                .build();
 
         given(vehicleRepository.findByCityContainingIgnoreCase("Lisboa"))
                 .willReturn(Arrays.asList(car));
@@ -57,8 +85,10 @@ class VehicleControllerTest {
     @Test
     @Requirement("SCRUM-49") // História Principal
     void givenDates_whenSearch_thenCallsAvailabilityService() throws Exception {
-        Vehicle car = new Vehicle();
-        car.setBrand("Tesla");
+        Vehicle car = Vehicle.builder()
+                .owner(testOwner)
+                .brand("Tesla")
+                .build();
 
         // Mock: Se pedirem datas, devolve o Tesla
         given(vehicleRepository.findAvailableVehicles(eq("Porto"), any(LocalDate.class), any(LocalDate.class)))
@@ -90,13 +120,17 @@ class VehicleControllerTest {
     @Test
     @Requirement("SCRUM-49")
     void givenNoFilters_whenSearch_thenReturnsAllVehicles() throws Exception {
-        Vehicle car1 = new Vehicle();
-        car1.setBrand("Toyota");
-        car1.setCity("Lisboa");
+        Vehicle car1 = Vehicle.builder()
+                .owner(testOwner)
+                .brand("Toyota")
+                .city("Lisboa")
+                .build();
 
-        Vehicle car2 = new Vehicle();
-        car2.setBrand("Honda");
-        car2.setCity("Porto");
+        Vehicle car2 = Vehicle.builder()
+                .owner(testOwner)
+                .brand("Honda")
+                .city("Porto")
+                .build();
 
         given(vehicleRepository.findAll())
                 .willReturn(Arrays.asList(car1, car2));
@@ -112,9 +146,11 @@ class VehicleControllerTest {
     @Test
     @Requirement("SCRUM-49")
     void givenDatesOnly_whenSearch_thenReturnsAvailableVehicles() throws Exception {
-        Vehicle car = new Vehicle();
-        car.setBrand("Nissan");
-        car.setModel("Leaf");
+        Vehicle car = Vehicle.builder()
+                .owner(testOwner)
+                .brand("Nissan")
+                .model("Leaf")
+                .build();
 
         given(vehicleRepository.findAvailableVehiclesByDates(any(LocalDate.class), any(LocalDate.class)))
                 .willReturn(Arrays.asList(car));
@@ -131,11 +167,15 @@ class VehicleControllerTest {
     @Test
     @Requirement("SCRUM-49")
     void givenGetAllVehicles_thenReturnsList() throws Exception {
-        Vehicle car1 = new Vehicle();
-        car1.setBrand("Mercedes");
+        Vehicle car1 = Vehicle.builder()
+                .owner(testOwner)
+                .brand("Mercedes")
+                .build();
         
-        Vehicle car2 = new Vehicle();
-        car2.setBrand("BMW");
+        Vehicle car2 = Vehicle.builder()
+                .owner(testOwner)
+                .brand("BMW")
+                .build();
 
         given(vehicleRepository.findAll())
                 .willReturn(Arrays.asList(car1, car2));

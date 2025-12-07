@@ -10,6 +10,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.dto.VehicleDetailDTO;
+import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.service.VehicleService;
 
@@ -37,6 +39,12 @@ class VehicleControllerGetByIdTest {
 
     @MockBean
     private VehicleService vehicleService;
+
+    @MockBean
+    private BookingRepository bookingRepository;
+
+    @MockBean
+    private UserRepository userRepository;
 
     private VehicleDetailDTO testVehicleDTO;
 

@@ -46,6 +46,8 @@ public class VehicleMapper {
                 .imageUrl(vehicle.getImageUrl())
                 .displayName(formatDisplayName(vehicle))
                 .formattedPrice(formatPrice(vehicle.getPricePerDay()))
+                .ownerName(vehicle.getOwner() != null ? vehicle.getOwner().getName() : null)
+                .ownerEmail(vehicle.getOwner() != null ? vehicle.getOwner().getEmail() : null)
                 .build();
     }
 
