@@ -76,4 +76,5 @@ jobs:
               -Dxray.clientSecret=${{ env.XRAYCLOUD_CLIENT_SECRET }} \
               -Dxray.testPlanKey=${{ env.XRAYCLOUD_TEST_PLAN_KEY }} \
               -Dxray.revision=${{ env.REVISION }} \
+              -Dxray.useInternalTestProxy=false \
               xray:import-results
