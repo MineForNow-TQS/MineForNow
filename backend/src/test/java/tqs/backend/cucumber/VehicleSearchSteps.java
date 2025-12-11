@@ -35,7 +35,6 @@ public class VehicleSearchSteps {
     // Tornar esta classe um bean do Spring para permitir @Autowired
     // (Cucumber + Spring integra e injeta repositórios nos step definitions)
 
-
     private Browser browser;
     private BrowserContext context;
     private Page page;
@@ -61,7 +60,8 @@ public class VehicleSearchSteps {
     @Before
     public void setUp() {
         Playwright playwright = Playwright.create();
-        // Detect CI or missing X display and run headless in that case to avoid failures on GitHub Actions
+        // Detect CI or missing X display and run headless in that case to avoid
+        // failures on GitHub Actions
         boolean headless = false;
         String ci = System.getenv("CI");
         String display = System.getenv("DISPLAY");
@@ -95,13 +95,15 @@ public class VehicleSearchSteps {
 
     @Given("que o sistema tem {int} veículos cadastrados")
     public void queOSistemaTemVeiculosCadastrados(int quantidade) {
-        // Este passo é apenas documentação, os veículos já estão no backend via CommandLineRunner
+        // Este passo é apenas documentação, os veículos já estão no backend via
+        // CommandLineRunner
         assertTrue(quantidade > 0, "O sistema deve ter veículos cadastrados");
     }
 
     @And("o veículo {string} em {string} está reservado de {string} até {string}")
     public void oVeiculoEstaReservado(String veiculo, String cidade, String dataInicio, String dataFim) {
-        // Criar de facto a reserva no banco de testes para tornar o cenário determinístico
+        // Criar de facto a reserva no banco de testes para tornar o cenário
+        // determinístico
         assertNotNull(veiculo);
         assertNotNull(cidade);
 
@@ -111,15 +113,16 @@ public class VehicleSearchSteps {
 
         // Procurar veículo por combinação "brand + ' ' + model" e cidade
         Vehicle found = vehicleRepository.findAll().stream()
-            .filter(v -> (v.getBrand() + " " + v.getModel()).equals(veiculo)
-                && v.getCity() != null && v.getCity().equalsIgnoreCase(cidade))
-            .findFirst()
-            .orElse(null);
+                .filter(v -> (v.getBrand() + " " + v.getModel()).equals(veiculo)
+                        && v.getCity() != null && v.getCity().equalsIgnoreCase(cidade))
+                .findFirst()
+                .orElse(null);
 
         assertNotNull(found, "Veículo referenciado na feature não foi encontrado na BD: " + veiculo);
 
         // Salvar reserva que irá bloquear o veículo nas datas indicadas
-        // Usar saveAndFlush para garantir que a reserva está persistida antes de consultarmos a API
+        // Usar saveAndFlush para garantir que a reserva está persistida antes de
+        // consultarmos a API
         bookingRepository.saveAndFlush(new Booking(null, start, end, found));
     }
 
@@ -139,19 +142,22 @@ public class VehicleSearchSteps {
     @When("pesquiso por veículos em {string}")
     public void pesquisoPorVeiculosEm(String cidade) {
         // Preencher o campo de cidade
-        Locator inputCidade = page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Lisboa, Porto, Faro..."));
+        Locator inputCidade = page.getByRole(AriaRole.TEXTBOX,
+                new Page.GetByRoleOptions().setName("Lisboa, Porto, Faro..."));
         inputCidade.click();
         inputCidade.fill(cidade);
         page.waitForTimeout(300);
         lastCity = cidade;
-        
+
         // NÃO clicar no botão aqui - pode haver steps de data depois
-        // O botão será clicado em selecionoADataDeDevolucao() ou em devoVerVeiculosNaLista()
+        // O botão será clicado em selecionoADataDeDevolucao() ou em
+        // devoVerVeiculosNaLista()
     }
 
     @And("seleciono a data de levantamento {string}")
     public void selecionoADataDeLevantamento(String data) {
-        // Baseado no teste gravado: page.getByRole(AriaRole.TEXTBOX).nth(1).fill("2025-12-16")
+        // Baseado no teste gravado:
+        // page.getByRole(AriaRole.TEXTBOX).nth(1).fill("2025-12-16")
         Locator pickupInput = page.getByRole(AriaRole.TEXTBOX).nth(1);
         pickupInput.click();
         page.waitForTimeout(300);
@@ -162,13 +168,14 @@ public class VehicleSearchSteps {
 
     @And("seleciono a data de devolução {string}")
     public void selecionoADataDeDevolucao(String data) {
-        // Baseado no teste gravado: page.getByRole(AriaRole.TEXTBOX).nth(2).fill("2025-12-21")
+        // Baseado no teste gravado:
+        // page.getByRole(AriaRole.TEXTBOX).nth(2).fill("2025-12-21")
         Locator dropoffInput = page.getByRole(AriaRole.TEXTBOX).nth(2);
         dropoffInput.click();
         page.waitForTimeout(300);
         dropoffInput.fill(data);
         page.waitForTimeout(300);
-        
+
         // Após preencher a última data, clicar no botão de pesquisa
         // (baseado no teste gravado que clica no botão após preencher as datas)
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Pesquisar Carros")).click();
@@ -184,11 +191,11 @@ public class VehicleSearchSteps {
             page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Pesquisar Carros")).click();
             searchButtonClicked = true;
         }
-        
+
         // Aguardar a página de resultados carregar
         page.waitForLoadState(LoadState.NETWORKIDLE);
         page.waitForTimeout(1000); // Aguardar renderização
-        
+
         // Procurar pelo texto de contagem
         String textoEsperado = quantidade + " carros encontrados";
         if (quantidade == 1) {
@@ -196,23 +203,24 @@ public class VehicleSearchSteps {
         } else if (quantidade == 0) {
             textoEsperado = "0 carros encontrados";
         }
-        
+
         // Verificar se o texto está presente na página
         String pageContent = page.content();
-        assertTrue(pageContent.contains(textoEsperado) || pageContent.contains(String.valueOf(quantidade)), 
-            String.format("Esperava ver '%s', mas não foi encontrado na página", textoEsperado));
+        assertTrue(pageContent.contains(textoEsperado) || pageContent.contains(String.valueOf(quantidade)),
+                String.format("Esperava ver '%s', mas não foi encontrado na página", textoEsperado));
     }
 
     @Then("devo ver {int} veículo na lista")
     public void devoVerVeiculoNaLista(int quantidade) {
-        // Suporta a forma singular usada nas features (ex: "devo ver 1 veículo na lista")
+        // Suporta a forma singular usada nas features (ex: "devo ver 1 veículo na
+        // lista")
         devoVerVeiculosNaLista(quantidade);
     }
 
     @And("devo ver o veículo {string}")
     public void devoVerOVeiculo(String nomeVeiculo) {
         page.waitForTimeout(500);
-        
+
         // Contar apenas correspondências EXATAS e VISÍVEIS
         try {
             Locator loc = page.getByText(nomeVeiculo, new Page.GetByTextOptions().setExact(true));
@@ -220,12 +228,14 @@ public class VehicleSearchSteps {
             int visible = 0;
             for (int i = 0; i < total; i++) {
                 try {
-                    if (loc.nth(i).isVisible()) visible++;
+                    if (loc.nth(i).isVisible())
+                        visible++;
                 } catch (Exception e) {
                     // ignore
                 }
             }
-            if (visible > 0) return;
+            if (visible > 0)
+                return;
         } catch (Exception e) {
             // ignore and fall back
         }
@@ -236,7 +246,11 @@ public class VehicleSearchSteps {
             Locator l2 = page.locator(xpath);
             int total2 = l2.count();
             for (int i = 0; i < total2; i++) {
-                try { if (l2.nth(i).isVisible()) return; } catch (Exception e) {}
+                try {
+                    if (l2.nth(i).isVisible())
+                        return;
+                } catch (Exception e) {
+                }
             }
         } catch (Exception e) {
             // ignore
@@ -245,18 +259,21 @@ public class VehicleSearchSteps {
         // Último recurso: verificar conteúdo da página
         String pageContent = page.content();
         assertTrue(pageContent != null && pageContent.contains(nomeVeiculo),
-            String.format("O veículo '%s' deveria estar visível na lista", nomeVeiculo));
+                String.format("O veículo '%s' deveria estar visível na lista", nomeVeiculo));
     }
 
     @And("não devo ver o veículo {string}")
     public void naoDevoVerOVeiculo(String nomeVeiculo) {
-        // Only assert using the backend API. Remove UI debug/warning checks to keep tests focused
-        // on backend availability logic and avoid false negatives from dev-frontend mismatch.
+        // Only assert using the backend API. Remove UI debug/warning checks to keep
+        // tests focused
+        // on backend availability logic and avoid false negatives from dev-frontend
+        // mismatch.
         List<Vehicle> backendCars = backendSearch();
         boolean presentInBackend = backendCars.stream()
                 .map(v -> v.getBrand() + " " + v.getModel())
                 .anyMatch(s -> s.equals(nomeVeiculo));
-        assertTrue(!presentInBackend, String.format("O veículo '%s' está presente na API de pesquisa (deveria estar ausente)", nomeVeiculo));
+        assertTrue(!presentInBackend,
+                String.format("O veículo '%s' está presente na API de pesquisa (deveria estar ausente)", nomeVeiculo));
 
         // All checks done via backend; no UI fallbacks or debug prints here.
     }
@@ -264,9 +281,12 @@ public class VehicleSearchSteps {
     private List<Vehicle> backendSearch() {
         String url = "http://localhost:" + port + "/api/vehicles/search";
         UriComponentsBuilder b = UriComponentsBuilder.fromHttpUrl(url);
-        if (lastCity != null) b.queryParam("city", lastCity);
-        if (lastPickup != null) b.queryParam("pickup", lastPickup);
-        if (lastDropoff != null) b.queryParam("dropoff", lastDropoff);
+        if (lastCity != null)
+            b.queryParam("city", lastCity);
+        if (lastPickup != null)
+            b.queryParam("pickup", lastPickup);
+        if (lastDropoff != null)
+            b.queryParam("dropoff", lastDropoff);
 
         Vehicle[] arr = restTemplate.getForObject(b.toUriString(), Vehicle[].class);
         return arr == null ? java.util.Collections.emptyList() : java.util.Arrays.asList(arr);
@@ -275,10 +295,10 @@ public class VehicleSearchSteps {
     @And("devo ver a mensagem {string}")
     public void devoVerAMensagem(String mensagem) {
         page.waitForTimeout(500);
-        
+
         // Procurar pela mensagem na página
         Locator elemento = page.getByText(mensagem);
-        assertTrue(elemento.count() > 0, 
-            String.format("A mensagem '%s' deveria estar visível", mensagem));
+        assertTrue(elemento.count() > 0,
+                String.format("A mensagem '%s' deveria estar visível", mensagem));
     }
 }

@@ -16,7 +16,7 @@ public class VehicleDetailsSteps {
     private Browser browser;
     private BrowserContext context;
     private Page page;
-    private final String FRONTEND_URL = "http://localhost:3000";
+    private final String frontendUrl = "http://localhost:3000";
 
     @Before("@SCRUM-12")
     public void setUp() {
@@ -71,7 +71,7 @@ public class VehicleDetailsSteps {
     @Given("que estou na página de detalhes do veículo com ID {int}")
     public void queEstouNaPaginaDeDetalhesDoVeiculoComID(int id) {
         // Navegar para a home e depois clicar em "Ver Detalhes"
-        page.navigate(FRONTEND_URL);
+        page.navigate(frontendUrl);
         page.waitForLoadState(LoadState.NETWORKIDLE);
 
         // Clicar em "Pesquisar" para ir à listagem
@@ -83,7 +83,7 @@ public class VehicleDetailsSteps {
             page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Ver Detalhes")).first().click();
         } else {
             // Para outros IDs, navegar diretamente
-            page.navigate(FRONTEND_URL + "/cars/" + id);
+            page.navigate(frontendUrl + "/cars/" + id);
         }
         page.waitForLoadState(LoadState.NETWORKIDLE);
     }

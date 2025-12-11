@@ -51,11 +51,12 @@ public class VehicleDetailDTO {
     }
 
     // All-args constructor
+    @SuppressWarnings("java:S107")
     public VehicleDetailDTO(Long id, String brand, String model, Integer year, String type, String licensePlate,
-                            Integer mileage, String fuelType, String transmission, Integer seats, Integer doors,
-                            Boolean hasAC, Boolean hasGPS, Boolean hasBluetooth, String city, String exactLocation,
-                            Double pricePerDay, String description, String imageUrl, String displayName,
-                            String formattedPrice, String ownerName, String ownerEmail) {
+            Integer mileage, String fuelType, String transmission, Integer seats, Integer doors,
+            Boolean hasAC, Boolean hasGPS, Boolean hasBluetooth, String city, String exactLocation,
+            Double pricePerDay, String description, String imageUrl, String displayName,
+            String formattedPrice, String ownerName, String ownerEmail) {
         this.id = id;
         this.brand = brand;
         this.model = model;
@@ -82,77 +83,194 @@ public class VehicleDetailDTO {
     }
 
     // Getters and setters (selected)
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getBrand() { return brand; }
-    public void setBrand(String brand) { this.brand = brand; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getModel() { return model; }
-    public void setModel(String model) { this.model = model; }
+    public String getBrand() {
+        return brand;
+    }
 
-    public Integer getYear() { return year; }
-    public void setYear(Integer year) { this.year = year; }
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public String getModel() {
+        return model;
+    }
 
-    public String getLicensePlate() { return licensePlate; }
-    public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
+    public void setModel(String model) {
+        this.model = model;
+    }
 
-    public Integer getMileage() { return mileage; }
-    public void setMileage(Integer mileage) { this.mileage = mileage; }
+    public Integer getYear() {
+        return year;
+    }
 
-    public String getFuelType() { return fuelType; }
-    public void setFuelType(String fuelType) { this.fuelType = fuelType; }
+    public void setYear(Integer year) {
+        this.year = year;
+    }
 
-    public String getTransmission() { return transmission; }
-    public void setTransmission(String transmission) { this.transmission = transmission; }
+    public String getType() {
+        return type;
+    }
 
-    public Integer getSeats() { return seats; }
-    public void setSeats(Integer seats) { this.seats = seats; }
+    public void setType(String type) {
+        this.type = type;
+    }
 
-    public Integer getDoors() { return doors; }
-    public void setDoors(Integer doors) { this.doors = doors; }
+    public String getLicensePlate() {
+        return licensePlate;
+    }
 
-    public Boolean getHasAC() { return hasAC; }
-    public void setHasAC(Boolean hasAC) { this.hasAC = hasAC; }
+    public void setLicensePlate(String licensePlate) {
+        this.licensePlate = licensePlate;
+    }
 
-    public Boolean getHasGPS() { return hasGPS; }
-    public void setHasGPS(Boolean hasGPS) { this.hasGPS = hasGPS; }
+    public Integer getMileage() {
+        return mileage;
+    }
 
-    public Boolean getHasBluetooth() { return hasBluetooth; }
-    public void setHasBluetooth(Boolean hasBluetooth) { this.hasBluetooth = hasBluetooth; }
+    public void setMileage(Integer mileage) {
+        this.mileage = mileage;
+    }
 
-    public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
+    public String getFuelType() {
+        return fuelType;
+    }
 
-    public String getExactLocation() { return exactLocation; }
-    public void setExactLocation(String exactLocation) { this.exactLocation = exactLocation; }
+    public void setFuelType(String fuelType) {
+        this.fuelType = fuelType;
+    }
 
-    public Double getPricePerDay() { return pricePerDay; }
-    public void setPricePerDay(Double pricePerDay) { this.pricePerDay = pricePerDay; }
+    public String getTransmission() {
+        return transmission;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setTransmission(String transmission) {
+        this.transmission = transmission;
+    }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public Integer getSeats() {
+        return seats;
+    }
 
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public void setSeats(Integer seats) {
+        this.seats = seats;
+    }
 
-    public String getFormattedPrice() { return formattedPrice; }
-    public void setFormattedPrice(String formattedPrice) { this.formattedPrice = formattedPrice; }
+    public Integer getDoors() {
+        return doors;
+    }
 
-    public String getOwnerName() { return ownerName; }
-    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
+    public void setDoors(Integer doors) {
+        this.doors = doors;
+    }
 
-    public String getOwnerEmail() { return ownerEmail; }
-    public void setOwnerEmail(String ownerEmail) { this.ownerEmail = ownerEmail; }
+    public Boolean getHasAC() {
+        return hasAC;
+    }
+
+    public void setHasAC(Boolean hasAC) {
+        this.hasAC = hasAC;
+    }
+
+    public Boolean getHasGPS() {
+        return hasGPS;
+    }
+
+    public void setHasGPS(Boolean hasGPS) {
+        this.hasGPS = hasGPS;
+    }
+
+    public Boolean getHasBluetooth() {
+        return hasBluetooth;
+    }
+
+    public void setHasBluetooth(Boolean hasBluetooth) {
+        this.hasBluetooth = hasBluetooth;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getExactLocation() {
+        return exactLocation;
+    }
+
+    public void setExactLocation(String exactLocation) {
+        this.exactLocation = exactLocation;
+    }
+
+    public Double getPricePerDay() {
+        return pricePerDay;
+    }
+
+    public void setPricePerDay(Double pricePerDay) {
+        this.pricePerDay = pricePerDay;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getFormattedPrice() {
+        return formattedPrice;
+    }
+
+    public void setFormattedPrice(String formattedPrice) {
+        this.formattedPrice = formattedPrice;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
+    }
 
     // Builder (manual)
-    public static VehicleDetailDTOBuilder builder() { return new VehicleDetailDTOBuilder(); }
+    public static VehicleDetailDTOBuilder builder() {
+        return new VehicleDetailDTOBuilder();
+    }
 
     public static class VehicleDetailDTOBuilder {
         private Long id;
@@ -179,29 +297,120 @@ public class VehicleDetailDTO {
         private String ownerName;
         private String ownerEmail;
 
-        public VehicleDetailDTOBuilder id(Long id) { this.id = id; return this; }
-        public VehicleDetailDTOBuilder brand(String brand) { this.brand = brand; return this; }
-        public VehicleDetailDTOBuilder model(String model) { this.model = model; return this; }
-        public VehicleDetailDTOBuilder year(Integer year) { this.year = year; return this; }
-        public VehicleDetailDTOBuilder type(String type) { this.type = type; return this; }
-        public VehicleDetailDTOBuilder licensePlate(String licensePlate) { this.licensePlate = licensePlate; return this; }
-        public VehicleDetailDTOBuilder mileage(Integer mileage) { this.mileage = mileage; return this; }
-        public VehicleDetailDTOBuilder fuelType(String fuelType) { this.fuelType = fuelType; return this; }
-        public VehicleDetailDTOBuilder transmission(String transmission) { this.transmission = transmission; return this; }
-        public VehicleDetailDTOBuilder seats(Integer seats) { this.seats = seats; return this; }
-        public VehicleDetailDTOBuilder doors(Integer doors) { this.doors = doors; return this; }
-        public VehicleDetailDTOBuilder hasAC(Boolean hasAC) { this.hasAC = hasAC; return this; }
-        public VehicleDetailDTOBuilder hasGPS(Boolean hasGPS) { this.hasGPS = hasGPS; return this; }
-        public VehicleDetailDTOBuilder hasBluetooth(Boolean hasBluetooth) { this.hasBluetooth = hasBluetooth; return this; }
-        public VehicleDetailDTOBuilder city(String city) { this.city = city; return this; }
-        public VehicleDetailDTOBuilder exactLocation(String exactLocation) { this.exactLocation = exactLocation; return this; }
-        public VehicleDetailDTOBuilder pricePerDay(Double pricePerDay) { this.pricePerDay = pricePerDay; return this; }
-        public VehicleDetailDTOBuilder description(String description) { this.description = description; return this; }
-        public VehicleDetailDTOBuilder imageUrl(String imageUrl) { this.imageUrl = imageUrl; return this; }
-        public VehicleDetailDTOBuilder displayName(String displayName) { this.displayName = displayName; return this; }
-        public VehicleDetailDTOBuilder formattedPrice(String formattedPrice) { this.formattedPrice = formattedPrice; return this; }
-        public VehicleDetailDTOBuilder ownerName(String ownerName) { this.ownerName = ownerName; return this; }
-        public VehicleDetailDTOBuilder ownerEmail(String ownerEmail) { this.ownerEmail = ownerEmail; return this; }
+        public VehicleDetailDTOBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder brand(String brand) {
+            this.brand = brand;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder model(String model) {
+            this.model = model;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder year(Integer year) {
+            this.year = year;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder type(String type) {
+            this.type = type;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder licensePlate(String licensePlate) {
+            this.licensePlate = licensePlate;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder mileage(Integer mileage) {
+            this.mileage = mileage;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder fuelType(String fuelType) {
+            this.fuelType = fuelType;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder transmission(String transmission) {
+            this.transmission = transmission;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder seats(Integer seats) {
+            this.seats = seats;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder doors(Integer doors) {
+            this.doors = doors;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder hasAC(Boolean hasAC) {
+            this.hasAC = hasAC;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder hasGPS(Boolean hasGPS) {
+            this.hasGPS = hasGPS;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder hasBluetooth(Boolean hasBluetooth) {
+            this.hasBluetooth = hasBluetooth;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder city(String city) {
+            this.city = city;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder exactLocation(String exactLocation) {
+            this.exactLocation = exactLocation;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder pricePerDay(Double pricePerDay) {
+            this.pricePerDay = pricePerDay;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder imageUrl(String imageUrl) {
+            this.imageUrl = imageUrl;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder displayName(String displayName) {
+            this.displayName = displayName;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder formattedPrice(String formattedPrice) {
+            this.formattedPrice = formattedPrice;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder ownerName(String ownerName) {
+            this.ownerName = ownerName;
+            return this;
+        }
+
+        public VehicleDetailDTOBuilder ownerEmail(String ownerEmail) {
+            this.ownerEmail = ownerEmail;
+            return this;
+        }
 
         public VehicleDetailDTO build() {
             return new VehicleDetailDTO(id, brand, model, year, type, licensePlate, mileage, fuelType, transmission,

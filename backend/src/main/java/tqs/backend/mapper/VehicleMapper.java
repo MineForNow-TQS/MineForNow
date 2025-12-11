@@ -11,6 +11,10 @@ import java.text.DecimalFormat;
  */
 public class VehicleMapper {
 
+    private VehicleMapper() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final DecimalFormat PRICE_FORMAT = new DecimalFormat("#0.00");
 
     /**
@@ -57,21 +61,23 @@ public class VehicleMapper {
      */
     private static String formatDisplayName(Vehicle vehicle) {
         StringBuilder name = new StringBuilder();
-        
+
         if (vehicle.getBrand() != null) {
             name.append(vehicle.getBrand());
         }
-        
+
         if (vehicle.getModel() != null) {
-            if (name.length() > 0) name.append(" ");
+            if (!name.isEmpty())
+                name.append(" ");
             name.append(vehicle.getModel());
         }
-        
+
         if (vehicle.getYear() != null) {
-            if (name.length() > 0) name.append(" ");
+            if (!name.isEmpty())
+                name.append(" ");
             name.append(vehicle.getYear());
         }
-        
+
         return name.toString();
     }
 

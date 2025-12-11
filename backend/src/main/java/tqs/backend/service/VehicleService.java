@@ -3,7 +3,6 @@ package tqs.backend.service;
 import org.springframework.stereotype.Service;
 import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.mapper.VehicleMapper;
-import tqs.backend.model.Vehicle;
 import tqs.backend.repository.VehicleRepository;
 
 import java.util.Optional;
