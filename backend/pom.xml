@@ -252,13 +252,13 @@
                 <version>3.2.5</version>
                 <configuration>
                     <argLine>${surefire.jacoco.args}</argLine> 
-                    <includes>
                         <include>**/*Test.java</include>
                         <include>**/*Tests.java</include>
                         <include>**/*IT.java</include>
-                        <include>**/*Cucumber*.java</include>
-                        <include>**/cucumber/**/*Test.java</include>
                     </includes>
+                    <excludes>
+                        <exclude>**/cucumber/**</exclude>
+                    </excludes>
                     <properties>
                         <configurationParameters>
                             junit.jupiter.extensions.autodetection.enabled = true

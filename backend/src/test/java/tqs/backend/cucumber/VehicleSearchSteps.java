@@ -253,7 +253,7 @@ public class VehicleSearchSteps {
                 }
             }
         } catch (Exception e) {
-            // ignore
+            // Ignored specifically for test resilience against UI fluctuations
         }
 
         // Último recurso: verificar conteúdo da página
