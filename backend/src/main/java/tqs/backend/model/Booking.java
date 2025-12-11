@@ -1,17 +1,13 @@
 package tqs.backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+// lombok removed: generate constructors/getters/setters manually
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "bookings")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Booking {
 
     @Id
@@ -28,4 +24,52 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
+
+    // No-arg constructor
+    public Booking() {
+    }
+
+    // All-args constructor
+    public Booking(Long id, java.time.LocalDate pickupDate, java.time.LocalDate returnDate, Vehicle vehicle) {
+        this.id = id;
+        this.pickupDate = pickupDate;
+        this.returnDate = returnDate;
+        this.vehicle = vehicle;
+    }
+
+    // Getters and setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public java.time.LocalDate getPickupDate() { return pickupDate; }
+    public void setPickupDate(java.time.LocalDate pickupDate) { this.pickupDate = pickupDate; }
+
+    public java.time.LocalDate getReturnDate() { return returnDate; }
+    public void setReturnDate(java.time.LocalDate returnDate) { this.returnDate = returnDate; }
+
+    public Vehicle getVehicle() { return vehicle; }
+    public void setVehicle(Vehicle vehicle) { this.vehicle = vehicle; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Booking booking = (Booking) o;
+        return Objects.equals(id, booking.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Booking{" +
+                "id=" + id +
+                ", pickupDate=" + pickupDate +
+                ", returnDate=" + returnDate +
+                ", vehicle=" + (vehicle != null ? vehicle.getBrand() + " " + vehicle.getModel() : null) +
+                '}';
+    }
 }

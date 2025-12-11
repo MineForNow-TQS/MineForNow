@@ -127,9 +127,11 @@ public class MinefornowApplication {
             // Vamos criar uma reserva para o MERCEDES AMG GT (Lisboa)
             // Para testar: Se pesquisar em Lisboa nessas datas, o Mercedes NÃO deve aparecer.
             
-            LocalDate today = LocalDate.now();
-            LocalDate pickup = today.plusDays(10); // Daqui a 10 dias
-            LocalDate dropoff = today.plusDays(15); // Daqui a 15 dias
+            // LocalDate today = LocalDate.now();
+            // LocalDate pickup = today.plusDays(10); // Daqui a 10 dias
+            // LocalDate dropoff = today.plusDays(15); // Daqui a 15 dias
+            LocalDate pickup = LocalDate.of(2025, 01, 16);
+            LocalDate dropoff = LocalDate.of(2025, 01, 21);
 
             bookingRepo.save(new Booking(null, pickup, dropoff, mercedes));
 

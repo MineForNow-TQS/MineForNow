@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import lombok.RequiredArgsConstructor;
+// lombok removed: add explicit constructor for dependency injection
 import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.VehicleRepository;
@@ -21,11 +21,16 @@ import tqs.backend.service.VehicleService;
 @RestController
 @RequestMapping("/api/vehicles")
 @CrossOrigin(origins = "http://localhost:3000")
-@RequiredArgsConstructor
 public class VehicleController {
 
     private final VehicleRepository vehicleRepository;
     private final VehicleService vehicleService;
+
+    // Explicit constructor replacing Lombok @RequiredArgsConstructor
+    public VehicleController(VehicleRepository vehicleRepository, VehicleService vehicleService) {
+        this.vehicleRepository = vehicleRepository;
+        this.vehicleService = vehicleService;
+    }
 
     @GetMapping
     public List<Vehicle> getAllVehicles() {
