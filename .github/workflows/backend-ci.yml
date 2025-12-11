@@ -43,8 +43,9 @@ jobs:
         run: |
           cd ../frontend
           npm install
-          npm run dev &
-          npx wait-on http://localhost:3000
+          npm run build
+          npx serve -s dist -l 3000 &
+          npx wait-on http://localhost:3000 -t 60000
         
       - name: Install Playwright Browsers
         run: mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.classpathScope=test -Dexec.args="install --with-deps"
