@@ -47,7 +47,7 @@ jobs:
           npx wait-on http://localhost:3000
         
       - name: Install Playwright Browsers
-        run: mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
+        run: mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.classpathScope=test -Dexec.args="install --with-deps"
 
       # 1. Compila e corre os testes (Corre sempre)
       - name: Build and Test with Maven
