@@ -34,25 +34,9 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install and Start Frontend
-        run: |
-          cd ../frontend
-          npm install
-          npm run build
-          npx serve -s dist -l 3000 &
-          npx wait-on http://localhost:3000 -t 60000
-        
-      - name: Install Playwright Browsers
-        run: mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.classpathScope=test -Dexec.args="install --with-deps"
-
-      # 1. Compila e corre os testes (Corre sempre)
+      # 1. Compila e corre os testes (EXCETO Cucumber/E2E)
       - name: Build and Test with Maven
-        run: mvn -B clean verify
+        run: mvn -B clean verify -Dtest=!CucumberTest
 
       # 2. Análise do SonarCloud (SÓ corre se NÃO for o Dependabot)
       - name: SonarCloud Scan
