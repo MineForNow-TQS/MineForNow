@@ -21,9 +21,15 @@ public class VehicleDetailsSteps {
     @Before("@SCRUM-12")
     public void setUp() {
         Playwright playwright = Playwright.create();
+        boolean headless = false;
+        String ci = System.getenv("CI");
+        String display = System.getenv("DISPLAY");
+        if ((ci != null && !ci.isEmpty()) || display == null || display.isEmpty()) {
+            headless = true;
+        }
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
-            .setHeadless(false)  // Browser VISÍVEL
-            .setSlowMo(500));    // Slow motion para ver as ações
+                .setHeadless(headless)
+                .setSlowMo(headless ? 0 : 500));
         context = browser.newContext();
         page = context.newPage();
         page.setDefaultTimeout(60000); // 60 segundos de timeout
@@ -67,11 +73,11 @@ public class VehicleDetailsSteps {
         // Navegar para a home e depois clicar em "Ver Detalhes"
         page.navigate(FRONTEND_URL);
         page.waitForLoadState(LoadState.NETWORKIDLE);
-        
+
         // Clicar em "Pesquisar" para ir à listagem
         page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Pesquisar")).click();
         page.waitForLoadState(LoadState.NETWORKIDLE);
-        
+
         // Clicar no primeiro "Ver Detalhes" (ou específico baseado no ID)
         if (id == 1) {
             page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Ver Detalhes")).first().click();
@@ -86,7 +92,7 @@ public class VehicleDetailsSteps {
     public void devoVerONomeDoVeiculo(String nomeVeiculo) {
         // Usar first() porque o nome aparece no título E na descrição
         assertTrue(page.getByText(nomeVeiculo).first().isVisible(),
-            "O nome do veículo deve estar visível");
+                "O nome do veículo deve estar visível");
     }
 
     @And("devo ver o ano {string}")
@@ -126,16 +132,12 @@ public class VehicleDetailsSteps {
         assertTrue(pageContent.contains(portas), "O número de portas deve estar visível");
     }
 
-
-
     @Then("devo ver a característica {string}")
     public void devoVerACaracteristica(String caracteristica) {
         String pageContent = page.content();
-        assertTrue(pageContent.contains(caracteristica), 
-            "A característica '" + caracteristica + "' deve estar visível");
+        assertTrue(pageContent.contains(caracteristica),
+                "A característica '" + caracteristica + "' deve estar visível");
     }
-
-
 
     @Then("devo ver a cidade {string}")
     public void devoVerACidade(String cidade) {
@@ -163,7 +165,7 @@ public class VehicleDetailsSteps {
         // Baseado no teste: "charmoso"
         String pageContent = page.content();
         assertTrue(pageContent.contains(palavra),
-            "A descrição deve conter a palavra '" + palavra + "'");
+                "A descrição deve conter a palavra '" + palavra + "'");
     }
 
     @Then("devo ver o botão {string}")
@@ -185,7 +187,7 @@ public class VehicleDetailsSteps {
         page.waitForTimeout(1000);
         String currentUrl = page.url();
         assertTrue(currentUrl.contains("/cars") && !currentUrl.matches(".*/cars/\\d+"),
-            "Deve estar na página de pesquisa");
+                "Deve estar na página de pesquisa");
     }
 
     @Then("devo ver uma mensagem de erro ou ser redirecionado")
@@ -193,22 +195,22 @@ public class VehicleDetailsSteps {
         page.waitForTimeout(1000);
         String currentUrl = page.url();
         String pageContent = page.content();
-        
-        boolean temErro = pageContent.contains("erro") || 
-                         pageContent.contains("não encontrado") || 
-                         pageContent.contains("404");
+
+        boolean temErro = pageContent.contains("erro") ||
+                pageContent.contains("não encontrado") ||
+                pageContent.contains("404");
         boolean foiRedirecionado = !currentUrl.contains("/cars/99999");
-        
+
         assertTrue(temErro || foiRedirecionado,
-            "Deve mostrar erro ou redirecionar para veículo inexistente");
+                "Deve mostrar erro ou redirecionar para veículo inexistente");
     }
 
     @Then("o preço deve estar no formato correto com {string}")
     public void oPrecoDeveEstarNoFormatoCorreto(String formato) {
         // Baseado no teste: "40 €/dia"
         Locator precoElement = page.getByText("€/dia");
-        assertTrue(precoElement.count() > 0, 
-            "O preço deve estar no formato com '" + formato + "'");
+        assertTrue(precoElement.count() > 0,
+                "O preço deve estar no formato com '" + formato + "'");
     }
 
     @Then("devo ver pelo menos uma imagem do veículo")
@@ -216,29 +218,29 @@ public class VehicleDetailsSteps {
         // O teste gravado clica em botões de navegação de imagem (nth(3), nth(5))
         // Verifica se existem imagens na página
         String pageContent = page.content();
-        assertTrue(pageContent.contains("img") || pageContent.contains("image"), 
-            "Deve haver pelo menos uma imagem do veículo");
+        assertTrue(pageContent.contains("img") || pageContent.contains("image"),
+                "Deve haver pelo menos uma imagem do veículo");
     }
 
     @Then("devo ver um mapa integrado com a localização")
     public void devoVerUmMapaIntegradoComALocalizacao() {
         String pageContent = page.content();
-        assertTrue(pageContent.contains("map") || 
-                   pageContent.contains("mapa") || 
-                   pageContent.contains("google") ||
-                   pageContent.contains("leaflet"),
-            "Deve haver um mapa integrado");
+        assertTrue(pageContent.contains("map") ||
+                pageContent.contains("mapa") ||
+                pageContent.contains("google") ||
+                pageContent.contains("leaflet"),
+                "Deve haver um mapa integrado");
     }
 
     @Then("devo ver a classificação por estrelas se disponível")
     public void devoVerAClassificacaoPorEstrelasSeDisponivel() {
         String pageContent = page.content();
         // Verifica se há sistema de rating/estrelas
-        boolean temRating = pageContent.contains("star") || 
-                           pageContent.contains("rating") || 
-                           pageContent.contains("estrela") ||
-                           pageContent.contains("★");
-        
+        boolean temRating = pageContent.contains("star") ||
+                pageContent.contains("rating") ||
+                pageContent.contains("estrela") ||
+                pageContent.contains("★");
+
         // Rating é opcional, então não falha se não existir
         System.out.println("Classificação por estrelas encontrada: " + temRating);
     }
