@@ -1,6 +1,6 @@
 package tqs.backend.integration;
 
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,13 +11,14 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
+import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Testes de integração para o endpoint GET /api/vehicles/{id} (SCRUM-12).
@@ -37,6 +38,9 @@ class VehicleGetByIdIT {
     @Autowired
     private VehicleRepository vehicleRepository;
 
+        @Autowired
+        private BookingRepository bookingRepository;
+
     @Autowired
     private UserRepository userRepository;
 
@@ -47,8 +51,10 @@ class VehicleGetByIdIT {
     @BeforeEach
     void setUp() {
         baseUrl = "http://localhost:" + port + "/api/vehicles";
-        vehicleRepository.deleteAll();
-        userRepository.deleteAll();
+                // Remover reservas primeiro para evitar violação de FK ao apagar veículos
+                bookingRepository.deleteAll();
+                vehicleRepository.deleteAll();
+                userRepository.deleteAll();
 
         // Criar owner de teste
         testOwner = userRepository.save(User.builder()
