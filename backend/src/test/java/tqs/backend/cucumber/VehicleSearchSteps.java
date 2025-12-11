@@ -61,9 +61,19 @@ public class VehicleSearchSteps {
     @Before
     public void setUp() {
         Playwright playwright = Playwright.create();
-        browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
-            .setHeadless(false)  // Browser VISÍVEL para veres os testes
-            .setSlowMo(500));    // Slow motion para ver as ações
+        // Detect CI or missing X display and run headless in that case to avoid failures on GitHub Actions
+        boolean headless = false;
+        String ci = System.getenv("CI");
+        String display = System.getenv("DISPLAY");
+        if ((ci != null && !ci.isEmpty()) || display == null || display.isEmpty()) {
+            headless = true;
+        }
+        BrowserType.LaunchOptions opts = new BrowserType.LaunchOptions().setHeadless(headless);
+        if (!headless) {
+            // only slow down actions for local interactive debugging
+            opts.setSlowMo(500);
+        }
+        browser = playwright.chromium().launch(opts);
         context = browser.newContext();
         page = context.newPage();
         page.setDefaultTimeout(60000); // 60 segundos de timeout
