@@ -34,7 +34,7 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      # 1. Compila e corre os testes (Corre sempre)
+      # 1. Compila e corre os testes (Unitários apenas)
       - name: Build and Test with Maven
         run: mvn -B clean verify
 

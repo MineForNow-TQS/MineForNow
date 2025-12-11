@@ -1,14 +1,28 @@
 package tqs.backend.model;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class VehicleTest {
 
+    private User testOwner;
+
+    @BeforeEach
+    void setUp() {
+        testOwner = User.builder()
+                .id(1L)
+                .email("owner@test.com")
+                .name("Test Owner")
+                .role(User.UserRole.OWNER)
+                .build();
+    }
+
     @Test
     void testVehicleBuilder() {
         Vehicle vehicle = Vehicle.builder()
+                .owner(testOwner)
                 .brand("Toyota")
                 .model("Corolla")
                 .year(2023)
@@ -51,7 +65,9 @@ class VehicleTest {
 
     @Test
     void testVehicleSetters() {
-        Vehicle vehicle = new Vehicle();
+        Vehicle vehicle = Vehicle.builder()
+                .owner(testOwner)
+                .build();
         vehicle.setId(1L);
         vehicle.setBrand("Honda");
         vehicle.setModel("Civic");
@@ -138,7 +154,9 @@ class VehicleTest {
 
     @Test
     void testVehicleNoArgsConstructor() {
-        Vehicle vehicle = new Vehicle();
+        Vehicle vehicle = Vehicle.builder()
+                .owner(testOwner)
+                .build();
         assertThat(vehicle).isNotNull();
         assertThat(vehicle.getBrand()).isNull();
         assertThat(vehicle.getModel()).isNull();
@@ -146,12 +164,28 @@ class VehicleTest {
 
     @Test
     void testVehicleAllArgsConstructor() {
-        Vehicle vehicle = new Vehicle(
-                1L, "Porsche", "911", 2024, "Sports", "CC-22-DD", 5000,
-                "Gasoline", "Automatic", 2, 2, true, true, true,
-                "Lisboa", "Cascais", 200.0, "Carro desportivo de luxo",
-                "https://example.com/911.jpg"
-        );
+        Vehicle vehicle = Vehicle.builder()
+                .id(1L)
+                .owner(testOwner)
+                .brand("Porsche")
+                .model("911")
+                .year(2024)
+                .type("Sports")
+                .licensePlate("CC-22-DD")
+                .mileage(5000)
+                .fuelType("Gasoline")
+                .transmission("Automatic")
+                .seats(2)
+                .doors(2)
+                .hasAC(true)
+                .hasGPS(true)
+                .hasBluetooth(true)
+                .city("Lisboa")
+                .exactLocation("Cascais")
+                .pricePerDay(200.0)
+                .description("Carro desportivo de luxo")
+                .imageUrl("https://example.com/911.jpg")
+                .build();
 
         assertThat(vehicle.getId()).isEqualTo(1L);
         assertThat(vehicle.getBrand()).isEqualTo("Porsche");

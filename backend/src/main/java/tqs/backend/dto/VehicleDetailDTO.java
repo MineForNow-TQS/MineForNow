@@ -1,46 +1,21 @@
-package tqs.backend.model;
+package tqs.backend.dto;
 
-import java.util.Objects;
+// lombok removed: generate constructors/getters/setters manually
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-// lombok removed: generating constructors, getters and setters manually
+/**
+ * DTO detalhado para exibição completa de informações do veículo.
+ * Usado na página de detalhes do veículo (SCRUM-12).
+ */
+public class VehicleDetailDTO {
 
-@Entity
-@Table(name = "vehicles")
-public class Vehicle {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // --- Owner ---
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
-
     // --- Informações Básicas ---
-    @Column(nullable = false)
     private String brand;
-
-    @Column(nullable = false)
     private String model;
-
-    @Column(name = "manufacturing_year")
     private Integer year;
-
-    private String type; // ex: Citadino, SUV, Moto
-
-    @Column(unique = true)
+    private String type;
     private String licensePlate;
-
     private Integer mileage;
 
     // --- Especificações ---
@@ -57,28 +32,32 @@ public class Vehicle {
     // --- Localização e Preço ---
     private String city;
     private String exactLocation;
-
-    @Column(nullable = false)
     private Double pricePerDay;
 
     // --- Outros ---
-    @Column(length = 1000)
     private String description;
-
     private String imageUrl;
 
+    // --- Campos Calculados/Formatados ---
+    private String displayName; // ex: "Fiat 500 2020"
+    private String formattedPrice; // ex: "25.00 €/dia"
+
+    // --- Informações do Proprietário ---
+    private String ownerName; // Nome do proprietário do veículo
+    private String ownerEmail; // Email do proprietário
+
     // No-arg constructor
-    public Vehicle() {
+    public VehicleDetailDTO() {
     }
 
     // All-args constructor
     @SuppressWarnings("java:S107")
-    public Vehicle(Long id, User owner, String brand, String model, Integer year, String type, String licensePlate,
+    public VehicleDetailDTO(Long id, String brand, String model, Integer year, String type, String licensePlate,
             Integer mileage, String fuelType, String transmission, Integer seats, Integer doors,
             Boolean hasAC, Boolean hasGPS, Boolean hasBluetooth, String city, String exactLocation,
-            Double pricePerDay, String description, String imageUrl) {
+            Double pricePerDay, String description, String imageUrl, String displayName,
+            String formattedPrice, String ownerName, String ownerEmail) {
         this.id = id;
-        this.owner = owner;
         this.brand = brand;
         this.model = model;
         this.year = year;
@@ -97,23 +76,19 @@ public class Vehicle {
         this.pricePerDay = pricePerDay;
         this.description = description;
         this.imageUrl = imageUrl;
+        this.displayName = displayName;
+        this.formattedPrice = formattedPrice;
+        this.ownerName = ownerName;
+        this.ownerEmail = ownerEmail;
     }
 
-    // Getters and setters
+    // Getters and setters (selected)
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
     }
 
     public String getBrand() {
@@ -260,14 +235,45 @@ public class Vehicle {
         this.imageUrl = imageUrl;
     }
 
-    // Builder (manual)
-    public static VehicleBuilder builder() {
-        return new VehicleBuilder();
+    public String getDisplayName() {
+        return displayName;
     }
 
-    public static class VehicleBuilder {
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getFormattedPrice() {
+        return formattedPrice;
+    }
+
+    public void setFormattedPrice(String formattedPrice) {
+        this.formattedPrice = formattedPrice;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
+    }
+
+    // Builder (manual)
+    public static VehicleDetailDTOBuilder builder() {
+        return new VehicleDetailDTOBuilder();
+    }
+
+    public static class VehicleDetailDTOBuilder {
         private Long id;
-        private User owner;
         private String brand;
         private String model;
         private Integer year;
@@ -286,134 +292,130 @@ public class Vehicle {
         private Double pricePerDay;
         private String description;
         private String imageUrl;
+        private String displayName;
+        private String formattedPrice;
+        private String ownerName;
+        private String ownerEmail;
 
-        public VehicleBuilder id(Long id) {
+        public VehicleDetailDTOBuilder id(Long id) {
             this.id = id;
             return this;
         }
 
-        public VehicleBuilder owner(User owner) {
-            this.owner = owner;
-            return this;
-        }
-
-        public VehicleBuilder brand(String brand) {
+        public VehicleDetailDTOBuilder brand(String brand) {
             this.brand = brand;
             return this;
         }
 
-        public VehicleBuilder model(String model) {
+        public VehicleDetailDTOBuilder model(String model) {
             this.model = model;
             return this;
         }
 
-        public VehicleBuilder year(Integer year) {
+        public VehicleDetailDTOBuilder year(Integer year) {
             this.year = year;
             return this;
         }
 
-        public VehicleBuilder type(String type) {
+        public VehicleDetailDTOBuilder type(String type) {
             this.type = type;
             return this;
         }
 
-        public VehicleBuilder licensePlate(String licensePlate) {
+        public VehicleDetailDTOBuilder licensePlate(String licensePlate) {
             this.licensePlate = licensePlate;
             return this;
         }
 
-        public VehicleBuilder mileage(Integer mileage) {
+        public VehicleDetailDTOBuilder mileage(Integer mileage) {
             this.mileage = mileage;
             return this;
         }
 
-        public VehicleBuilder fuelType(String fuelType) {
+        public VehicleDetailDTOBuilder fuelType(String fuelType) {
             this.fuelType = fuelType;
             return this;
         }
 
-        public VehicleBuilder transmission(String transmission) {
+        public VehicleDetailDTOBuilder transmission(String transmission) {
             this.transmission = transmission;
             return this;
         }
 
-        public VehicleBuilder seats(Integer seats) {
+        public VehicleDetailDTOBuilder seats(Integer seats) {
             this.seats = seats;
             return this;
         }
 
-        public VehicleBuilder doors(Integer doors) {
+        public VehicleDetailDTOBuilder doors(Integer doors) {
             this.doors = doors;
             return this;
         }
 
-        public VehicleBuilder hasAC(Boolean hasAC) {
+        public VehicleDetailDTOBuilder hasAC(Boolean hasAC) {
             this.hasAC = hasAC;
             return this;
         }
 
-        public VehicleBuilder hasGPS(Boolean hasGPS) {
+        public VehicleDetailDTOBuilder hasGPS(Boolean hasGPS) {
             this.hasGPS = hasGPS;
             return this;
         }
 
-        public VehicleBuilder hasBluetooth(Boolean hasBluetooth) {
+        public VehicleDetailDTOBuilder hasBluetooth(Boolean hasBluetooth) {
             this.hasBluetooth = hasBluetooth;
             return this;
         }
 
-        public VehicleBuilder city(String city) {
+        public VehicleDetailDTOBuilder city(String city) {
             this.city = city;
             return this;
         }
 
-        public VehicleBuilder exactLocation(String exactLocation) {
+        public VehicleDetailDTOBuilder exactLocation(String exactLocation) {
             this.exactLocation = exactLocation;
             return this;
         }
 
-        public VehicleBuilder pricePerDay(Double pricePerDay) {
+        public VehicleDetailDTOBuilder pricePerDay(Double pricePerDay) {
             this.pricePerDay = pricePerDay;
             return this;
         }
 
-        public VehicleBuilder description(String description) {
+        public VehicleDetailDTOBuilder description(String description) {
             this.description = description;
             return this;
         }
 
-        public VehicleBuilder imageUrl(String imageUrl) {
+        public VehicleDetailDTOBuilder imageUrl(String imageUrl) {
             this.imageUrl = imageUrl;
             return this;
         }
 
-        public Vehicle build() {
-            return new Vehicle(id, owner, brand, model, year, type, licensePlate, mileage, fuelType, transmission,
-                    seats, doors, hasAC, hasGPS, hasBluetooth, city, exactLocation, pricePerDay, description, imageUrl);
+        public VehicleDetailDTOBuilder displayName(String displayName) {
+            this.displayName = displayName;
+            return this;
         }
-    }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        Vehicle vehicle = (Vehicle) o;
-        return Objects.equals(id, vehicle.id);
-    }
+        public VehicleDetailDTOBuilder formattedPrice(String formattedPrice) {
+            this.formattedPrice = formattedPrice;
+            return this;
+        }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+        public VehicleDetailDTOBuilder ownerName(String ownerName) {
+            this.ownerName = ownerName;
+            return this;
+        }
 
-    @Override
-    public String toString() {
-        return "Vehicle{" +
-                "id=" + id +
-                ", brand='" + brand + '\'' +
-                ", model='" + model + '\'' +
-                '}';
+        public VehicleDetailDTOBuilder ownerEmail(String ownerEmail) {
+            this.ownerEmail = ownerEmail;
+            return this;
+        }
+
+        public VehicleDetailDTO build() {
+            return new VehicleDetailDTO(id, brand, model, year, type, licensePlate, mileage, fuelType, transmission,
+                    seats, doors, hasAC, hasGPS, hasBluetooth, city, exactLocation, pricePerDay, description, imageUrl,
+                    displayName, formattedPrice, ownerName, ownerEmail);
+        }
     }
 }

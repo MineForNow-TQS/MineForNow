@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.backend.model.Booking;
+import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
 
 import java.time.LocalDate;
@@ -29,17 +30,65 @@ class VehicleRepositoryTest {
 
     private Vehicle fiat;
     private Vehicle tesla;
+    private User testOwner;
 
     @BeforeEach
     void setUp() {
-        // 1. Criar Veículos
-        fiat = new Vehicle(null, "Fiat", "500", 2021, "Citadino", "AA-00-AA", 10000, 
-                "Gasolina", "Manual", 4, 3, true, true, true, 
-                "Lisboa", "Aeroporto", 35.0, "Desc", "url");
+        // 1. Criar Owner
+        testOwner = User.builder()
+                .email("testowner@minefornow.com")
+                .name("Test Owner")
+                .role(User.UserRole.OWNER)
+                .password("test123")
+                .phone("+351 910 000 000")
+                .address("Test Address")
+                .build();
+        entityManager.persist(testOwner);
         
-        tesla = new Vehicle(null, "Tesla", "Model 3", 2023, "Sedan", "BB-11-BB", 5000, 
-                "Elétrico", "Automática", 5, 5, true, true, true, 
-                "Porto", "Campanhã", 85.0, "Desc", "url");
+        // 2. Criar Veículos
+        fiat = Vehicle.builder()
+                .owner(testOwner)
+                .brand("Fiat")
+                .model("500")
+                .year(2021)
+                .type("Citadino")
+                .licensePlate("AA-00-AA")
+                .mileage(10000)
+                .fuelType("Gasolina")
+                .transmission("Manual")
+                .seats(4)
+                .doors(3)
+                .hasAC(true)
+                .hasGPS(true)
+                .hasBluetooth(true)
+                .city("Lisboa")
+                .exactLocation("Aeroporto")
+                .pricePerDay(35.0)
+                .description("Desc")
+                .imageUrl("url")
+                .build();
+        
+        tesla = Vehicle.builder()
+                .owner(testOwner)
+                .brand("Tesla")
+                .model("Model 3")
+                .year(2023)
+                .type("Sedan")
+                .licensePlate("BB-11-BB")
+                .mileage(5000)
+                .fuelType("Elétrico")
+                .transmission("Automática")
+                .seats(5)
+                .doors(5)
+                .hasAC(true)
+                .hasGPS(true)
+                .hasBluetooth(true)
+                .city("Porto")
+                .exactLocation("Campanhã")
+                .pricePerDay(85.0)
+                .description("Desc")
+                .imageUrl("url")
+                .build();
 
         entityManager.persist(fiat);
         entityManager.persist(tesla);
