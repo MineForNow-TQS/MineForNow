@@ -157,6 +157,7 @@
             <artifactId>playwright</artifactId>
             <version>1.48.0</version>
             <scope>test</scope>
+        </dependency>
 
         <!-- Optional: PostgreSQL -->
         <!--
@@ -382,5 +383,4 @@
             </build>
         </profile>
     </profiles>
-</project>
 </project>

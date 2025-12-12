@@ -15,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.User;
+import tqs.backend.model.UserRole;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
@@ -59,9 +60,9 @@ class VehicleGetByIdIT {
         // Criar owner de teste
         testOwner = userRepository.save(User.builder()
                 .email("testowner@test.com")
-                .name("Test Owner")
+                .fullName("Test Owner")
                 .password("test123")
-                .role(User.UserRole.OWNER)
+                .role(UserRole.OWNER)
                 .build());
 
         // Criar veículo de teste no banco

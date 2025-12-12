@@ -19,6 +19,7 @@ import tqs.backend.model.Booking;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.BookingRepository;
+import tqs.backend.model.UserRole;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -53,9 +54,9 @@ class VehicleSearchIT {
 
         User owner = userRepository.save(User.builder()
             .email("owner@test.com")
-            .name("Owner Test")
+            .fullName("Owner Test")
             .password("owner")
-            .role(User.UserRole.OWNER)
+            .role(UserRole.OWNER)
             .build());
 
         Vehicle mercedes = new Vehicle(null, owner, "Mercedes-Benz", "AMG GT", 2021, "Desportivo",

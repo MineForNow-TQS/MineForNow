@@ -37,5 +37,5 @@ public class UserController {
     }
 
     // DTO de resposta
-    record RegisterResponse(String message, String userId, String email, String role) {}
+    record RegisterResponse(String message, long userId, String email, String role) {}
 }
