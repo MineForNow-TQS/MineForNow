@@ -24,7 +24,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Testes unitários do VehicleController - Endpoint GET /{id} (SCRUM-12).
  */
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import tqs.backend.config.SecurityConfig;
+import tqs.backend.security.JwtUtils;
+import tqs.backend.security.UserDetailsServiceImpl;
+import tqs.backend.security.JwtAuthenticationFilter;
+
 @WebMvcTest(VehicleController.class)
+@ActiveProfiles("test")
+@Import(SecurityConfig.class)
 @DisplayName("VehicleController GET /{id} Tests")
 class VehicleControllerGetByIdTest {
 
@@ -45,6 +54,12 @@ class VehicleControllerGetByIdTest {
 
     @MockBean
     private UserRepository userRepository;
+
+    @MockBean
+    private JwtUtils jwtUtils;
+
+    @MockBean
+    private UserDetailsServiceImpl userDetailsService;
 
     private VehicleDetailDTO testVehicleDTO;
 

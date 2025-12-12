@@ -24,13 +24,12 @@ import tqs.backend.security.UserDetailsServiceImpl;
 
 import org.springframework.test.context.ActiveProfiles;
 
-import org.springframework.context.annotation.Import;
-import tqs.backend.config.SecurityConfig;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 @WebMvcTest(AuthController.class)
 @ActiveProfiles("test")
-@Import(SecurityConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
 @DisplayName("AuthController Unit Tests")
 class AuthControllerTest {
 
@@ -70,5 +69,13 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("mock-jwt-token"))
                 .andExpect(jsonPath("$.type").value("Bearer"));
+    }
+
+    @Test
+    @Requirement("SCRUM-32")
+    @DisplayName("POST /logout - Success")
+    void whenPostLogout_thenReturns200() throws Exception {
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isOk());
     }
 }
