@@ -28,6 +28,24 @@ export const authService = {
     },
 
     /**
+   * Logout user
+   */
+    async logout() {
+        try {
+            await fetch(`${API_BASE_URL}/api/auth/logout`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.getToken()}`
+                }
+            });
+        } catch (error) {
+            console.error('Logout failed:', error);
+        } finally {
+            this.removeToken();
+        }
+    },
+
+    /**
      * Get stored JWT token
      * @returns {string|null}
      */

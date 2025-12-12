@@ -80,10 +80,14 @@ export function AuthProvider({ children }) {
     return mockUser;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    authService.removeToken();
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      setUser(null);
+      localStorage.removeItem('user');
+      authService.removeToken();
+    }
   };
 
   const isAuthenticated = () => {
