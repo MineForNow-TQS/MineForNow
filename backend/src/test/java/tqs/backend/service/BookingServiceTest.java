@@ -1,5 +1,6 @@
 package tqs.backend.service;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +49,7 @@ class BookingServiceTest {
     }
 
     @Test
+    @Requirement("SCRUM-15")
     void createBooking_ValidRequest_ReturnsDTO() {
         // Rent for 3 days: 10, 11, 12 (difference between 10 and 12 is 2 days?? Wait.)
         // ChronoUnit.DAYS.between(10, 12) = 2.
@@ -79,6 +81,7 @@ class BookingServiceTest {
     }
 
     @Test
+    @Requirement("SCRUM-15")
     void createBooking_Overlap_ThrowsException() {
         LocalDate start = LocalDate.now().plusDays(1);
         LocalDate end = LocalDate.now().plusDays(3);
@@ -96,6 +99,7 @@ class BookingServiceTest {
     }
 
     @Test
+    @Requirement("SCRUM-15")
     void createBooking_InvalidDates_ThrowsException() {
         LocalDate start = LocalDate.now().plusDays(5);
         LocalDate end = LocalDate.now().plusDays(1); // End before start
