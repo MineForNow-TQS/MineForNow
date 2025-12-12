@@ -231,7 +231,7 @@ public class VehicleSearchSteps {
                     if (loc.nth(i).isVisible())
                         visible++;
                 } catch (Exception e) {
-                    // ignore
+                    // Ignore exception if the element is not found or visible, try next one
                 }
             }
             if (visible > 0)
@@ -250,6 +250,7 @@ public class VehicleSearchSteps {
                     if (l2.nth(i).isVisible())
                         return;
                 } catch (Exception e) {
+                    // Ignore exception if the element is not found or visible, try next one
                 }
             }
         } catch (Exception e) {
