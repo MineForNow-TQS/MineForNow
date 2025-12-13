@@ -7,7 +7,7 @@ const loadUsers = () => {
   return [
     {
       id: '1',
-      name: 'Admin User',
+      fullName: 'Admin User',
       email: 'admin@minefornow.com',
       full_name: 'Admin User',
       role: 'admin',
@@ -16,7 +16,7 @@ const loadUsers = () => {
     },
     {
       id: '2',
-      name: 'Owner User',
+      fullName: 'Owner User',
       email: 'owner@minefornow.com',
       full_name: 'Owner User',
       role: 'owner',
@@ -25,7 +25,7 @@ const loadUsers = () => {
     },
     {
       id: '3',
-      name: 'Rental User',
+      fullName: 'Rental User',
       email: 'rental@minefornow.com',
       full_name: 'Rental User',
       role: 'rental',

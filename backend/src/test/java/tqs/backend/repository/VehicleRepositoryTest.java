@@ -10,6 +10,7 @@ import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
+import tqs.backend.model.UserRole;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,8 +38,8 @@ class VehicleRepositoryTest {
         // 1. Criar Owner
         testOwner = User.builder()
                 .email("testowner@minefornow.com")
-                .name("Test Owner")
-                .role(User.UserRole.OWNER)
+                .fullName("Test Owner")
+                .role(UserRole.OWNER)
                 .password("test123")
                 .phone("+351 910 000 000")
                 .address("Test Address")

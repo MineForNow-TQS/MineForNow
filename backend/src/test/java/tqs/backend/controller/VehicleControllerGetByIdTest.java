@@ -15,17 +15,21 @@ import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.service.VehicleService;
 
+
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.test.context.support.WithMockUser;
+
 
 /**
  * Testes unitários do VehicleController - Endpoint GET /{id} (SCRUM-12).
  */
 @WebMvcTest(VehicleController.class)
 @DisplayName("VehicleController GET /{id} Tests")
+@WithMockUser 
 class VehicleControllerGetByIdTest {
 
     @Autowired

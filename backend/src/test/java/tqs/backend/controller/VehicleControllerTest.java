@@ -1,38 +1,39 @@
 package tqs.backend.controller;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
-import tqs.backend.model.User;
-import tqs.backend.model.Vehicle;
-import tqs.backend.repository.BookingRepository;
-import tqs.backend.repository.UserRepository;
-import tqs.backend.repository.VehicleRepository;
-import tqs.backend.service.VehicleService;
-
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.BDDMockito.given;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.springframework.test.context.ActiveProfiles;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+import tqs.backend.model.User;
+import tqs.backend.model.UserRole;
+import tqs.backend.model.Vehicle;
+import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.UserRepository;
+import tqs.backend.repository.VehicleRepository;
+import tqs.backend.service.VehicleService;
 
 @WebMvcTest(VehicleController.class)
 @ActiveProfiles("test")
+@WithMockUser 
 class VehicleControllerTest {
 
     @Autowired
@@ -57,8 +58,8 @@ class VehicleControllerTest {
         testOwner = User.builder()
                 .id(1L)
                 .email("owner@test.com")
-                .name("Test Owner")
-                .role(User.UserRole.OWNER)
+                .fullName("Test Owner")
+                .role(UserRole.OWNER)
                 .build();
     }
 
