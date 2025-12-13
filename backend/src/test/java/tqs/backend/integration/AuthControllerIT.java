@@ -22,6 +22,7 @@ import tqs.backend.model.UserRole;
 import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
+import java.util.Objects;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -64,7 +65,7 @@ class AuthControllerIT {
                 .password(passwordEncoder.encode("password123"))
                 .role(UserRole.RENTER)
                 .build();
-        userRepository.save(user);
+        userRepository.save(Objects.requireNonNull(user));
     }
 
     @Test
@@ -81,9 +82,9 @@ class AuthControllerIT {
                 AuthResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getToken()).isNotEmpty();
-        assertThat(response.getBody().getType()).isEqualTo("Bearer");
+        AuthResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getToken()).isNotEmpty();
+        assertThat(body.getType()).isEqualTo("Bearer");
     }
 
     @Test

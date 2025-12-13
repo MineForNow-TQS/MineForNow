@@ -47,7 +47,7 @@ class UserServiceTest {
         request.setConfirmPassword("Senha123");
 
         when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(userRepository.save(any(User.class))).thenAnswer(i -> (User) i.getArguments()[0]);
         when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
 
         User user = userService.register(request);
@@ -69,8 +69,7 @@ class UserServiceTest {
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> userService.register(request)
-        );
+                () -> userService.register(request));
 
         assertEquals("As passwords não coincidem", ex.getMessage());
     }
@@ -88,8 +87,7 @@ class UserServiceTest {
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> userService.register(request)
-        );
+                () -> userService.register(request));
 
         assertEquals("Email já está em uso", ex.getMessage());
     }

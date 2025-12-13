@@ -8,10 +8,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
+import java.util.Objects;
 import tqs.backend.model.UserRole;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
@@ -32,41 +34,39 @@ public class MinefornowApplication {
         @Bean
         @Profile("!test")
         public CommandLineRunner demo(VehicleRepository vehicleRepo, BookingRepository bookingRepo,
-                        UserRepository userRepo, PasswordEncoder passwordEncoder) {
+                        UserRepository userRepo, PasswordEncoder passwordEncoder,
+                        @Value("${minefornow.app.defaultPassword}") String defaultPassword) {
                 return args -> {
                         // --- CRIAR USERS ---
-                        User admin = userRepo.save(User.builder()
+                        User admin = Objects.requireNonNull(User.builder()
                                         .email("admin@minefornow.com")
                                         .fullName("Admin MineForNow")
-                                        .password(passwordEncoder.encode("9#vK2!Lm$Pq5")) // Em
-                                                                                          // produção,
-                                                                                          // usar
-                                                                                          // BCrypt
+                                        .password(passwordEncoder.encode(defaultPassword))
                                         .role(UserRole.ADMIN)
                                         .phone("+351 912 345 678")
                                         .build());
 
-                        User owner = userRepo.save(User.builder()
+                        User owner = Objects.requireNonNull(User.builder()
                                         .email("owner@minefornow.com")
                                         .fullName("João Silva")
-                                        .password(passwordEncoder.encode("9#vK2!Lm$Pq5"))
+                                        .password(passwordEncoder.encode(defaultPassword))
                                         .role(UserRole.OWNER)
                                         .phone("+351 923 456 789")
                                         .address("Rua das Flores, 123, Lisboa")
                                         .build());
 
-                        userRepo.save(User.builder()
+                        User renter = Objects.requireNonNull(User.builder()
                                         .email("renter@minefornow.com")
                                         .fullName("Maria Santos")
-                                        .password(passwordEncoder.encode("9#vK2!Lm$Pq5"))
+                                        .password(passwordEncoder.encode(defaultPassword))
                                         .role(UserRole.RENTER)
                                         .phone("+351 934 567 890")
                                         .address("Avenida da República, 456, Porto")
                                         .build());
 
-                        if (admin == null || owner == null) {
-                                throw new IllegalArgumentException("Users are null");
-                        }
+                        userRepo.save(admin);
+                        userRepo.save(owner);
+                        userRepo.save(renter);
 
                         // --- CARRO 1: Fiat 500 (Cascais) - Owner: admin ---
                         // Vídeo: 40€, Gasolina, Automática, 4 Lugares, 3 Portas

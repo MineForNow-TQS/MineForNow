@@ -20,7 +20,7 @@ public class AuthenticationSteps {
     private Browser browser;
     private BrowserContext context;
     private Page page;
-    private final String FRONTEND_URL = "http://localhost:3000";
+    private final String frontendUrl = "http://localhost:3000";
 
     @Autowired
     private UserRepository userRepository;
@@ -46,9 +46,7 @@ public class AuthenticationSteps {
         page = context.newPage();
 
         // Clean up test user
-        if (userRepository.findByEmail("joaosilva@gmail.com").isPresent()) {
-            userRepository.delete(userRepository.findByEmail("joaosilva@gmail.com").get());
-        }
+        userRepository.findByEmail("joaosilva@gmail.com").ifPresent(userRepository::delete);
     }
 
     @After("@SCRUM-32")
@@ -64,7 +62,7 @@ public class AuthenticationSteps {
     @Given("que tenho um pedido de registo válido")
     public void queTenhoUmPedidoDeRegistoValido() {
         // Cleaning DB in @Before matches this intent
-        page.navigate(FRONTEND_URL);
+        page.navigate(frontendUrl);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
         page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Criar conta")).click();
     }
@@ -106,7 +104,7 @@ public class AuthenticationSteps {
 
     @Given("que tenho um pedido de registo com passwords diferentes")
     public void ieTenhoRegistoPasswordsDiferentes() {
-        page.navigate(FRONTEND_URL);
+        page.navigate(frontendUrl);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
         page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Criar conta")).click();
 
@@ -132,7 +130,7 @@ public class AuthenticationSteps {
             user.setRole(tqs.backend.model.UserRole.RENTER);
             userRepository.save(user);
         }
-        page.navigate(FRONTEND_URL);
+        page.navigate(frontendUrl);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
     }
 
@@ -145,7 +143,7 @@ public class AuthenticationSteps {
 
     @Given("que tenho credenciais inválidas")
     public void queTenhoCredenciaisInvalidas() {
-        page.navigate(FRONTEND_URL);
+        page.navigate(frontendUrl);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
         page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Email")).fill("invalid@gmail.com");
         page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Password")).fill("WrongPass");

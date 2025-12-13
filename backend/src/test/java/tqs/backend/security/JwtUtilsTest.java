@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
+import java.util.Objects;
 
 import java.util.Collections;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
@@ -25,8 +26,8 @@ class JwtUtilsTest {
     @BeforeEach
     void setUp() {
         jwtUtils = new JwtUtils();
-        ReflectionTestUtils.setField(jwtUtils, "jwtSecret", jwtSecret);
-        ReflectionTestUtils.setField(jwtUtils, "jwtExpirationMs", jwtExpirationMs);
+        ReflectionTestUtils.setField(Objects.requireNonNull(jwtUtils), "jwtSecret", jwtSecret);
+        ReflectionTestUtils.setField(Objects.requireNonNull(jwtUtils), "jwtExpirationMs", jwtExpirationMs);
     }
 
     @Test
