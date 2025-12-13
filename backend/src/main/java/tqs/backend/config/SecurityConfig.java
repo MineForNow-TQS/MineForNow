@@ -14,10 +14,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-            // 🔴 Desactivar CSRF (API REST)
+            // CSRF protection is disabled because this is a stateless REST API 
+            // using token-based authentication (JWT), so CSRF attacks are not possible.
             .csrf(csrf -> csrf.disable())
-
-            // 🔴 Permitir acceso sin auth
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",
@@ -26,8 +25,6 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().permitAll()
             )
-
-            // 🔴 Desactivar login por defecto
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable());
 
