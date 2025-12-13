@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
@@ -16,7 +17,6 @@ import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 public class MinefornowApplication {
@@ -36,10 +36,10 @@ public class MinefornowApplication {
                         User admin = userRepo.save(User.builder()
                                         .email("admin@minefornow.com")
                                         .fullName("Admin MineForNow")
-                                        .password(passwordEncoder.encode("ChangeMeToSomethingSecure2025!")) // Em
-                                                                                                            // produção,
-                                                                                                            // usar
-                                                                                                            // BCrypt
+                                        .password(passwordEncoder.encode("9#vK2!Lm$Pq5")) // Em
+                                                                                          // produção,
+                                                                                          // usar
+                                                                                          // BCrypt
                                         .role(UserRole.ADMIN)
                                         .phone("+351 912 345 678")
                                         .build());
@@ -47,7 +47,7 @@ public class MinefornowApplication {
                         User owner = userRepo.save(User.builder()
                                         .email("owner@minefornow.com")
                                         .fullName("João Silva")
-                                        .password(passwordEncoder.encode("owner123"))
+                                        .password(passwordEncoder.encode("9#vK2!Lm$Pq5"))
                                         .role(UserRole.OWNER)
                                         .phone("+351 923 456 789")
                                         .address("Rua das Flores, 123, Lisboa")
@@ -56,7 +56,7 @@ public class MinefornowApplication {
                         userRepo.save(User.builder()
                                         .email("renter@minefornow.com")
                                         .fullName("Maria Santos")
-                                        .password(passwordEncoder.encode("renter123"))
+                                        .password(passwordEncoder.encode("9#vK2!Lm$Pq5"))
                                         .role(UserRole.RENTER)
                                         .phone("+351 934 567 890")
                                         .address("Avenida da República, 456, Porto")
