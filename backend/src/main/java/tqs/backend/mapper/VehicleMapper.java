@@ -1,9 +1,9 @@
 package tqs.backend.mapper;
 
+import java.text.DecimalFormat;
+
 import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.Vehicle;
-
-import java.text.DecimalFormat;
 
 /**
  * Mapper para converter entre a entidade Vehicle e o DTO VehicleDetailDTO.
@@ -50,7 +50,7 @@ public class VehicleMapper {
                 .imageUrl(vehicle.getImageUrl())
                 .displayName(formatDisplayName(vehicle))
                 .formattedPrice(formatPrice(vehicle.getPricePerDay()))
-                .ownerName(vehicle.getOwner() != null ? vehicle.getOwner().getName() : null)
+                .ownerName(vehicle.getOwner() != null ? vehicle.getOwner().getFullName() : null)
                 .ownerEmail(vehicle.getOwner() != null ? vehicle.getOwner().getEmail() : null)
                 .build();
     }

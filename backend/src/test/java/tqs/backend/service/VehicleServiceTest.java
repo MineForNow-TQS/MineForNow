@@ -12,6 +12,8 @@ import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.VehicleRepository;
+import tqs.backend.model.UserRole;
+
 
 import java.util.Optional;
 
@@ -39,8 +41,8 @@ class VehicleServiceTest {
         testOwner = User.builder()
                 .id(1L)
                 .email("owner@minefornow.com")
-                .name("João Silva")
-                .role(User.UserRole.OWNER)
+                .fullName("João Silva")
+                .role(UserRole.OWNER)
                 .build();
 
         testVehicle = Vehicle.builder()

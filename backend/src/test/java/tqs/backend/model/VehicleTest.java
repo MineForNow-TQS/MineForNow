@@ -1,9 +1,8 @@
 package tqs.backend.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class VehicleTest {
 
@@ -14,8 +13,8 @@ class VehicleTest {
         testOwner = User.builder()
                 .id(1L)
                 .email("owner@test.com")
-                .name("Test Owner")
-                .role(User.UserRole.OWNER)
+                .fullName("Test Owner")
+                .role(UserRole.OWNER)
                 .build();
     }
 
