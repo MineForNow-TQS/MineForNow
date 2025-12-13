@@ -317,13 +317,22 @@
                 <groupId>app.getxray</groupId>
                 <artifactId>xray-maven-plugin</artifactId>
                 <version>0.7.4</version>
-                <configuration>
-                    <cloud>true</cloud>
-                    <projectKey>SCRUM</projectKey>
-                    <reportFormat>junit</reportFormat>
-                    <reportFile>target/TEST-junit-jupiter.xml</reportFile>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>import-junit-results</id>
+                        <goals>
+                            <goal>import-results</goal> <!-- <- goal correcto -->
+                        </goals>
+                        <configuration>
+                            <cloud>true</cloud>
+                            <projectKey>SCRUM</projectKey>
+                            <reportFormat>junit</reportFormat>
+                            <reportFile>target/TEST-junit-jupiter.xml</reportFile>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
+
         </plugins>
     </build>
 
