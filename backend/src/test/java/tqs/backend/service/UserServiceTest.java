@@ -1,6 +1,7 @@
 package tqs.backend.service;
 
 import java.util.Optional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -20,11 +21,14 @@ import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
 import tqs.backend.repository.UserRepository;
 
-@XrayTest(key = "SCRUM-39")
+@XrayTest(key = "SCRUM-37")
 class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -44,6 +48,7 @@ class UserServiceTest {
 
         when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
 
         User user = userService.register(request);
 

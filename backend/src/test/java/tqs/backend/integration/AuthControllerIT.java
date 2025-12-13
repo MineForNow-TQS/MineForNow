@@ -18,6 +18,7 @@ import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.backend.dto.AuthResponse;
 import tqs.backend.dto.LoginRequest;
 import tqs.backend.model.User;
+import tqs.backend.model.UserRole;
 import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
@@ -59,9 +60,9 @@ class AuthControllerIT {
         // Create test user
         User user = User.builder()
                 .email("testrenter@test.com")
-                .name("Test Renter")
+                .fullName("Test Renter")
                 .password(passwordEncoder.encode("password123"))
-                .role(User.UserRole.RENTER)
+                .role(UserRole.RENTER)
                 .build();
         userRepository.save(user);
     }
