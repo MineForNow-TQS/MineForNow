@@ -14,11 +14,13 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import tqs.backend.dto.RegisterRequest;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
 import tqs.backend.repository.UserRepository;
 
+@XrayTest(key = "SCRUM-39")
 class UserServiceTest {
 
     @Mock
@@ -49,7 +51,7 @@ class UserServiceTest {
         assertEquals("João Silva", user.getFullName());
         assertEquals("joao@email.com", user.getEmail());
         assertEquals(UserRole.RENTER, user.getRole());
-        assertNotEquals("Senha123", user.getPassword()); // password deve ser encriptada
+        assertNotEquals("Senha123", user.getPassword()); // password encriptada
     }
 
     @Test
@@ -60,8 +62,11 @@ class UserServiceTest {
         request.setPassword("Senha123");
         request.setConfirmPassword("Senha321");
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> userService.register(request));
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.register(request)
+        );
+
         assertEquals("As passwords não coincidem", ex.getMessage());
     }
 
@@ -76,8 +81,11 @@ class UserServiceTest {
         when(userRepository.findByEmail(request.getEmail()))
                 .thenReturn(Optional.of(new User()));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> userService.register(request));
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.register(request)
+        );
+
         assertEquals("Email já está em uso", ex.getMessage());
     }
 }

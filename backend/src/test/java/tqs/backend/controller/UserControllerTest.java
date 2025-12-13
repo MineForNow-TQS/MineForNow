@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.backend.dto.RegisterRequest;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
@@ -57,6 +58,7 @@ class UserControllerTest {
     }
 
     @Test
+    @Requirement("SCRUM-40")
     void registerShouldReturn200WhenSuccess() throws Exception {
         User mockUser = User.builder()
                 .id(1L)
@@ -78,6 +80,7 @@ class UserControllerTest {
     }
 
     @Test
+    @Requirement("SCRUM-40")
     void registerShouldReturn400WhenPasswordsDoNotMatch() throws Exception {
         when(userService.register(passwordMismatchRequest))
                 .thenThrow(new IllegalArgumentException("As passwords não coincidem"));
