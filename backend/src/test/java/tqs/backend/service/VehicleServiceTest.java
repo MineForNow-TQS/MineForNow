@@ -14,7 +14,6 @@ import tqs.backend.model.Vehicle;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.model.UserRole;
 
-
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,7 +78,7 @@ class VehicleServiceTest {
         // Assert
         assertThat(result).isPresent();
         VehicleDetailDTO dto = result.get();
-        
+
         assertThat(dto.getId()).isEqualTo(1L);
         assertThat(dto.getBrand()).isEqualTo("Fiat");
         assertThat(dto.getModel()).isEqualTo("500");
@@ -99,6 +98,17 @@ class VehicleServiceTest {
 
         // Act
         Optional<VehicleDetailDTO> result = vehicleService.getVehicleById(999L);
+
+        // Assert
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @Requirement("SCRUM-12")
+    @DisplayName("Quando buscar veículo com ID null, deve retornar vazio")
+    void whenGetVehicleByNullId_thenReturnEmpty() {
+        // Act
+        Optional<VehicleDetailDTO> result = vehicleService.getVehicleById(null);
 
         // Assert
         assertThat(result).isEmpty();

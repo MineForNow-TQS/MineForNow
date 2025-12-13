@@ -11,6 +11,11 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Objects;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import java.security.Key;
+import java.util.Date;
 
 import java.util.Collections;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
@@ -73,6 +78,47 @@ class JwtUtilsTest {
     @DisplayName("Validate JWT Token - Should return false for invalid token")
     void givenInvalidToken_whenValidateJwtToken_thenReturnsFalse() {
         boolean isValid = jwtUtils.validateJwtToken("invalid.token.here");
+
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    @Requirement("SCRUM-32")
+    @DisplayName("Validate JWT Token - Should return false for expired token")
+    void givenExpiredToken_whenValidateJwtToken_thenReturnsFalse() {
+        Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        String token = Jwts.builder()
+                .setSubject("testuser")
+                .setIssuedAt(new Date(System.currentTimeMillis() - 10000))
+                .setExpiration(new Date(System.currentTimeMillis() - 1000))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        boolean isValid = jwtUtils.validateJwtToken(token);
+
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    @Requirement("SCRUM-32")
+    @DisplayName("Validate JWT Token - Should return false for unsupported token")
+    void givenUnsupportedToken_whenValidateJwtToken_thenReturnsFalse() {
+        // Create an unsigned token (which should be unsupported when a signed one is
+        // expected)
+        String token = Jwts.builder()
+                .setSubject("testuser")
+                .compact();
+
+        boolean isValid = jwtUtils.validateJwtToken(token);
+
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    @Requirement("SCRUM-32")
+    @DisplayName("Validate JWT Token - Should return false for empty token")
+    void givenEmptyToken_whenValidateJwtToken_thenReturnsFalse() {
+        boolean isValid = jwtUtils.validateJwtToken("");
 
         assertThat(isValid).isFalse();
     }

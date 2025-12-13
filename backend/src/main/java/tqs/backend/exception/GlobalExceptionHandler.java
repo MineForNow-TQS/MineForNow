@@ -12,6 +12,8 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final String MESSAGE = "message";
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> response = new HashMap<>();
@@ -19,29 +21,29 @@ public class GlobalExceptionHandler {
         String message = ex.getBindingResult().getAllErrors().stream()
                 .map(error -> {
                     if (error instanceof FieldError) {
-                        // return ((FieldError) error).getField() + ": " + error.getDefaultMessage();
                         return error.getDefaultMessage();
                     }
                     return error.getDefaultMessage();
                 })
                 .findFirst()
                 .orElse("Validation error");
-        
-        response.put("message", message);
+
+        response.put(MESSAGE, message);
         return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
         Map<String, String> response = new HashMap<>();
-        response.put("message", ex.getMessage());
+        response.put(MESSAGE, ex.getMessage());
         return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
-    public ResponseEntity<Map<String, String>> handleBadCredentialsException(org.springframework.security.authentication.BadCredentialsException ex) {
+    public ResponseEntity<Map<String, String>> handleBadCredentialsException(
+            org.springframework.security.authentication.BadCredentialsException ex) {
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Credenciais inválidas");
+        response.put(MESSAGE, "Credenciais inválidas");
         return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(response);
     }
 }
