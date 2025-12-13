@@ -80,16 +80,4 @@ class UserServiceTest {
                 () -> userService.register(request));
         assertEquals("Email já está em uso", ex.getMessage());
     }
-
-    @Test
-    void shouldThrowWhenPasswordTooWeak() {
-        RegisterRequest request = new RegisterRequest();
-        request.setFullName("Ana");
-        request.setEmail("ana@email.com");
-        request.setPassword("senha");  // muito fraca
-        request.setConfirmPassword("senha");
-
-        // Aqui a validação de regex é feita pelo DTO com @Valid no controller
-        // Então UserService não verifica regex. Podemos testar via controller ou via validator
-    }
 }
