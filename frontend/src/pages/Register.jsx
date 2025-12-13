@@ -19,37 +19,51 @@ export default function Register() {
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
-        if (!name || !email || !password) {
+    
+        if (!name || !email || !password || !confirmPassword) {
             setError('Por favor, preencha todos os campos');
             return;
         }
-
-        if (password.length < 8) {
-            setError('A password deve ter pelo menos 8 caracteres');
+    
+        // Validación de patrón
+        const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
+        if (!passwordPattern.test(password)) {
+            setError('A password deve ter pelo menos 8 caracteres, 1 maiúscula, 1 minúscula e 1 número');
             return;
         }
-
+    
+        if (password !== confirmPassword) {
+            setError('As senhas não coincidem');
+            return;
+        }
+    
         if (!acceptTerms) {
             setError('Deve aceitar os termos de serviço');
             return;
         }
-
+    
         setLoading(true);
         try {
-            await register({ full_name: name, email, password });
+            await register({ fullName: name, email, password, confirmPassword });
             navigate('/');
         } catch (err) {
-            setError('Erro ao criar conta. Tente novamente.');
+            if (err.response && err.response.data && err.response.data.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('Erro ao criar conta. Tente novamente.');
+            }
         } finally {
             setLoading(false);
         }
+        
     };
-
+    
     const benefits = [
         "Acesso a centenas de carros",
         "Preços competitivos",
@@ -183,6 +197,21 @@ export default function Register() {
                                 </button>
                             </div>
                         </div>
+                        <div>
+                            <Label className="text-slate-700">Confirmar Password</Label>
+                            <div className="relative mt-1">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Confirme a password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="bg-white pl-12 h-12 rounded-xl border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20"
+                                    required
+                                />
+                            </div>
+                        </div>
+
 
                         <div className="flex items-start gap-3">
                             <Checkbox

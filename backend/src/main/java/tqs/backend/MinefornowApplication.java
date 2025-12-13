@@ -5,17 +5,19 @@ import java.time.LocalDate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
+import tqs.backend.model.UserRole;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = { SecurityAutoConfiguration.class})
 public class MinefornowApplication {
 
     private static final String DESPORTIVO = "Desportivo";
@@ -32,26 +34,26 @@ public class MinefornowApplication {
             // --- CRIAR USERS ---
             User admin = userRepo.save(User.builder()
                     .email("admin@minefornow.com")
-                    .name("Admin MineForNow")
+                    .fullName("Admin MineForNow")
                     .password("admin123") // Em produção, usar BCrypt
-                    .role(User.UserRole.ADMIN)
+                    .role(UserRole.ADMIN)
                     .phone("+351 912 345 678")
                     .build());
 
             User owner = userRepo.save(User.builder()
                     .email("owner@minefornow.com")
-                    .name("João Silva")
+                    .fullName("João Silva")
                     .password("owner123")
-                    .role(User.UserRole.OWNER)
+                    .role(UserRole.OWNER)
                     .phone("+351 923 456 789")
                     .address("Rua das Flores, 123, Lisboa")
                     .build());
 
             userRepo.save(User.builder()
                     .email("renter@minefornow.com")
-                    .name("Maria Santos")
+                    .fullName("Maria Santos")
                     .password("renter123")
-                    .role(User.UserRole.RENTER)
+                    .role(UserRole.RENTER)
                     .phone("+351 934 567 890")
                     .address("Avenida da República, 456, Porto")
                     .build());

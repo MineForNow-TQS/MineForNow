@@ -52,33 +52,39 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (userData) => {
-    // Create new user in the system
-    const newUserData = {
-      name: userData.full_name,
-      email: userData.email,
-      password: userData.password,
-      full_name: userData.full_name,
-      role: 'RENTER',
+  const register = async ({ fullName, email, password, confirmPassword }) => {
+    const response = await fetch("http://localhost:8080/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName,       // ahora coincide exactamente con el DTO del backend
+        email,
+        password,
+        confirmPassword
+      })
+    });
+
+    if (!response.ok) {
+      const errMsg = await response.text();
+      throw new Error(errMsg || "Erro desconhecido no registro");
+    }
+
+    const data = await response.json();
+
+    const newUser = {
+      id: data.userId,
+      fullName,
+      email: data.email,
+      role: data.role
     };
 
-    const createdUser = await userService.create(newUserData);
+    setUser(newUser);
+    localStorage.setItem("user", JSON.stringify(newUser));
 
-    // After registration, login the user
-    const authResponse = await authService.login(userData.email, userData.password);
-    authService.setToken(authResponse.token);
-
-    const mockUser = {
-      id: createdUser.data.id,
-      email: createdUser.data.email,
-      full_name: createdUser.data.full_name,
-      user_role: createdUser.data.role,
-    };
-
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    return mockUser;
+    return newUser;
   };
+
+
 
   const logout = async () => {
     try {
