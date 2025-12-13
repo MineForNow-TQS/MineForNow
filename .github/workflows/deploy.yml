@@ -1,0 +1,69 @@
+name: Build and Deploy to VM
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # --- 1. PREPARAÇÃO ---
+    - name: Checkout do Código
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js (para o React)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Setup Java (para o Spring)
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21' 
+        distribution: 'temurin'
+        cache: 'maven'
+
+    # --- 2. CONSTRUIR REACT ---
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: |
+        npm install
+        npm run build
+
+    # --- 3. UNIR TUDO ---
+    - name: Copiar React para dentro do Spring
+      run: |
+        mkdir -p backend/src/main/resources/static
+        cp -r frontend/dist/* backend/src/main/resources/static/
+
+    # --- 4. CONSTRUIR O JAR FINAL ---
+    - name: Build Backend (com React lá dentro)
+      working-directory: ./backend
+      run: |
+        mvn clean package -DskipTests
+
+    # --- 5. ENVIAR PARA A VM (SCP) ---
+    - name: Copy JAR to VM
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        source: "backend/target/*.jar"
+        target: "/home/${{ secrets.SSH_USERNAME }}/deploy-temp"
+        strip_components: 2
+
+    # --- 6. REINICIAR SERVIÇO NA VM (SSH) ---
+    - name: Restart Service
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          mv ~/deploy-temp/*.jar ~/app.jar
+          echo "A reiniciar a aplicação..."
+          sudo systemctl restart myapp
+          systemctl status myapp --no-pager
