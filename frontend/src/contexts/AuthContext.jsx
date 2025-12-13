@@ -53,23 +53,13 @@ export function AuthProvider({ children }) {
   };
 
   const register = async ({ fullName, email, password, confirmPassword }) => {
-    const response = await fetch("http://localhost:8080/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fullName,       // ahora coincide exactamente con el DTO del backend
-        email,
-        password,
-        confirmPassword
-      })
+
+    const data = await authService.register({
+      fullName,
+      email,
+      password,
+      confirmPassword
     });
-
-    if (!response.ok) {
-      const errMsg = await response.text();
-      throw new Error(errMsg || "Erro desconhecido no registro");
-    }
-
-    const data = await response.json();
 
     const newUser = {
       id: data.userId,

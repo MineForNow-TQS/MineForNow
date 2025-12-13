@@ -25,29 +25,30 @@ export default function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-    
+
         if (!name || !email || !password || !confirmPassword) {
             setError('Por favor, preencha todos os campos');
             return;
         }
-    
-        // Validación de patrón
+
+        // Validação de password removida para permitir que o backend trate disso
+
         const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
         if (!passwordPattern.test(password)) {
             setError('A password deve ter pelo menos 8 caracteres, 1 maiúscula, 1 minúscula e 1 número');
             return;
         }
-    
+
         if (password !== confirmPassword) {
             setError('As senhas não coincidem');
             return;
         }
-    
+
         if (!acceptTerms) {
             setError('Deve aceitar os termos de serviço');
             return;
         }
-    
+
         setLoading(true);
         try {
             await register({ fullName: name, email, password, confirmPassword });
@@ -61,9 +62,9 @@ export default function Register() {
         } finally {
             setLoading(false);
         }
-        
+
     };
-    
+
     const benefits = [
         "Acesso a centenas de carros",
         "Preços competitivos",
@@ -79,16 +80,16 @@ export default function Register() {
                     <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1920')] bg-cover bg-center opacity-40" />
                     <div className="absolute inset-0 bg-gradient-to-l from-slate-900/80 to-transparent" />
                 </div>
-                
+
                 <div className="relative z-10 flex flex-col justify-center h-full p-12">
                     <div className="transition-all duration-800">
                         <h2 className="text-4xl font-light text-white mb-8">
-                            Junte-se à maior comunidade de 
+                            Junte-se à maior comunidade de
                             <span className="font-semibold block mt-2 bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">
                                 car sharing em Portugal
                             </span>
                         </h2>
-                        
+
                         <div className="space-y-4">
                             {benefits.map((benefit, i) => (
                                 <div
@@ -228,7 +229,7 @@ export default function Register() {
                             </Label>
                         </div>
 
-                        <Button 
+                        <Button
                             type="submit"
                             disabled={!acceptTerms || loading}
                             className="w-full h-12 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 rounded-xl text-base font-medium shadow-lg shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -244,9 +245,9 @@ export default function Register() {
                             </span>
                         </div>
 
-                        <Button 
+                        <Button
                             type="button"
-                            variant="outline" 
+                            variant="outline"
                             className="w-full h-12 rounded-xl border-slate-200 hover:bg-slate-50"
                         >
                             <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 mr-2" />
