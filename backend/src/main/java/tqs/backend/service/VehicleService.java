@@ -26,7 +26,9 @@ public class VehicleService {
      * @return Optional com o DTO se encontrado, vazio caso contrário
      */
     public Optional<VehicleDetailDTO> getVehicleById(Long id) {
-        return vehicleRepository.findById(id)
-                .map(VehicleMapper::toDetailDTO);
+        if (id == null) {
+            return Optional.empty();
+        }
+        return vehicleRepository.findById(id).map(VehicleMapper::toDetailDTO);
     }
 }

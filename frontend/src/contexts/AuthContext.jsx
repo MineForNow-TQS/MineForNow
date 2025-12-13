@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '@/services/authService';
 import { userService } from '@/services/userService';
 
 const AuthContext = createContext(null);
@@ -8,69 +9,57 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar se existe usuário no localStorage
+    // Check if user exists in localStorage
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const token = authService.getToken();
+
+    if (storedUser && token) {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    // Verificar se o usuário já existe no sistema
+    // Call the backend login API
+    const authResponse = await authService.login(email, password);
+
+    // Store the JWT token
+    authService.setToken(authResponse.token);
+
+    // Get user details from backend
     try {
-      const existingUser = await userService.getByEmail(email);
-      const mockUser = {
-        id: existingUser.data.id,
-        email: existingUser.data.email,
-        full_name: existingUser.data.full_name || existingUser.data.name,
-        user_role: existingUser.data.role,
+      const userResponse = await userService.getByEmail(email);
+      const userData = {
+        id: userResponse.data.id,
+        email: userResponse.data.email,
+        full_name: userResponse.data.full_name || userResponse.data.name,
+        user_role: userResponse.data.role,
       };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      return mockUser;
+
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
     } catch (error) {
-      // Se não existir, criar novo usuário
-      const newUserData = {
-        name: email.split('@')[0],
+      // If user details fetch fails, use basic info from email
+      const basicUser = {
         email: email,
         full_name: email.split('@')[0],
-        role: 'rental', // Novos usuários sempre começam como rental
+        user_role: 'RENTER',
       };
-      
-      const createdUser = await userService.create(newUserData);
-      const mockUser = {
-        id: createdUser.data.id,
-        email: createdUser.data.email,
-        full_name: createdUser.data.full_name,
-        user_role: createdUser.data.role,
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      return mockUser;
+      setUser(basicUser);
+      localStorage.setItem('user', JSON.stringify(basicUser));
+      return basicUser;
     }
   };
 
   const register = async ({ fullName, email, password, confirmPassword }) => {
-    const response = await fetch("http://localhost:8080/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fullName,       // ahora coincide exactamente con el DTO del backend
-        email,
-        password,
-        confirmPassword
-      })
+
+    const data = await authService.register({
+      fullName,
+      email,
+      password,
+      confirmPassword
     });
-
-    if (!response.ok) {
-      const errMsg = await response.text();
-      throw new Error(errMsg || "Erro desconhecido no registro");
-    }
-
-    const data = await response.json();
 
     const newUser = {
       id: data.userId,
@@ -83,17 +72,22 @@ export function AuthProvider({ children }) {
     localStorage.setItem("user", JSON.stringify(newUser));
 
     return newUser;
-};
+  };
 
 
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      setUser(null);
+      localStorage.removeItem('user');
+      authService.removeToken();
+    }
   };
 
   const isAuthenticated = () => {
-    return !!user;
+    return !!user && authService.isAuthenticated();
   };
 
   const value = {
@@ -115,3 +109,4 @@ export function useAuth() {
   }
   return context;
 }
+
