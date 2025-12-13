@@ -77,4 +77,5 @@ jobs:
               -Dxray.testPlanKey=${{ env.XRAYCLOUD_TEST_PLAN_KEY }} \
               -Dxray.revision=${{ env.REVISION }} \
               -Dxray.useInternalTestProxy=false \
+              -Dxray.assignee="email.da.tua.colega@exemplo.com" \
               xray:import-results
