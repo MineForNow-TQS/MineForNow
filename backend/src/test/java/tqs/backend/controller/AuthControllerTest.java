@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,8 +91,8 @@ class AuthControllerTest {
                 when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("mock-jwt-token");
 
                 mockMvc.perform(post("/api/auth/login")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(loginRequest)))
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(loginRequest))))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.token").value("mock-jwt-token"))
                                 .andExpect(jsonPath("$.type").value("Bearer"));
@@ -118,8 +119,8 @@ class AuthControllerTest {
                 when(userService.register(any(RegisterRequest.class))).thenReturn(mockUser);
 
                 mockMvc.perform(post("/api/auth/register")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(validRequest)))
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(validRequest))))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.message").value("Conta criada com sucesso"))
                                 .andExpect(jsonPath("$.userId").value(1))
@@ -134,8 +135,9 @@ class AuthControllerTest {
                                 .thenThrow(new IllegalArgumentException("As passwords não coincidem"));
 
                 mockMvc.perform(post("/api/auth/register")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(passwordMismatchRequest)))
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(Objects.requireNonNull(
+                                                objectMapper.writeValueAsString(passwordMismatchRequest))))
                                 .andExpect(status().isBadRequest())
                                 .andExpect(jsonPath("$.message").value("As passwords não coincidem"));
         }
@@ -153,8 +155,8 @@ class AuthControllerTest {
                                                 "Bad credentials"));
 
                 mockMvc.perform(post("/api/auth/login")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(loginRequest)))
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(loginRequest))))
                                 .andExpect(status().isUnauthorized());
         }
 
@@ -169,8 +171,8 @@ class AuthControllerTest {
                 invalidEmailRequest.setConfirmPassword("Senha123");
 
                 mockMvc.perform(post("/api/auth/register")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(invalidEmailRequest)))
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(invalidEmailRequest))))
                                 .andExpect(status().isBadRequest())
                                 .andExpect(jsonPath("$.message").value("Email inválido"));
         }
@@ -186,8 +188,8 @@ class AuthControllerTest {
                 weakPasswordRequest.setConfirmPassword("weak");
 
                 mockMvc.perform(post("/api/auth/register")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(weakPasswordRequest)))
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(weakPasswordRequest))))
                                 .andExpect(status().isBadRequest())
                                 .andExpect(jsonPath("$.message").value(
                                                 "A password deve ter pelo menos 8 caracteres, 1 maiúscula, 1 minúscula e 1 número"));

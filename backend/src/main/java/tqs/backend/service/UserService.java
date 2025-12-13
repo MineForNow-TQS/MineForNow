@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import tqs.backend.dto.RegisterRequest;
 import tqs.backend.model.User;
 import tqs.backend.repository.UserRepository;
+import tqs.backend.model.UserRole;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +16,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @SuppressWarnings("null")
     public User register(RegisterRequest request) {
 
         // Verifica confirmação de password
@@ -32,7 +34,7 @@ public class UserService {
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(tqs.backend.model.UserRole.RENTER)
+                .role(UserRole.RENTER)
                 .build();
 
         return userRepository.save(user);
