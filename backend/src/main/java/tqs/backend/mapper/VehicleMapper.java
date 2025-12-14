@@ -1,94 +1,62 @@
 package tqs.backend.mapper;
 
-import java.text.DecimalFormat;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+import org.springframework.stereotype.Component;
 
 import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.Vehicle;
 
-/**
- * Mapper para converter entre a entidade Vehicle e o DTO VehicleDetailDTO.
- * Implementa lógica de formatação e campos calculados.
- */
+@Component
 public class VehicleMapper {
 
-    private VehicleMapper() {
-        throw new IllegalStateException("Utility class");
-    }
+    public VehicleDetailDTO toDetailDTO(Vehicle v) {
+        if (v == null) return null;
 
-    private static final DecimalFormat PRICE_FORMAT = new DecimalFormat("#0.00");
+        String ownerName = (v.getOwner() != null) ? v.getOwner().getFullName() : null;
+        String ownerEmail = (v.getOwner() != null) ? v.getOwner().getEmail() : null;
 
-    /**
-     * Converte uma entidade Vehicle para VehicleDetailDTO.
-     * 
-     * @param vehicle entidade a converter
-     * @return DTO com dados formatados, ou null se vehicle for null
-     */
-    public static VehicleDetailDTO toDetailDTO(Vehicle vehicle) {
-        if (vehicle == null) {
-            return null;
-        }
+        BigDecimal ppd = v.getPricePerDay();
+        Double ppdDouble = (ppd != null) ? ppd.doubleValue() : null;
 
         return VehicleDetailDTO.builder()
-                .id(vehicle.getId())
-                .brand(vehicle.getBrand())
-                .model(vehicle.getModel())
-                .year(vehicle.getYear())
-                .type(vehicle.getType())
-                .licensePlate(vehicle.getLicensePlate())
-                .mileage(vehicle.getMileage())
-                .fuelType(vehicle.getFuelType())
-                .transmission(vehicle.getTransmission())
-                .seats(vehicle.getSeats())
-                .doors(vehicle.getDoors())
-                .hasAC(vehicle.getHasAC())
-                .hasGPS(vehicle.getHasGPS())
-                .hasBluetooth(vehicle.getHasBluetooth())
-                .city(vehicle.getCity())
-                .exactLocation(vehicle.getExactLocation())
-                .pricePerDay(vehicle.getPricePerDay())
-                .description(vehicle.getDescription())
-                .imageUrl(vehicle.getImageUrl())
-                .displayName(formatDisplayName(vehicle))
-                .formattedPrice(formatPrice(vehicle.getPricePerDay()))
-                .ownerName(vehicle.getOwner() != null ? vehicle.getOwner().getFullName() : null)
-                .ownerEmail(vehicle.getOwner() != null ? vehicle.getOwner().getEmail() : null)
+                .id(v.getId())
+                .brand(v.getBrand())
+                .model(v.getModel())
+                .year(v.getYear())
+                .type(v.getType())
+                .licensePlate(v.getLicensePlate())
+                .mileage(v.getMileage())
+                .fuelType(v.getFuelType())
+                .transmission(v.getTransmission())
+                .seats(v.getSeats())
+                .doors(v.getDoors())
+                .hasAC(Boolean.TRUE.equals(v.getHasAC()))
+                .hasGPS(Boolean.TRUE.equals(v.getHasGPS()))
+                .hasBluetooth(Boolean.TRUE.equals(v.getHasBluetooth()))
+                .city(v.getCity())
+                .exactLocation(v.getExactLocation())
+                .pricePerDay(ppdDouble)
+                .formattedPrice(formatEur(ppd, v.getCurrency()))
+                .description(v.getDescription())
+                .imageUrl(v.getImageUrl())
+                .ownerName(ownerName)
+                .ownerEmail(ownerEmail)
                 .build();
     }
 
-    /**
-     * Formata o nome de exibição do veículo.
-     * Formato: "Marca Modelo Ano" (ex: "Fiat 500 2020")
-     */
-    private static String formatDisplayName(Vehicle vehicle) {
-        StringBuilder name = new StringBuilder();
+    private String formatEur(BigDecimal amount, String currency) {
+        if (amount == null) return null;
 
-        if (vehicle.getBrand() != null) {
-            name.append(vehicle.getBrand());
+        NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "PT"));
+
+        String formatted = nf.format(amount);
+
+        if (currency != null && !currency.isBlank() && !"EUR".equalsIgnoreCase(currency)) {
+            return formatted + " " + currency.toUpperCase();
         }
-
-        if (vehicle.getModel() != null) {
-            if (!name.isEmpty())
-                name.append(" ");
-            name.append(vehicle.getModel());
-        }
-
-        if (vehicle.getYear() != null) {
-            if (!name.isEmpty())
-                name.append(" ");
-            name.append(vehicle.getYear());
-        }
-
-        return name.toString();
-    }
-
-    /**
-     * Formata o preço para exibição.
-     * Formato: "XX.XX €/dia" (ex: "25.00 €/dia")
-     */
-    private static String formatPrice(Double price) {
-        if (price == null) {
-            return "N/A";
-        }
-        return PRICE_FORMAT.format(price) + " €/dia";
+        return formatted;
     }
 }

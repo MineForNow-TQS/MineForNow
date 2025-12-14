@@ -1,75 +1,47 @@
 package tqs.backend.model;
 
 import jakarta.persistence.*;
-// lombok removed: generate constructors/getters/setters manually
+import lombok.*;
 
-import java.time.LocalDate;
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "bookings")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private LocalDate pickupDate;
-
-    @Column(nullable = false)
-    private LocalDate returnDate;
-
-    // Relação: Uma reserva pertence a um Veículo
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
-    // No-arg constructor
-    public Booking() {
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "renter_user_id", nullable = false)
+    private User renter;
 
-    // All-args constructor
-    public Booking(Long id, java.time.LocalDate pickupDate, java.time.LocalDate returnDate, Vehicle vehicle) {
-        this.id = id;
-        this.pickupDate = pickupDate;
-        this.returnDate = returnDate;
-        this.vehicle = vehicle;
-    }
+    @Column(name = "start_datetime", nullable = false)
+    private OffsetDateTime startDateTime;
 
-    // Getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    @Column(name = "end_datetime", nullable = false)
+    private OffsetDateTime endDateTime;
 
-    public java.time.LocalDate getPickupDate() { return pickupDate; }
-    public void setPickupDate(java.time.LocalDate pickupDate) { this.pickupDate = pickupDate; }
+    @Column(nullable = false)
+    private String status;
 
-    public java.time.LocalDate getReturnDate() { return returnDate; }
-    public void setReturnDate(java.time.LocalDate returnDate) { this.returnDate = returnDate; }
+    @Column(name = "total_price", nullable = false)
+    private BigDecimal totalPrice;
 
-    public Vehicle getVehicle() { return vehicle; }
-    public void setVehicle(Vehicle vehicle) { this.vehicle = vehicle; }
+    @Column(nullable = false)
+    private String currency;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Booking booking = (Booking) o;
-        return Objects.equals(id, booking.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Booking{" +
-                "id=" + id +
-                ", pickupDate=" + pickupDate +
-                ", returnDate=" + returnDate +
-                ", vehicle=" + (vehicle != null ? vehicle.getBrand() + " " + vehicle.getModel() : null) +
-                '}';
-    }
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt;
 }

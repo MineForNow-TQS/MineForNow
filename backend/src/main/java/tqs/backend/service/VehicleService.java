@@ -7,28 +7,19 @@ import tqs.backend.repository.VehicleRepository;
 
 import java.util.Optional;
 
-/**
- * Service para operações de negócio relacionadas a veículos.
- */
 @Service
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final VehicleMapper vehicleMapper;
 
-    public VehicleService(VehicleRepository vehicleRepository) {
+    public VehicleService(VehicleRepository vehicleRepository, VehicleMapper vehicleMapper) {
         this.vehicleRepository = vehicleRepository;
+        this.vehicleMapper = vehicleMapper;
     }
 
-    /**
-     * Busca um veículo por ID e retorna o DTO detalhado.
-     * 
-     * @param id ID do veículo
-     * @return Optional com o DTO se encontrado, vazio caso contrário
-     */
     public Optional<VehicleDetailDTO> getVehicleById(Long id) {
-        if (id == null) {
-            return Optional.empty();
-        }
-        return vehicleRepository.findById(id).map(VehicleMapper::toDetailDTO);
+        if (id == null) return Optional.empty();
+        return vehicleRepository.findById(id).map(vehicleMapper::toDetailDTO);
     }
 }
