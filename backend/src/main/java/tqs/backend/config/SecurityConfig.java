@@ -55,7 +55,7 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    @Bean
+    @Bean // Guarda a password encriptada com salt
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
