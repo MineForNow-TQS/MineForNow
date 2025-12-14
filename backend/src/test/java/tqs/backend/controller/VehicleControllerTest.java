@@ -33,159 +33,160 @@ import tqs.backend.service.VehicleService;
 
 @WebMvcTest(VehicleController.class)
 @ActiveProfiles("test")
-@WithMockUser 
+@WithMockUser
+@SuppressWarnings("null")
 class VehicleControllerTest {
 
-    @Autowired
-    private MockMvc mvc;
+        @Autowired
+        private MockMvc mvc;
 
-    @MockBean
-    private VehicleRepository vehicleRepository;
+        @MockBean
+        private VehicleRepository vehicleRepository;
 
-    @MockBean
-    private VehicleService vehicleService;
+        @MockBean
+        private VehicleService vehicleService;
 
-    @MockBean
-    private BookingRepository bookingRepository;
+        @MockBean
+        private BookingRepository bookingRepository;
 
-    @MockBean
-    private UserRepository userRepository;
+        @MockBean
+        private UserRepository userRepository;
 
-    private User testOwner;
+        private User testOwner;
 
-    @BeforeEach
-    void setUp() {
-        testOwner = User.builder()
-                .id(1L)
-                .email("owner@test.com")
-                .fullName("Test Owner")
-                .role(UserRole.OWNER)
-                .build();
-    }
+        @BeforeEach
+        void setUp() {
+                testOwner = User.builder()
+                                .id(1L)
+                                .email("owner@test.com")
+                                .fullName("Test Owner")
+                                .role(UserRole.OWNER)
+                                .build();
+        }
 
-    @Test
-    @Requirement("SCRUM-49") // História Principal
-    void givenCityOnly_whenSearch_thenReturnsVehicles() throws Exception {
-        Vehicle car = Vehicle.builder()
-                .owner(testOwner)
-                .brand("Ferrari")
-                .city("Lisboa")
-                .build();
+        @Test
+        @Requirement("SCRUM-49") // História Principal
+        void givenCityOnly_whenSearch_thenReturnsVehicles() throws Exception {
+                Vehicle car = Vehicle.builder()
+                                .owner(testOwner)
+                                .brand("Ferrari")
+                                .city("Lisboa")
+                                .build();
 
-        given(vehicleRepository.findByCityContainingIgnoreCase("Lisboa"))
-                .willReturn(Arrays.asList(car));
+                given(vehicleRepository.findByCityContainingIgnoreCase("Lisboa"))
+                                .willReturn(Arrays.asList(car));
 
-        mvc.perform(get("/api/vehicles/search")
-                .param("city", "Lisboa")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].brand", is("Ferrari")));
-    }
+                mvc.perform(get("/api/vehicles/search")
+                                .param("city", "Lisboa")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(1)))
+                                .andExpect(jsonPath("$[0].brand", is("Ferrari")));
+        }
 
-    @Test
-    @Requirement("SCRUM-49") // História Principal
-    void givenDates_whenSearch_thenCallsAvailabilityService() throws Exception {
-        Vehicle car = Vehicle.builder()
-                .owner(testOwner)
-                .brand("Tesla")
-                .build();
+        @Test
+        @Requirement("SCRUM-49") // História Principal
+        void givenDates_whenSearch_thenCallsAvailabilityService() throws Exception {
+                Vehicle car = Vehicle.builder()
+                                .owner(testOwner)
+                                .brand("Tesla")
+                                .build();
 
-        // Mock: Se pedirem datas, devolve o Tesla
-        given(vehicleRepository.findAvailableVehicles(eq("Porto"), any(LocalDate.class), any(LocalDate.class)))
-                .willReturn(Arrays.asList(car));
+                // Mock: Se pedirem datas, devolve o Tesla
+                given(vehicleRepository.findAvailableVehicles(eq("Porto"), any(LocalDate.class), any(LocalDate.class)))
+                                .willReturn(Arrays.asList(car));
 
-        mvc.perform(get("/api/vehicles/search")
-                .param("city", "Porto")
-                .param("pickup", "2025-12-10")
-                .param("dropoff", "2025-12-12")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].brand", is("Tesla")));
-    }
-    
-    @Test
-    @Requirement("SCRUM-49") // História Principal
-    void givenNoResults_thenReturnEmptyList() throws Exception {
-        given(vehicleRepository.findByCityContainingIgnoreCase("Mars"))
-                .willReturn(Collections.emptyList());
+                mvc.perform(get("/api/vehicles/search")
+                                .param("city", "Porto")
+                                .param("pickup", "2025-12-10")
+                                .param("dropoff", "2025-12-12")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(1)))
+                                .andExpect(jsonPath("$[0].brand", is("Tesla")));
+        }
 
-        mvc.perform(get("/api/vehicles/search")
-                .param("city", "Mars")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
-    }
+        @Test
+        @Requirement("SCRUM-49") // História Principal
+        void givenNoResults_thenReturnEmptyList() throws Exception {
+                given(vehicleRepository.findByCityContainingIgnoreCase("Mars"))
+                                .willReturn(Collections.emptyList());
 
-    @Test
-    @Requirement("SCRUM-49")
-    void givenNoFilters_whenSearch_thenReturnsAllVehicles() throws Exception {
-        Vehicle car1 = Vehicle.builder()
-                .owner(testOwner)
-                .brand("Toyota")
-                .city("Lisboa")
-                .build();
+                mvc.perform(get("/api/vehicles/search")
+                                .param("city", "Mars")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(0)));
+        }
 
-        Vehicle car2 = Vehicle.builder()
-                .owner(testOwner)
-                .brand("Honda")
-                .city("Porto")
-                .build();
+        @Test
+        @Requirement("SCRUM-49")
+        void givenNoFilters_whenSearch_thenReturnsAllVehicles() throws Exception {
+                Vehicle car1 = Vehicle.builder()
+                                .owner(testOwner)
+                                .brand("Toyota")
+                                .city("Lisboa")
+                                .build();
 
-        given(vehicleRepository.findAll())
-                .willReturn(Arrays.asList(car1, car2));
+                Vehicle car2 = Vehicle.builder()
+                                .owner(testOwner)
+                                .brand("Honda")
+                                .city("Porto")
+                                .build();
 
-        mvc.perform(get("/api/vehicles/search")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].brand", is("Toyota")))
-                .andExpect(jsonPath("$[1].brand", is("Honda")));
-    }
+                given(vehicleRepository.findAll())
+                                .willReturn(Arrays.asList(car1, car2));
 
-    @Test
-    @Requirement("SCRUM-49")
-    void givenDatesOnly_whenSearch_thenReturnsAvailableVehicles() throws Exception {
-        Vehicle car = Vehicle.builder()
-                .owner(testOwner)
-                .brand("Nissan")
-                .model("Leaf")
-                .build();
+                mvc.perform(get("/api/vehicles/search")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(2)))
+                                .andExpect(jsonPath("$[0].brand", is("Toyota")))
+                                .andExpect(jsonPath("$[1].brand", is("Honda")));
+        }
 
-        given(vehicleRepository.findAvailableVehiclesByDates(any(LocalDate.class), any(LocalDate.class)))
-                .willReturn(Arrays.asList(car));
+        @Test
+        @Requirement("SCRUM-49")
+        void givenDatesOnly_whenSearch_thenReturnsAvailableVehicles() throws Exception {
+                Vehicle car = Vehicle.builder()
+                                .owner(testOwner)
+                                .brand("Nissan")
+                                .model("Leaf")
+                                .build();
 
-        mvc.perform(get("/api/vehicles/search")
-                .param("pickup", "2025-12-10")
-                .param("dropoff", "2025-12-12")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].brand", is("Nissan")));
-    }
+                given(vehicleRepository.findAvailableVehiclesByDates(any(LocalDate.class), any(LocalDate.class)))
+                                .willReturn(Arrays.asList(car));
 
-    @Test
-    @Requirement("SCRUM-49")
-    void givenGetAllVehicles_thenReturnsList() throws Exception {
-        Vehicle car1 = Vehicle.builder()
-                .owner(testOwner)
-                .brand("Mercedes")
-                .build();
-        
-        Vehicle car2 = Vehicle.builder()
-                .owner(testOwner)
-                .brand("BMW")
-                .build();
+                mvc.perform(get("/api/vehicles/search")
+                                .param("pickup", "2025-12-10")
+                                .param("dropoff", "2025-12-12")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(1)))
+                                .andExpect(jsonPath("$[0].brand", is("Nissan")));
+        }
 
-        given(vehicleRepository.findAll())
-                .willReturn(Arrays.asList(car1, car2));
+        @Test
+        @Requirement("SCRUM-49")
+        void givenGetAllVehicles_thenReturnsList() throws Exception {
+                Vehicle car1 = Vehicle.builder()
+                                .owner(testOwner)
+                                .brand("Mercedes")
+                                .build();
 
-        mvc.perform(get("/api/vehicles")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].brand", is("Mercedes")))
-                .andExpect(jsonPath("$[1].brand", is("BMW")));
-    }
+                Vehicle car2 = Vehicle.builder()
+                                .owner(testOwner)
+                                .brand("BMW")
+                                .build();
+
+                given(vehicleRepository.findAll())
+                                .willReturn(Arrays.asList(car1, car2));
+
+                mvc.perform(get("/api/vehicles")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(2)))
+                                .andExpect(jsonPath("$[0].brand", is("Mercedes")))
+                                .andExpect(jsonPath("$[1].brand", is("BMW")));
+        }
 }
