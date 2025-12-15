@@ -4,15 +4,22 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 // lombok removed: add explicit constructor for dependency injection
+import tqs.backend.dto.CreateVehicleRequest;
 import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.VehicleRepository;
@@ -38,6 +45,32 @@ public class VehicleController {
     }
 
     /**
+     * Endpoint para criar um novo veículo (SCRUM-7).
+     * Requer autenticação - apenas Owners podem criar veículos.
+     * 
+     * @param request     dados do veículo a criar
+     * @param userDetails informação do utilizador autenticado
+     * @return 201 Created com o veículo criado, ou 400 Bad Request se validação
+     *         falhar
+     */
+    @PostMapping
+    public ResponseEntity<Vehicle> createVehicle(
+            @Valid @RequestBody CreateVehicleRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            Vehicle vehicle = vehicleService.createVehicle(request, userDetails.getUsername());
+            return ResponseEntity.status(HttpStatus.CREATED).body(vehicle);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
      * Endpoint para buscar detalhes de um veículo específico (SCRUM-12).
      * 
      * @param id ID do veículo
@@ -50,7 +83,8 @@ public class VehicleController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // NOVO ENDPOINT: /api/vehicles/search?city=Lisboa&pickup=2025-12-10&dropoff=2025-12-12
+    // NOVO ENDPOINT:
+    // /api/vehicles/search?city=Lisboa&pickup=2025-12-10&dropoff=2025-12-12
     @GetMapping("/search")
     public List<Vehicle> searchVehicles(
             @RequestParam(required = false) String city,
@@ -67,7 +101,8 @@ public class VehicleController {
             return vehicleRepository.findAvailableVehicles(city, pickup, dropoff);
         }
 
-        // Se só tiver datas (sem cidade), filtra por disponibilidade em todas as cidades
+        // Se só tiver datas (sem cidade), filtra por disponibilidade em todas as
+        // cidades
         if (pickup != null && dropoff != null) {
             return vehicleRepository.findAvailableVehiclesByDates(pickup, dropoff);
         }

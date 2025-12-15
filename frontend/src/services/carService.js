@@ -35,7 +35,7 @@ export const carService = {
     try {
       // Construir query parameters
       const params = new URLSearchParams();
-      
+
       if (filters.city) {
         params.append('city', filters.city);
       }
@@ -48,13 +48,13 @@ export const carService = {
 
       const url = `${API_BASE_URL}/vehicles/search${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       let cars = await response.json();
-      
+
       // Adaptar dados do backend para o formato do frontend
       cars = cars.map(adaptVehicleFromBackend);
 
@@ -89,14 +89,14 @@ export const carService = {
   async get(id) {
     try {
       const response = await fetch(`${API_BASE_URL}/vehicles/${id}`);
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Carro não encontrado');
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const car = await response.json();
       return { data: adaptVehicleFromBackend(car) };
     } catch (error) {
@@ -120,18 +120,25 @@ export const carService = {
   // Criar um novo carro
   async create(carData) {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/vehicles`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(carData),
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const newCar = await response.json();
       return { data: newCar };
     } catch (error) {
@@ -150,14 +157,14 @@ export const carService = {
         },
         body: JSON.stringify(carData),
       });
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Carro não encontrado');
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const updatedCar = await response.json();
       return { data: updatedCar };
     } catch (error) {
@@ -177,14 +184,14 @@ export const carService = {
       const response = await fetch(`${API_BASE_URL}/vehicles/${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Carro não encontrado');
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       return { success: true };
     } catch (error) {
       console.error('Erro ao deletar carro:', error);
