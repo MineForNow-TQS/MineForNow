@@ -5,5 +5,5 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, properties = "server.port=8080")
-public class CucumberSpringConfiguration {
+public class CucumberSpringConfiguration extends tqs.backend.AbstractPostgresTest {
 }

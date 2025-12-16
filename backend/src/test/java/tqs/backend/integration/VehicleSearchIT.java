@@ -2,37 +2,30 @@ package tqs.backend.integration;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
-import tqs.backend.model.Vehicle;
-import tqs.backend.model.User;
+import org.springframework.http.*;
+import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.Booking;
-import tqs.backend.repository.VehicleRepository;
-import tqs.backend.repository.UserRepository;
-import tqs.backend.repository.BookingRepository;
+import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
-import java.util.Objects;
+import tqs.backend.model.Vehicle;
+import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.UserRepository;
+import tqs.backend.repository.VehicleRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-class VehicleSearchIT {
-
-    @LocalServerPort
-    int randomServerPort;
+class VehicleSearchIT extends tqs.backend.AbstractPostgresTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -41,91 +34,125 @@ class VehicleSearchIT {
     private VehicleRepository vehicleRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private User owner;
+    private User renter;
+
+    private Vehicle lisboaAvailable;
+    private Vehicle lisboaBooked;
+
     @BeforeEach
-    void setUp() {
-        // Limpar e preparar dados determinísticos para os testes de integração
+    void setup() {
         bookingRepository.deleteAll();
         vehicleRepository.deleteAll();
         userRepository.deleteAll();
 
-        User owner = userRepository.save(Objects.requireNonNull(User.builder()
+        owner = userRepository.save(User.builder()
                 .email("owner@test.com")
-                .fullName("Owner Test")
-                .password("owner")
+                .passwordHash("dummy-hash") 
+                .fullName("Owner User")
                 .role(UserRole.OWNER)
-                .build()));
+                .build());
 
-        Vehicle mercedes = new Vehicle(null, owner, "Mercedes-Benz", "AMG GT", 2021, "Desportivo",
-                "DD-04-DD", 18000, "Gasolina", "Automática", 2, 2, true, true, true,
-                "Lisboa", "Avenida da Liberdade", 850.0,
-                "Mercedes-AMG GT de luxo.", "/Images/photo-1617814076367-b759c7d7e738.jpeg");
+        renter = userRepository.save(User.builder()
+                .email("renter@test.com")
+                .passwordHash("dummy-hash")
+                .fullName("Renter User")
+                .role(UserRole.RENTER)
+                .build());
 
-        Vehicle ferrari = new Vehicle(null, owner, "Ferrari", "Roma", 2024, "Desportivo",
-                "EE-05-EE", 1000, "Gasolina", "Automática", 2, 2, true, true, true,
-                "Lisboa", "Parque das Nações", 950.0,
-                "Ferrari Roma desportivo de luxo.", "/Images/photo-1606220838315-056192d5e927.jpeg");
+        lisboaAvailable = vehicleRepository.save(Vehicle.builder()
+                .owner(owner)
+                .brand("Tesla")
+                .model("Model 3")
+                .title("Tesla Model 3 - Lisboa")
+                .year(2022)
+                .licensePlate("AA-00-AA")
+                .mileage(10000)
+                .fuelType("ELECTRIC")
+                .transmission("AUTO")
+                .city("Lisboa")
+                .exactLocation("Rua A, Lisboa")
+                .pricePerDay(BigDecimal.valueOf(80))
+                .imageUrl("http://example.com/img1.jpg")
+                .description("Available vehicle")
+                .status("AVAILABLE")
+                .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+                .updatedAt(OffsetDateTime.now(ZoneOffset.UTC))
+                .build());
 
-        vehicleRepository.save(mercedes);
-        vehicleRepository.save(ferrari);
+        lisboaBooked = vehicleRepository.save(Vehicle.builder()
+                .owner(owner)
+                .brand("Renault")
+                .model("Clio")
+                .title("Renault Clio - Lisboa")
+                .year(2020)
+                .licensePlate("BB-11-BB")
+                .mileage(40000)
+                .fuelType("GASOLINE")
+                .transmission("MANUAL")
+                .city("Lisboa")
+                .exactLocation("Rua B, Lisboa")
+                .pricePerDay(BigDecimal.valueOf(30))
+                .imageUrl("http://example.com/img2.jpg")
+                .description("Booked vehicle")
+                .status("AVAILABLE")
+                .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+                .updatedAt(OffsetDateTime.now(ZoneOffset.UTC))
+                .build());
 
-        // Criar reserva para o Mercedes relativa a hoje
-        var today = LocalDate.now();
-        var pickup = today.plusDays(10);
-        var dropoff = today.plusDays(15);
-        bookingRepository.save(new Booking(null, pickup, dropoff, mercedes));
+        LocalDate pickup = LocalDate.of(2025, 12, 10);
+        LocalDate dropoff = LocalDate.of(2025, 12, 12);
+
+        bookingRepository.save(Booking.builder()
+                .vehicle(lisboaBooked)
+                .renter(renter)
+                .startDateTime(pickup.atStartOfDay().atOffset(ZoneOffset.UTC))
+                .endDateTime(dropoff.atStartOfDay().atOffset(ZoneOffset.UTC))
+                .status("CONFIRMED")
+                .totalPrice(BigDecimal.valueOf(60))
+                .currency("EUR")
+                .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+                .build());
     }
 
     @Test
-    @Requirement("SCRUM-49")
-    void whenSearchLisbon_thenReturnsMercedesAndFerrari() {
-        // Teste real contra a BD populada pelo MinefornowApplication
-        String url = "http://localhost:" + randomServerPort + "/api/vehicles/search?city=Lisboa";
+    void whenSearchVehiclesInCityAndDates_thenOnlyAvailableReturned() {
+        String city = "Lisboa";
+        LocalDate pickup = LocalDate.of(2025, 12, 10);
+        LocalDate dropoff = LocalDate.of(2025, 12, 12);
 
-        ResponseEntity<List<Vehicle>> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<Vehicle>>() {
-                });
+        String url = String.format("/api/vehicles/search?city=%s&pickup=%s&dropoff=%s",
+                city, pickup, dropoff);
+
+        ResponseEntity<VehicleDetailDTO[]> response =
+                restTemplate.getForEntity(url, VehicleDetailDTO[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        List<Vehicle> cars = response.getBody();
+        VehicleDetailDTO[] body = response.getBody();
+        assertThat(body).isNotNull();
 
-        // Em Lisboa temos o Mercedes e o Ferrari (dados do MinefornowApplication)
-        assertThat(cars).extracting(Vehicle::getBrand)
-                .contains("Mercedes-Benz", "Ferrari");
+        List<VehicleDetailDTO> results = Arrays.asList(body);
+
+        assertThat(results)
+                .anySatisfy(v -> assertThat(v.getId()).isEqualTo(lisboaAvailable.getId()));
+
+        assertThat(results)
+                .noneSatisfy(v -> assertThat(v.getId()).isEqualTo(lisboaBooked.getId()));
     }
 
     @Test
-    @Requirement("SCRUM-49")
-    void whenSearchLisbonWithConflictDates_thenMercedesIsMissing() {
-        // Sabemos que o Mercedes tem reserva criada no MinefornowApplication para:
-        // Hoje + 10 dias até Hoje + 15 dias.
+    void whenSearchWithCityNoMatches_thenEmptyList() {
+        String url = "/api/vehicles/search?city=Porto&pickup=2025-12-10&dropoff=2025-12-12";
+        ResponseEntity<VehicleDetailDTO[]> response =
+                restTemplate.getForEntity(url, VehicleDetailDTO[].class);
 
-        LocalDate today = LocalDate.now();
-        LocalDate pickup = today.plusDays(10);
-        LocalDate dropoff = today.plusDays(12);
-
-        String url = String.format("http://localhost:%d/api/vehicles/search?city=Lisboa&pickup=%s&dropoff=%s",
-                randomServerPort, pickup, dropoff);
-
-        ResponseEntity<List<Vehicle>> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<Vehicle>>() {
-                });
-
-        List<Vehicle> cars = response.getBody();
-
-        // O Mercedes deve estar ausente porque está reservado!
-        assertThat(cars).extracting(Vehicle::getBrand)
-                .doesNotContain("Mercedes-Benz")
-                .contains("Ferrari");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).isEmpty();
     }
 }

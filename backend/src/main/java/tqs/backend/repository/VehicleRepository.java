@@ -1,7 +1,8 @@
 package tqs.backend.repository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,15 +25,11 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
             WHERE (b.startDateTime <= :endDateTime AND b.endDateTime >= :startDateTime)
         )
         """)
-    List<Vehicle> findAvailableVehiclesByDateTime(
-            @Param("startDateTime") LocalDateTime startDateTime,
-            @Param("endDateTime") LocalDateTime endDateTime
-    );
+        List<Vehicle> findAvailableVehiclesByDateTime(
+            @Param("startDateTime") OffsetDateTime startDateTime,
+            @Param("endDateTime") OffsetDateTime endDateTime
+        );
 
-    /**
-     * Método que o VehicleController espera
-     * Converte LocalDate -> intervalo LocalDateTime.
-     */
     default List<Vehicle> findAvailableVehiclesByDates(LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
             throw new IllegalArgumentException("startDate e endDate não podem ser null");
@@ -41,8 +38,8 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
             throw new IllegalArgumentException("endDate não pode ser antes de startDate");
         }
 
-        LocalDateTime start = startDate.atStartOfDay();
-        LocalDateTime end = endDate.plusDays(1).atStartOfDay().minusNanos(1);
+        OffsetDateTime start = startDate.atStartOfDay().atOffset(ZoneOffset.UTC);
+        OffsetDateTime end = endDate.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC).minusNanos(1);
 
         return findAvailableVehiclesByDateTime(start, end);
     }

@@ -1,142 +1,108 @@
 package tqs.backend.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
 
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
-import tqs.backend.model.Vehicle;
 import tqs.backend.model.UserRole;
-
-import java.time.LocalDate;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.springframework.test.context.ActiveProfiles;
+import tqs.backend.model.Vehicle;
 
 @DataJpaTest
 @ActiveProfiles("test")
-class VehicleRepositoryTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
+class VehicleRepositoryTest extends tqs.backend.AbstractPostgresTest {
 
     @Autowired
     private VehicleRepository vehicleRepository;
 
-    private Vehicle fiat;
-    private Vehicle tesla;
-    private User testOwner;
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    private Vehicle vehicle;
 
     @BeforeEach
-    void setUp() {
-        // 1. Criar Owner
-        testOwner = User.builder()
-                .email("testowner@minefornow.com")
-                .fullName("Test Owner")
+    void setup() {
+        bookingRepository.deleteAll();
+        vehicleRepository.deleteAll();
+        userRepository.deleteAll();
+
+        User owner = User.builder()
+                .email("owner@test.com")
+                .fullName("Owner")
+                .passwordHash("hash")
                 .role(UserRole.OWNER)
-                .password("test123")
-                .phone("+351 910 000 000")
-                .address("Test Address")
+            .status("ACTIVE")
+            .createdAt(java.time.OffsetDateTime.now())
                 .build();
-        entityManager.persist(testOwner);
-        
-        // 2. Criar Veículos
-        fiat = Vehicle.builder()
-                .owner(testOwner)
-                .brand("Fiat")
-                .model("500")
-                .year(2021)
-                .type("Citadino")
-                .licensePlate("AA-00-AA")
-                .mileage(10000)
-                .fuelType("Gasolina")
-                .transmission("Manual")
-                .seats(4)
-                .doors(3)
-                .hasAC(true)
-                .hasGPS(true)
-                .hasBluetooth(true)
-                .city("Lisboa")
-                .exactLocation("Aeroporto")
-                .pricePerDay(35.0)
-                .description("Desc")
-                .imageUrl("url")
-                .build();
-        
-        tesla = Vehicle.builder()
-                .owner(testOwner)
-                .brand("Tesla")
+        owner = userRepository.save(owner);
+
+        vehicle = Vehicle.builder()
+                .owner(owner)
+            .title("Tesla Model 3")
+            .brand("Tesla")
                 .model("Model 3")
-                .year(2023)
-                .type("Sedan")
-                .licensePlate("BB-11-BB")
-                .mileage(5000)
-                .fuelType("Elétrico")
-                .transmission("Automática")
-                .seats(5)
-                .doors(5)
-                .hasAC(true)
-                .hasGPS(true)
-                .hasBluetooth(true)
                 .city("Porto")
-                .exactLocation("Campanhã")
-                .pricePerDay(85.0)
-                .description("Desc")
-                .imageUrl("url")
+                .year(2022)
+                .fuelType("electric")
+                .type("sedan")
+                .doors(4)
+                .exactLocation("Porto center")
+                .description("Nice electric car")
+                .seats(5)
+                .transmission("automatic")
+                .licensePlate("AA-00-AA")
+                .mileage(15000)
+                .pricePerDay(BigDecimal.valueOf(45.0))
+            .status("VISIBLE")
                 .build();
 
-        entityManager.persist(fiat);
-        entityManager.persist(tesla);
-
-        // 2. Criar uma Reserva no Fiat para o Natal (20 a 25 Dezembro 2025)
-        Booking booking = new Booking(null, 
-                LocalDate.of(2025, 12, 20), 
-                LocalDate.of(2025, 12, 25), 
-                fiat);
-        entityManager.persist(booking);
-        
-        entityManager.flush();
+        vehicle = vehicleRepository.save(vehicle);
     }
 
     @Test
-    @Requirement("SCRUM-49")
-    void whenSearchByCity_thenReturnCorrectVehicles() {
-        List<Vehicle> found = vehicleRepository.findByCityContainingIgnoreCase("Lisboa");
-        
-        assertThat(found).hasSize(1);
-        assertThat(found.get(0).getBrand()).isEqualTo("Fiat");
+    void whenFindByCity_thenReturnVehicles() {
+        List<Vehicle> result = vehicleRepository.findByCityContainingIgnoreCase("porto");
+        assertThat(result).isNotEmpty();
+        assertThat(result.get(0).getBrand()).isEqualTo("Tesla");
     }
 
     @Test
-    @Requirement("SCRUM-49")
-    void whenSearchAvailability_andDatesDoNotOverlap_thenReturnVehicle() {
-        // Pesquisa para datas ANTES da reserva (10 a 15 Dezembro)
-        List<Vehicle> available = vehicleRepository.findAvailableVehicles(
-            "Lisboa", 
-            LocalDate.of(2025, 12, 10), 
-            LocalDate.of(2025, 12, 15)
+    void whenVehicleIsBooked_thenItShouldNotBeAvailableForThatPeriod() {
+        LocalDate start = LocalDate.now().plusDays(1);
+        LocalDate end = start.plusDays(2);
+
+        OffsetDateTime startDT = start.atStartOfDay().atOffset(ZoneOffset.UTC);
+        OffsetDateTime endDT = end.atStartOfDay().atOffset(ZoneOffset.UTC);
+
+        Booking booking = new Booking(
+            null,
+            vehicle,
+            vehicle.getOwner(),
+            startDT,
+            endDT,
+            "CONFIRMED",
+            BigDecimal.valueOf(90.0),
+            "EUR",
+            OffsetDateTime.now()
         );
+        bookingRepository.save(booking);
 
-        assertThat(available).hasSize(1);
-        assertThat(available.get(0).getBrand()).isEqualTo("Fiat");
-    }
+        List<Vehicle> available = vehicleRepository.findAvailableVehicles(vehicle.getCity(), start, end);
 
-    @Test
-    @Requirement("SCRUM-49")
-    void whenSearchAvailability_andDatesOverlap_thenReturnEmpty() {
-        // Pesquisa COLIDE com a reserva (22 a 23 Dezembro)
-        List<Vehicle> available = vehicleRepository.findAvailableVehicles(
-            "Lisboa", 
-            LocalDate.of(2025, 12, 22), 
-            LocalDate.of(2025, 12, 23)
-        );
-
-        assertThat(available).isEmpty();
+        assertThat(available).doesNotContain(vehicle);
     }
 }

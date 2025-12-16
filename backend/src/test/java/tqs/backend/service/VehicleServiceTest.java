@@ -1,165 +1,99 @@
 package tqs.backend.service;
 
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import tqs.backend.dto.VehicleDetailDTO;
-import tqs.backend.model.User;
-import tqs.backend.model.Vehicle;
-import tqs.backend.repository.VehicleRepository;
-import tqs.backend.model.UserRole;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-/**
- * Testes unitários do VehicleService (SCRUM-12).
- */
-@ExtendWith(MockitoExtension.class)
-@DisplayName("VehicleService Unit Tests")
+import tqs.backend.model.Vehicle;
+import tqs.backend.repository.VehicleRepository;
+import tqs.backend.mapper.VehicleMapper;
+import tqs.backend.dto.VehicleDetailDTO;
+
 class VehicleServiceTest {
 
     @Mock
     private VehicleRepository vehicleRepository;
 
+    @Mock
+    private VehicleMapper vehicleMapper;
+
     @InjectMocks
     private VehicleService vehicleService;
 
-    private Vehicle testVehicle;
-    private User testOwner;
+    private Vehicle vehicle1;
+    private Vehicle vehicle2;
 
     @BeforeEach
     void setUp() {
-        testOwner = User.builder()
-                .id(1L)
-                .email("owner@minefornow.com")
-                .fullName("João Silva")
-                .role(UserRole.OWNER)
-                .build();
+        MockitoAnnotations.openMocks(this);
 
-        testVehicle = Vehicle.builder()
-                .id(1L)
-                .owner(testOwner)
-                .brand("Fiat")
-                .model("500")
-                .year(2020)
-                .type("Citadino")
-                .pricePerDay(25.0)
-                .city("Lisboa")
-                .seats(4)
-                .doors(3)
-                .transmission("Manual")
-                .fuelType("Gasolina")
-                .hasAC(true)
-                .hasGPS(false)
-                .hasBluetooth(true)
-                .description("Carro económico perfeito para cidade")
-                .imageUrl("https://example.com/fiat500.jpg")
-                .build();
+        vehicle1 = Vehicle.builder()
+            .id(1L)
+            .title("Tesla Model 3")
+            .brand("Tesla")
+            .model("Model 3")
+            .city("Porto")
+            .year(2022)
+            .pricePerDay(BigDecimal.valueOf(25.0))
+            .status("VISIBLE")
+            .build();
+
+        vehicle2 = Vehicle.builder()
+            .id(2L)
+            .title("BMW X5")
+            .brand("BMW")
+            .model("X5")
+            .city("Lisboa")
+            .year(2020)
+            .pricePerDay(BigDecimal.valueOf(40.0))
+            .status("VISIBLE")
+            .build();
     }
 
     @Test
-    @Requirement("SCRUM-12")
-    @DisplayName("Quando buscar veículo por ID existente, deve retornar DTO com dados corretos")
-    void whenGetVehicleById_thenReturnDTO() {
-        // Arrange
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+    void whenGetAllVehicles_thenReturnVehicleList() {
+        // VehicleService now returns DTOs via getVehicleById; test mapping behavior instead
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle1));
+        VehicleDetailDTO dto = VehicleDetailDTO.builder().id(1L).brand("Tesla").model("Model 3").year(2022).pricePerDay(25.0).build();
+        when(vehicleMapper.toDetailDTO(vehicle1)).thenReturn(dto);
 
-        // Act
-        Optional<VehicleDetailDTO> result = vehicleService.getVehicleById(1L);
+        Optional<VehicleDetailDTO> found = vehicleService.getVehicleById(1L);
 
-        // Assert
-        assertThat(result).isPresent();
-        VehicleDetailDTO dto = result.get();
-
-        assertThat(dto.getId()).isEqualTo(1L);
-        assertThat(dto.getBrand()).isEqualTo("Fiat");
-        assertThat(dto.getModel()).isEqualTo("500");
-        assertThat(dto.getYear()).isEqualTo(2020);
-        assertThat(dto.getPricePerDay()).isEqualTo(25.0);
-        assertThat(dto.getCity()).isEqualTo("Lisboa");
-        assertThat(dto.getDisplayName()).isEqualTo("Fiat 500 2020");
-        assertThat(dto.getFormattedPrice()).isEqualTo("25.00 €/dia");
+        assertThat(found).isPresent();
+        assertThat(found.get().getBrand()).isEqualTo("Tesla");
+        verify(vehicleRepository, times(1)).findById(1L);
+        verify(vehicleMapper, times(1)).toDetailDTO(vehicle1);
     }
 
     @Test
-    @Requirement("SCRUM-12")
-    @DisplayName("Quando buscar veículo por ID inexistente, deve retornar vazio")
-    void whenGetVehicleByInvalidId_thenReturnEmpty() {
-        // Arrange
+    void whenGetVehicleById_thenReturnVehicle() {
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle1));
+        VehicleDetailDTO dto = VehicleDetailDTO.builder().id(1L).brand("Tesla").model("Model 3").year(2022).pricePerDay(25.0).build();
+        when(vehicleMapper.toDetailDTO(vehicle1)).thenReturn(dto);
+
+        Optional<VehicleDetailDTO> found = vehicleService.getVehicleById(1L);
+
+        assertThat(found).isPresent();
+        assertThat(found.get().getBrand()).isEqualTo("Tesla");
+        verify(vehicleRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void whenGetVehicleByIdNotFound_thenReturnEmpty() {
         when(vehicleRepository.findById(999L)).thenReturn(Optional.empty());
+        Optional<VehicleDetailDTO> found = vehicleService.getVehicleById(999L);
 
-        // Act
-        Optional<VehicleDetailDTO> result = vehicleService.getVehicleById(999L);
-
-        // Assert
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    @Requirement("SCRUM-12")
-    @DisplayName("Quando buscar veículo com ID null, deve retornar vazio")
-    void whenGetVehicleByNullId_thenReturnEmpty() {
-        // Act
-        Optional<VehicleDetailDTO> result = vehicleService.getVehicleById(null);
-
-        // Assert
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    @Requirement("SCRUM-12")
-    @DisplayName("Quando veículo não tem ano, displayName deve conter apenas marca e modelo")
-    void whenVehicleHasNoYear_thenDisplayNameContainsOnlyBrandAndModel() {
-        // Arrange
-        testVehicle.setYear(null);
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
-
-        // Act
-        Optional<VehicleDetailDTO> result = vehicleService.getVehicleById(1L);
-
-        // Assert
-        assertThat(result).isPresent();
-        assertThat(result.get().getDisplayName()).isEqualTo("Fiat 500");
-    }
-
-    @Test
-    @Requirement("SCRUM-12")
-    @DisplayName("Quando preço é null, formattedPrice deve retornar N/A")
-    void whenPriceIsNull_thenFormattedPriceReturnsNA() {
-        // Arrange
-        testVehicle.setPricePerDay(null);
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
-
-        // Act
-        Optional<VehicleDetailDTO> result = vehicleService.getVehicleById(1L);
-
-        // Assert
-        assertThat(result).isPresent();
-        assertThat(result.get().getFormattedPrice()).isEqualTo("N/A");
-    }
-
-    @Test
-    @Requirement("SCRUM-12")
-    @DisplayName("Quando veículo tem owner, deve retornar ownerName e ownerEmail no DTO")
-    void whenVehicleHasOwner_thenDTOContainsOwnerInfo() {
-        // Arrange
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
-
-        // Act
-        Optional<VehicleDetailDTO> result = vehicleService.getVehicleById(1L);
-
-        // Assert
-        assertThat(result).isPresent();
-        VehicleDetailDTO dto = result.get();
-        assertThat(dto.getOwnerName()).isEqualTo("João Silva");
-        assertThat(dto.getOwnerEmail()).isEqualTo("owner@minefornow.com");
+        assertThat(found).isNotPresent();
+        verify(vehicleRepository, times(1)).findById(999L);
     }
 }

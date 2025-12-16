@@ -2,6 +2,8 @@ package tqs.backend.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Objects;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,12 +24,11 @@ import tqs.backend.model.UserRole;
 import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
-import java.util.Objects;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DisplayName("Authentication Integration Tests")
-class AuthControllerIT {
+class AuthControllerIT extends tqs.backend.AbstractPostgresTest {
 
     @LocalServerPort
     private int port;
@@ -53,18 +54,17 @@ class AuthControllerIT {
     void setUp() {
         baseUrl = "http://localhost:" + port + "/api/auth/login";
 
-        // Clean up DB strictly in order to avoid FK violations
         bookingRepository.deleteAll();
         vehicleRepository.deleteAll();
         userRepository.deleteAll();
 
-        // Create test user
         User user = User.builder()
                 .email("testrenter@test.com")
                 .fullName("Test Renter")
-                .password(passwordEncoder.encode("password123"))
+                .passwordHash(passwordEncoder.encode("password123"))
                 .role(UserRole.RENTER)
                 .build();
+
         userRepository.save(Objects.requireNonNull(user));
     }
 
@@ -100,7 +100,6 @@ class AuthControllerIT {
                 loginRequest,
                 AuthResponse.class);
 
-        // Spring Security typically returns 401 Unauthorized for bad credentials
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
