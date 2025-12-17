@@ -23,9 +23,9 @@ Funcionalidade: Intenção de Reserva (Booking Intent)
     E estou a visualizar os detalhes do veículo com ID 1
     Quando seleciono a data de levantamento para "2025-12-20"
     E seleciono a data de devolução para "2025-12-25"
-    E clico no botão "Reservar Agora"
+    E aciono o botão "Reservar Agora"
     Então devo ser redirecionado para a página de checkout
     E devo ver o preço total calculado para 5 dias
-    Quando clico no botão "Confirmar e Pagar"
+    Quando aciono o botão "Confirmar e Pagar"
     Então devo ser redirecionado para a página de pagamento
     E devo ver os detalhes da reserva para pagamento
