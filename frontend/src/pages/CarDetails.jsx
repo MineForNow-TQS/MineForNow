@@ -6,7 +6,7 @@ import { reviewService } from '@/services/reviewService';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Star, MapPin, Fuel, Users, Calendar, Shield, Check, ArrowLeft, ChevronLeft, ChevronRight, Car, Snowflake, Bluetooth as BluetoothIcon } from "lucide-react";
+import { Star, MapPin, Fuel, Users, Calendar, Shield, Check, ArrowLeft, ChevronLeft, ChevronRight, Car, Snowflake, Bluetooth as BluetoothIcon, Navigation2 } from "lucide-react";
 import { formatCurrency } from '@/utils';
 
 export default function CarDetails() {
@@ -51,9 +51,9 @@ export default function CarDetails() {
     }
 
     const car = data;
-    // Criar array de imagens (repetir 3 vezes se houver apenas 1)
-    const baseImage = car.images?.[0] || '/Images/photo-1494976388531-d1058494cdd8.jpeg';
-    const images = car.images?.length > 1 ? car.images : [baseImage, baseImage, baseImage];
+    // O adapter já garante que car.images[0] tem uma URL válida (imagem real ou placeholder)
+    const baseImage = car.images?.[0] || car.image_url || '/Images/photo-1494976388531-d1058494cdd8.jpeg';
+    const images = [baseImage, baseImage, baseImage];
     const reviews = reviewsData || [];
 
     const nextImage = () => {
@@ -69,6 +69,14 @@ export default function CarDetails() {
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('pt-PT', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
+
+    // Formata a matrícula para o formato AA-00-BB
+    const formatLicensePlate = (plate) => {
+        if (!plate) return null;
+        const cleaned = plate.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        if (cleaned.length !== 6) return plate; // Se não tiver 6 caracteres, retorna como está
+        return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 4)}-${cleaned.slice(4, 6)}`;
     };
 
     return (
@@ -145,11 +153,14 @@ export default function CarDetails() {
                             <h1 className="text-3xl font-bold text-slate-900 mb-1">
                                 {car.brand} {car.model}
                             </h1>
-                            <p className="text-slate-500 mb-3">{car.year}</p>
+                            <p className="text-slate-500 mb-1">{car.year}</p>
+                            {car.license_plate && (
+                                <p className="text-slate-400 text-sm mb-3">{formatLicensePlate(car.license_plate)}</p>
+                            )}
 
                             <div className="flex items-center gap-2 text-slate-600">
                                 <MapPin className="w-4 h-4" />
-                                <span>Estação de Comboios, {car.city}</span>
+                                <span>{car.location ? `${car.location}, ${car.city}` : car.city}</span>
                             </div>
                         </div>
 
@@ -190,6 +201,12 @@ export default function CarDetails() {
                                     <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm border border-slate-200">
                                         <Snowflake className="w-5 h-5 text-slate-700" />
                                         <span className="text-slate-900">Ar Condicionado</span>
+                                    </div>
+                                )}
+                                {car.gps && (
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm border border-slate-200">
+                                        <Navigation2 className="w-5 h-5 text-slate-700" />
+                                        <span className="text-slate-900">GPS</span>
                                     </div>
                                 )}
                                 {car.bluetooth && (
@@ -256,7 +273,7 @@ export default function CarDetails() {
                             <Button
                                 className="w-full h-12 text-base font-semibold mb-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{ backgroundColor: canReserve ? '#6366f1' : '#9ca3af' }}
-                                onClick={() => canReserve && navigate(`/checkout?carId=${car.id}&start=${startDate}&end=${endDate}`)}
+                                onClick={() => canReserve && navigate(`/checkout?carId=${car.id}`)}
                                 disabled={!canReserve}
                             >
                                 Reservar Agora
@@ -307,8 +324,8 @@ export default function CarDetails() {
                                                     <Star
                                                         key={i}
                                                         className={`w-4 h-4 ${i < review.rating
-                                                                ? 'fill-amber-400 text-amber-400'
-                                                                : 'text-slate-300'
+                                                            ? 'fill-amber-400 text-amber-400'
+                                                            : 'text-slate-300'
                                                             }`}
                                                     />
                                                 ))}

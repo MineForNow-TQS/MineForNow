@@ -21,10 +21,10 @@ import com.microsoft.playwright.options.LoadState;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
-import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
+import io.cucumber.java.pt.Dado;
+import io.cucumber.java.pt.Quando;
+import io.cucumber.java.pt.Então;
+import io.cucumber.java.pt.E;
 import tqs.backend.model.Booking;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
@@ -93,14 +93,14 @@ public class VehicleSearchSteps {
         }
     }
 
-    @Given("que o sistema tem {int} veículos cadastrados")
+    @Dado("que o sistema tem {int} veículos cadastrados")
     public void queOSistemaTemVeiculosCadastrados(int quantidade) {
         // Este passo é apenas documentação, os veículos já estão no backend via
         // CommandLineRunner
         assertTrue(quantidade > 0, "O sistema deve ter veículos cadastrados");
     }
 
-    @And("o veículo {string} em {string} está reservado de {string} até {string}")
+    @E("o veículo {string} em {string} está reservado de {string} até {string}")
     public void oVeiculoEstaReservado(String veiculo, String cidade, String dataInicio, String dataFim) {
         // Criar de facto a reserva no banco de testes para tornar o cenário
         // determinístico
@@ -126,20 +126,20 @@ public class VehicleSearchSteps {
         bookingRepository.saveAndFlush(new Booking(null, start, end, found));
     }
 
-    @Given("que estou na página de pesquisa")
+    @Dado("que estou na página de pesquisa")
     public void queEstouNaPaginaDePesquisa() {
         page.navigate(FRONTEND_URL);
         page.waitForLoadState(LoadState.NETWORKIDLE);
     }
 
-    @When("não aplico nenhum filtro")
+    @Quando("não aplico nenhum filtro")
     public void naoAplicoNenhumFiltro() {
         // Clicar no botão "Pesquisar Carros"
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Pesquisar Carros")).click();
         page.waitForLoadState(LoadState.NETWORKIDLE);
     }
 
-    @When("pesquiso por veículos em {string}")
+    @Quando("pesquiso por veículos em {string}")
     public void pesquisoPorVeiculosEm(String cidade) {
         // Preencher o campo de cidade
         Locator inputCidade = page.getByRole(AriaRole.TEXTBOX,
@@ -154,7 +154,7 @@ public class VehicleSearchSteps {
         // devoVerVeiculosNaLista()
     }
 
-    @And("seleciono a data de levantamento {string}")
+    @E("seleciono a data de levantamento {string}")
     public void selecionoADataDeLevantamento(String data) {
         // Baseado no teste gravado:
         // page.getByRole(AriaRole.TEXTBOX).nth(1).fill("2025-12-16")
@@ -166,7 +166,7 @@ public class VehicleSearchSteps {
         lastPickup = data;
     }
 
-    @And("seleciono a data de devolução {string}")
+    @E("seleciono a data de devolução {string}")
     public void selecionoADataDeDevolucao(String data) {
         // Baseado no teste gravado:
         // page.getByRole(AriaRole.TEXTBOX).nth(2).fill("2025-12-21")
@@ -184,7 +184,7 @@ public class VehicleSearchSteps {
         lastDropoff = data;
     }
 
-    @Then("devo ver {int} veículos na lista")
+    @Então("devo ver {int} veículos na lista")
     public void devoVerVeiculosNaLista(int quantidade) {
         // Se ainda não clicamos no botão, clicar agora (caso de pesquisa só por cidade)
         if (!searchButtonClicked) {
@@ -210,14 +210,14 @@ public class VehicleSearchSteps {
                 String.format("Esperava ver '%s', mas não foi encontrado na página", textoEsperado));
     }
 
-    @Then("devo ver {int} veículo na lista")
+    @Então("devo ver {int} veículo na lista")
     public void devoVerVeiculoNaLista(int quantidade) {
         // Suporta a forma singular usada nas features (ex: "devo ver 1 veículo na
         // lista")
         devoVerVeiculosNaLista(quantidade);
     }
 
-    @And("devo ver o veículo {string}")
+    @E("devo ver o veículo {string}")
     public void devoVerOVeiculo(String nomeVeiculo) {
         page.waitForTimeout(500);
 
@@ -231,7 +231,7 @@ public class VehicleSearchSteps {
                     if (loc.nth(i).isVisible())
                         visible++;
                 } catch (Exception e) {
-                    // ignore
+                    // Ignore exception if the element is not found or visible, try next one
                 }
             }
             if (visible > 0)
@@ -250,6 +250,7 @@ public class VehicleSearchSteps {
                     if (l2.nth(i).isVisible())
                         return;
                 } catch (Exception e) {
+                    // Ignore exception if the element is not found or visible, try next one
                 }
             }
         } catch (Exception e) {
@@ -262,7 +263,7 @@ public class VehicleSearchSteps {
                 String.format("O veículo '%s' deveria estar visível na lista", nomeVeiculo));
     }
 
-    @And("não devo ver o veículo {string}")
+    @E("não devo ver o veículo {string}")
     public void naoDevoVerOVeiculo(String nomeVeiculo) {
         // Only assert using the backend API. Remove UI debug/warning checks to keep
         // tests focused
@@ -292,7 +293,7 @@ public class VehicleSearchSteps {
         return arr == null ? java.util.Collections.emptyList() : java.util.Arrays.asList(arr);
     }
 
-    @And("devo ver a mensagem {string}")
+    @E("devo ver a mensagem {string}")
     public void devoVerAMensagem(String mensagem) {
         page.waitForTimeout(500);
 
