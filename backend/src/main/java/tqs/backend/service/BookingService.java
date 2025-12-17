@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tqs.backend.dto.BookingDTO;
 import tqs.backend.dto.BookingRequestDTO;
+import tqs.backend.dto.PaymentDTO;
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
@@ -12,10 +13,15 @@ import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class BookingService {
+
+    private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
 
     @Autowired
     private BookingRepository bookingRepository;
@@ -81,5 +87,48 @@ public class BookingService {
                 saved.getTotalPrice(),
                 saved.getVehicle().getId(),
                 saved.getRenter().getId());
+    }
+
+    @Transactional
+    public BookingDTO confirmPayment(Long bookingId, PaymentDTO paymentData) {
+        // 1. Validate Booking exists
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        // 2. Validate status is WAITING_PAYMENT
+        if (!"WAITING_PAYMENT".equals(booking.getStatus())) {
+            throw new IllegalStateException(
+                    "Booking is not waiting for payment. Current status: " + booking.getStatus());
+        }
+
+        // 3. Mock payment processing (always succeeds for MVP)
+        logger.info("Processing payment for booking {}: Card ending in {}",
+                bookingId, paymentData.getCardNumber());
+
+        // 4. Update booking status
+        booking.setStatus("CONFIRMED");
+        booking.setPaymentDate(LocalDateTime.now());
+        booking.setPaymentMethod("CREDIT_CARD");
+
+        Booking confirmed = bookingRepository.save(booking);
+
+        // 5. Simulate email confirmation (log only)
+        logger.info("=== EMAIL CONFIRMATION (SIMULATED) ===");
+        logger.info("To: {}", confirmed.getRenter().getEmail());
+        logger.info("Subject: Booking Confirmation #{}", confirmed.getId());
+        logger.info("Your booking for {} {} has been confirmed!",
+                confirmed.getVehicle().getBrand(), confirmed.getVehicle().getModel());
+        logger.info("Pickup: {}, Return: {}", confirmed.getPickupDate(), confirmed.getReturnDate());
+        logger.info("Total: €{}", confirmed.getTotalPrice());
+        logger.info("======================================");
+
+        return new BookingDTO(
+                confirmed.getId(),
+                confirmed.getPickupDate(),
+                confirmed.getReturnDate(),
+                confirmed.getStatus(),
+                confirmed.getTotalPrice(),
+                confirmed.getVehicle().getId(),
+                confirmed.getRenter().getId());
     }
 }
