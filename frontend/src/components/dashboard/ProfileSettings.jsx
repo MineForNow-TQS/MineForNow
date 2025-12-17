@@ -1,25 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User } from 'lucide-react';
+import { User, Loader2, CheckCircle } from 'lucide-react';
+import { userService } from '@/services/userService';
 
 export default function ProfileSettings() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        fullName: user?.full_name || '',
-        email: user?.email || '',
-        phone: user?.phone || '',
-        drivingLicense: user?.driving_license || ''
+        fullName: '',
+        email: '',
+        phone: '',
+        drivingLicense: ''
     });
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
 
-    const handleSubmit = (e) => {
+    // Fetch current user profile on mount
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                setLoading(true);
+                const response = await userService.getCurrentUser();
+                const profile = response.data;
+                setFormData({
+                    fullName: profile.fullName || '',
+                    email: profile.email || '',
+                    phone: profile.phone || '',
+                    drivingLicense: profile.drivingLicense || ''
+                });
+            } catch (err) {
+                // Fallback to auth context data if API fails
+                setFormData({
+                    fullName: user?.full_name || user?.fullName || '',
+                    email: user?.email || '',
+                    phone: user?.phone || '',
+                    drivingLicense: user?.driving_license || user?.drivingLicense || ''
+                });
+                console.error('Error fetching profile:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, [user]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Guardar alterações:', formData);
-        // TODO: Implement save logic
+        setError(null);
+        setSuccess(false);
+        setSaving(true);
+
+        try {
+            await userService.updateCurrentUserProfile({
+                phone: formData.phone,
+                drivingLicense: formData.drivingLicense
+            });
+            setSuccess(true);
+            // Hide success message after 3 seconds
+            setTimeout(() => setSuccess(false), 3000);
+        } catch (err) {
+            setError(err.message || 'Erro ao guardar alterações');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleLogout = () => {
@@ -29,6 +79,14 @@ export default function ProfileSettings() {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             {/* Personal Information Card */}
@@ -37,6 +95,19 @@ export default function ProfileSettings() {
                     <User className="w-5 h-5 text-slate-600" />
                     <h2 className="text-lg font-semibold text-slate-900">Informação Pessoal</h2>
                 </div>
+
+                {error && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+                        {error}
+                    </div>
+                )}
+
+                {success && (
+                    <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4" />
+                        Alterações guardadas com sucesso!
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -91,11 +162,19 @@ export default function ProfileSettings() {
                         />
                     </div>
 
-                    <Button 
+                    <Button
                         type="submit"
                         className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                        disabled={saving}
                     >
-                        Guardar Alterações
+                        {saving ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                A guardar...
+                            </>
+                        ) : (
+                            'Guardar Alterações'
+                        )}
                     </Button>
                 </form>
             </Card>
@@ -109,7 +188,7 @@ export default function ProfileSettings() {
                     <p className="text-sm text-red-700 mb-4">
                         Sair da sua conta MineForNow
                     </p>
-                    <Button 
+                    <Button
                         onClick={handleLogout}
                         variant="outline"
                         className="border-red-300 text-red-600 hover:bg-red-100"
@@ -121,3 +200,4 @@ export default function ProfileSettings() {
         </div>
     );
 }
+

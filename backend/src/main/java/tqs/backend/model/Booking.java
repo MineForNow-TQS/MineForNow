@@ -1,7 +1,6 @@
 package tqs.backend.model;
 
 import jakarta.persistence.*;
-// lombok removed: generate constructors/getters/setters manually
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,21 +20,19 @@ public class Booking {
     @Column(nullable = false)
     private LocalDate returnDate;
 
-    // Relação: Uma reserva pertence a um Veículo
     @ManyToOne
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
-
-    // Relação: Uma reserva pertence a um Renter (User)
-    @ManyToOne
-    @JoinColumn(name = "renter_id")
-    private User renter;
 
     @Column(nullable = false)
     private String status; // WAITING_PAYMENT, CONFIRMED, CANCELLED
 
     @Column(nullable = false)
     private Double totalPrice;
+
+    @ManyToOne
+    @JoinColumn(name = "renter_id")
+    private User renter;
 
     // SCRUM-16: Payment fields
     @Column(name = "payment_date")
@@ -49,11 +46,31 @@ public class Booking {
     }
 
     // All-args constructor
-    public Booking(Long id, java.time.LocalDate pickupDate, java.time.LocalDate returnDate, Vehicle vehicle) {
+    public Booking(Long id, java.time.LocalDate pickupDate, java.time.LocalDate returnDate, Vehicle vehicle,
+            User renter, String status, Double totalPrice) {
         this.id = id;
         this.pickupDate = pickupDate;
         this.returnDate = returnDate;
         this.vehicle = vehicle;
+        this.renter = renter;
+        this.status = status;
+        this.totalPrice = totalPrice;
+    }
+
+    // Legacy constructor for backward compatibility (tests)
+    public Booking(Long id, java.time.LocalDate pickupDate, java.time.LocalDate returnDate, Vehicle vehicle) {
+        this(id, pickupDate, returnDate, vehicle, null, "CONFIRMED", 0.0);
+    }
+
+    // Additional Constructor for easier instantiation (without ID)
+    public Booking(java.time.LocalDate pickupDate, java.time.LocalDate returnDate, Vehicle vehicle, User renter,
+            String status, Double totalPrice) {
+        this.pickupDate = pickupDate;
+        this.returnDate = returnDate;
+        this.vehicle = vehicle;
+        this.renter = renter;
+        this.status = status;
+        this.totalPrice = totalPrice;
     }
 
     // Getters and setters
@@ -111,7 +128,7 @@ public class Booking {
 
     public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
-    }
+    }<<<<<<<HEAD
 
     public LocalDateTime getPaymentDate() {
         return paymentDate;
@@ -127,7 +144,7 @@ public class Booking {
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
-    }
+    }=======>>>>>>>origin/feat/SCRUM-15-booking-intent
 
     @Override
     public boolean equals(Object o) {
@@ -151,6 +168,8 @@ public class Booking {
                 ", pickupDate=" + pickupDate +
                 ", returnDate=" + returnDate +
                 ", vehicle=" + (vehicle != null ? vehicle.getBrand() + " " + vehicle.getModel() : null) +
+                ", status='" + status + '\'' +
+                ", totalPrice=" + totalPrice +
                 '}';
     }
 }

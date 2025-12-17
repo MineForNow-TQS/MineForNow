@@ -9,6 +9,7 @@ import Home from './pages/Home';
 import Cars from './pages/Cars';
 import CarDetails from './pages/CarDetails';
 import Checkout from './pages/Checkout';
+import Payment from './pages/Payment';
 import Dashboard from './pages/Dashboard';
 import AddCar from './pages/AddCar';
 import EditCar from './pages/EditCar';
@@ -35,6 +36,7 @@ function App() {
             <Route path="/cars" element={<Layout currentPageName="Cars"><Cars /></Layout>} />
             <Route path="/cars/:id" element={<Layout currentPageName="CarDetails"><CarDetails /></Layout>} />
             <Route path="/checkout" element={<Layout currentPageName="Checkout"><Checkout /></Layout>} />
+            <Route path="/payment" element={<Layout currentPageName="Payment"><Payment /></Layout>} />
             <Route path="/dashboard" element={<Layout currentPageName="Dashboard"><Dashboard /></Layout>} />
             <Route path="/add-car" element={<Layout currentPageName="AddCar"><AddCar /></Layout>} />
             <Route path="/edit-car/:id" element={<Layout currentPageName="EditCar"><EditCar /></Layout>} />
