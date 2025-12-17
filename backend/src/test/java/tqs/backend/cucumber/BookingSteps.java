@@ -94,7 +94,17 @@ public class BookingSteps {
 
     @Dado("que sou um utilizador do tipo {string} autenticado")
     public void souUtilizadorAutenticado(String role) {
-        // Pending implementation
+        // Navigate to home and login
+        page.navigate("http://localhost:3000/");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
+
+        // Use default test user credentials (renter@minefornow.com)
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Email")).fill("renter@minefornow.com");
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Password")).fill("password");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar").setExact(true)).click();
+
+        // Wait for login to complete
+        page.waitForTimeout(2000);
     }
 
     @Quando("seleciono a data de levantamento para {string}")
@@ -109,12 +119,14 @@ public class BookingSteps {
 
     @Então("devo ser redirecionado para a página de checkout")
     public void devoSerRedirecionadoCheckout() {
-        org.assertj.core.api.Assertions.assertThat(page.url()).contains("/checkout");
+        assertThat(page).hasURL(java.util.regex.Pattern.compile(".*\\/checkout.*"));
     }
 
     @Então("devo ver o preço total calculado para {int} dias")
     public void devoVerPrecoCalculado(int days) {
-        // Implementation pending
+        // Verify that price calculation is visible
+        // The checkout page shows "X dias x Y,00 €"
+        assertThat(page.getByText(days + " dias")).isVisible();
     }
 
     @Então("devo ver uma mensagem de sucesso {string}")
@@ -122,8 +134,16 @@ public class BookingSteps {
         assertThat(page.getByText(message)).isVisible();
     }
 
-    @Então("devo ser redirecionado para o dashboard")
-    public void devoSerRedirecionadoDashboard() {
-        org.assertj.core.api.Assertions.assertThat(page.url()).contains("/dashboard");
+    @Então("devo ser redirecionado para a página de pagamento")
+    public void devoSerRedirecionadoPagamento() {
+        // Wait for redirect and verify URL contains /payment
+        assertThat(page).hasURL(java.util.regex.Pattern.compile(".*\\/payment.*"));
+    }
+
+    @Então("devo ver os detalhes da reserva para pagamento")
+    public void devoVerDetalhesReservaPagamento() {
+        // Verify payment page shows booking details
+        assertThat(page.getByText("Pagamento")).isVisible();
+        assertThat(page.getByText("Detalhes da Reserva")).isVisible();
     }
 }
