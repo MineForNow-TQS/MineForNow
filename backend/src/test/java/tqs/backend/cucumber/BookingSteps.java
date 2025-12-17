@@ -147,7 +147,7 @@ public class BookingSteps {
     @Então("devo ver os detalhes da reserva para pagamento")
     public void devoVerDetalhesReservaPagamento() {
         // Verify payment page shows booking details
-        assertThat(page.getByText("Pagamento")).isVisible();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Pagamento"))).isVisible();
         assertThat(page.getByText("Detalhes da Reserva")).isVisible();
     }
 }
