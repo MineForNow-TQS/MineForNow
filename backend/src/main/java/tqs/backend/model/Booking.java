@@ -128,7 +128,7 @@ public class Booking {
 
     public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
-    }<<<<<<<HEAD
+    }
 
     public LocalDateTime getPaymentDate() {
         return paymentDate;
@@ -144,7 +144,7 @@ public class Booking {
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
-    }=======>>>>>>>origin/feat/SCRUM-15-booking-intent
+    }
 
     @Override
     public boolean equals(Object o) {
