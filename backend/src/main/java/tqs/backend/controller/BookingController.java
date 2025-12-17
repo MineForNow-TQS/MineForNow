@@ -11,14 +11,16 @@ import tqs.backend.service.BookingService;
 
 @RestController
 @RequestMapping("/api/bookings")
-@CrossOrigin
 public class BookingController {
 
-    @Autowired
-    private BookingService bookingService;
+    private final BookingService bookingService;
+
+    public BookingController(BookingService bookingService) {
+        this.bookingService = bookingService;
+    }
 
     @PostMapping
-    public ResponseEntity<?> createBooking(@Valid @RequestBody BookingRequestDTO bookingRequest) {
+    public ResponseEntity<Object> createBooking(@Valid @RequestBody BookingRequestDTO bookingRequest) {
         try {
             BookingDTO booking = bookingService.createBooking(bookingRequest);
             return new ResponseEntity<>(booking, HttpStatus.CREATED);
