@@ -85,7 +85,14 @@ public class FileStorageService {
      * @return Path para o ficheiro
      */
     public Path getFilePath(String fileName) {
-        return uploadPath.resolve(fileName).normalize();
+        Path resolvedPath = uploadPath.resolve(fileName).normalize();
+
+        // Garantir que o caminho final permanece dentro do diretório de uploads
+        if (!resolvedPath.startsWith(uploadPath)) {
+            throw new FileStorageException("Caminho de ficheiro inválido ou potencialmente malicioso: " + fileName);
+        }
+
+        return resolvedPath;
     }
 
     /**
