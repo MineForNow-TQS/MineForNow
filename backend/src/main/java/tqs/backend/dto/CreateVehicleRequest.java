@@ -46,7 +46,12 @@ public class CreateVehicleRequest {
     private String imageUrl;
 
     // --- Constructors ---
+
+    /**
+     * Default constructor required by Jackson for JSON deserialization.
+     */
     public CreateVehicleRequest() {
+        // Empty constructor needed for Jackson to deserialize JSON into this DTO
     }
 
     // --- Getters and Setters ---

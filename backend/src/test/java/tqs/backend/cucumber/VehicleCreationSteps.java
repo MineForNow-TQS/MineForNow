@@ -18,6 +18,7 @@ import tqs.backend.repository.UserRepository;
 import java.util.Map;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VehicleCreationSteps {
@@ -178,7 +179,7 @@ public class VehicleCreationSteps {
     @Então("não devo ver o botão {string}")
     public void naoDevoVerOBotao(String buttonName) {
         page.waitForTimeout(1000);
-        assertTrue(page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(buttonName)).count() == 0,
+        assertEquals(0, page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(buttonName)).count(),
                 "O botão '" + buttonName + "' não deveria estar visível para um renter");
     }
 }

@@ -26,6 +26,8 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:3000")
 public class FileController {
 
+    private static final String ERROR_KEY = "error";
+
     private final FileStorageService fileStorageService;
 
     public FileController(FileStorageService fileStorageService) {
@@ -53,7 +55,7 @@ public class FileController {
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Apenas ficheiros de imagem são permitidos"));
+                    .body(Map.of(ERROR_KEY, "Apenas ficheiros de imagem são permitidos"));
         }
 
         try {
@@ -65,10 +67,10 @@ public class FileController {
                     "url", fileUrl));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Erro ao guardar ficheiro: " + e.getMessage()));
+                    .body(Map.of(ERROR_KEY, "Erro ao guardar ficheiro: " + e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(ERROR_KEY, e.getMessage()));
         }
     }
 

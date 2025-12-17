@@ -2,7 +2,7 @@ package tqs.backend.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.PostConstruct;
@@ -13,6 +13,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
+
+import tqs.backend.exception.FileStorageException;
 
 /**
  * Serviço para armazenamento de ficheiros (imagens de veículos).
@@ -31,7 +33,7 @@ public class FileStorageService {
         try {
             Files.createDirectories(uploadPath);
         } catch (IOException e) {
-            throw new RuntimeException("Não foi possível criar o diretório de uploads", e);
+            throw new FileStorageException("Não foi possível criar o diretório de uploads", e);
         }
     }
 
@@ -48,12 +50,20 @@ public class FileStorageService {
             throw new IllegalArgumentException("Ficheiro vazio");
         }
 
-        // Obter extensão original
-        String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-        String fileExtension = "";
-        int dotIndex = originalFileName.lastIndexOf('.');
-        if (dotIndex > 0) {
-            fileExtension = originalFileName.substring(dotIndex);
+        // Determinar extensão baseada no Content-Type
+        String contentType = file.getContentType();
+        String fileExtension;
+
+        if ("image/jpeg".equals(contentType)) {
+            fileExtension = ".jpg";
+        } else if ("image/png".equals(contentType)) {
+            fileExtension = ".png";
+        } else if ("image/gif".equals(contentType)) {
+            fileExtension = ".gif";
+        } else if ("image/webp".equals(contentType)) {
+            fileExtension = ".webp";
+        } else {
+            throw new IllegalArgumentException("Tipo de ficheiro não suportado: " + contentType);
         }
 
         // Gerar nome único
