@@ -299,4 +299,112 @@ class VehicleServiceTest {
         assertThat(result.getLicensePlate()).isEqualTo("AA-12-BB");
         assertThat(result.getMileage()).isEqualTo(15000);
     }
+    // ==================== TESTES PARA updateVehicle (SCRUM-7)
+    // ====================
+
+    @Test
+    @Requirement("SCRUM-10")
+    @DisplayName("Quando atualizar veículo inexistente, deve lançar exceção")
+    void whenUpdateNonExistentVehicle_thenThrowException() {
+        // Arrange
+        when(vehicleRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatThrownBy(() -> vehicleService.updateVehicle(999L, createRequest, "owner@minefornow.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Veículo não encontrado");
+
+        verify(vehicleRepository, never()).save(any(Vehicle.class));
+    }
+
+    @Test
+    @Requirement("SCRUM-10")
+    @DisplayName("Quando não owner tenta atualizar, deve lançar exceção")
+    void whenNotOwnerUpdatesVehicle_thenThrowException() {
+        // Arrange
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+
+        // Act & Assert
+        assertThatThrownBy(() -> vehicleService.updateVehicle(1L, createRequest, "client@minefornow.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Apenas o proprietário pode editar este veículo");
+
+        verify(vehicleRepository, never()).save(any(Vehicle.class));
+    }
+
+    @Test
+    @Requirement("SCRUM-10")
+    @DisplayName("Quando atualizar veículo com sucesso, deve atualizar campos e salvar")
+    void whenUpdateVehicleSuccess_thenUpdateFieldsAndSave() {
+        // Arrange
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+        when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Vehicle updatedVehicle = vehicleService.updateVehicle(1L, createRequest, "owner@minefornow.com");
+
+        // Assert
+        assertThat(updatedVehicle.getBrand()).isEqualTo("Toyota");
+        assertThat(updatedVehicle.getModel()).isEqualTo("Corolla");
+        assertThat(updatedVehicle.getYear()).isEqualTo(2022);
+        assertThat(updatedVehicle.getPricePerDay()).isEqualTo(35.0);
+        assertThat(updatedVehicle.getFuelType()).isEqualTo("Híbrido");
+        assertThat(updatedVehicle.getCity()).isEqualTo("Porto");
+        assertThat(updatedVehicle.getType()).isEqualTo("Sedan");
+        assertThat(updatedVehicle.getLicensePlate()).isEqualTo("AA-12-BB");
+        assertThat(updatedVehicle.getMileage()).isEqualTo(15000);
+        assertThat(updatedVehicle.getTransmission()).isEqualTo("Automático");
+        assertThat(updatedVehicle.getSeats()).isEqualTo(5);
+        assertThat(updatedVehicle.getDoors()).isEqualTo(4);
+        assertThat(updatedVehicle.getHasAC()).isTrue();
+        assertThat(updatedVehicle.getHasGPS()).isTrue();
+        assertThat(updatedVehicle.getHasBluetooth()).isTrue();
+        assertThat(updatedVehicle.getDescription()).isEqualTo("Veículo confortável e económico");
+
+        verify(vehicleRepository).save(testVehicle);
+    }
+
+    @Test
+    @Requirement("SCRUM-10")
+    @DisplayName("Quando eliminar veículo inexistente, deve lançar exceção")
+    void whenDeleteNonExistentVehicle_thenThrowException() {
+        // Arrange
+        when(vehicleRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatThrownBy(() -> vehicleService.deleteVehicle(999L, "owner@minefornow.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Veículo não encontrado");
+
+        verify(vehicleRepository, never()).delete(any(Vehicle.class));
+    }
+
+    @Test
+    @Requirement("SCRUM-10")
+    @DisplayName("Quando não owner tenta eliminar, deve lançar exceção")
+    void whenNotOwnerDeletesVehicle_thenThrowException() {
+        // Arrange
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+
+        // Act & Assert
+        assertThatThrownBy(() -> vehicleService.deleteVehicle(1L, "client@minefornow.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Apenas o proprietário pode eliminar este veículo");
+
+        verify(vehicleRepository, never()).delete(any(Vehicle.class));
+    }
+
+    @Test
+    @Requirement("SCRUM-7")
+    @DisplayName("Quando eliminar veículo com sucesso, deve chamar delete do repositório")
+    void whenDeleteVehicleSuccess_thenCallDelete() {
+        // Arrange
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+
+        // Act
+        vehicleService.deleteVehicle(1L, "owner@minefornow.com");
+
+        // Assert
+        verify(vehicleRepository).delete(testVehicle);
+    }
 }
