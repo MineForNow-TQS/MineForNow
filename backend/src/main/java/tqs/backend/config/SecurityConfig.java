@@ -67,6 +67,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll() // Allow viewing vehicles
+                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // Allow viewing uploaded images
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception

@@ -47,6 +47,7 @@ public class VehicleService {
      * @return o veículo criado
      * @throws IllegalArgumentException se o user não existir ou não for OWNER
      */
+    @SuppressWarnings("null")
     public Vehicle createVehicle(CreateVehicleRequest request, String ownerEmail) {
         // Buscar user pelo email
         User owner = userRepository.findByEmail(ownerEmail)
@@ -81,5 +82,71 @@ public class VehicleService {
                 .build();
 
         return vehicleRepository.save(vehicle);
+    }
+
+    /**
+     * Atualiza um veículo existente.
+     * Apenas o owner do veículo pode atualizá-lo.
+     * 
+     * @param id         ID do veículo a atualizar
+     * @param request    DTO com os novos dados
+     * @param ownerEmail email do owner autenticado
+     * @return o veículo atualizado
+     * @throws IllegalArgumentException se o veículo não existir ou o user não for o
+     *                                  owner
+     */
+    @SuppressWarnings("null")
+    public Vehicle updateVehicle(Long id, CreateVehicleRequest request, String ownerEmail) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Veículo não encontrado: " + id));
+
+        // Verificar que o user autenticado é o owner do veículo
+        if (!vehicle.getOwner().getEmail().equals(ownerEmail)) {
+            throw new IllegalArgumentException("Apenas o proprietário pode editar este veículo");
+        }
+
+        // Atualizar os campos
+        vehicle.setBrand(request.getBrand());
+        vehicle.setModel(request.getModel());
+        vehicle.setYear(request.getYear());
+        vehicle.setPricePerDay(request.getPricePerDay());
+        vehicle.setFuelType(request.getFuelType());
+        vehicle.setCity(request.getCity());
+        vehicle.setType(request.getType());
+        vehicle.setLicensePlate(request.getLicensePlate());
+        vehicle.setMileage(request.getMileage());
+        vehicle.setTransmission(request.getTransmission());
+        vehicle.setSeats(request.getSeats());
+        vehicle.setDoors(request.getDoors());
+        vehicle.setHasAC(request.getHasAC());
+        vehicle.setHasGPS(request.getHasGPS());
+        vehicle.setHasBluetooth(request.getHasBluetooth());
+        vehicle.setExactLocation(request.getExactLocation());
+        vehicle.setDescription(request.getDescription());
+        vehicle.setImageUrl(request.getImageUrl());
+
+        return vehicleRepository.save(vehicle);
+    }
+
+    /**
+     * Elimina um veículo existente.
+     * Apenas o owner do veículo pode eliminá-lo.
+     * 
+     * @param id         ID do veículo a eliminar
+     * @param ownerEmail email do owner autenticado
+     * @throws IllegalArgumentException se o veículo não existir ou o user não for o
+     *                                  owner
+     */
+    @SuppressWarnings("null")
+    public void deleteVehicle(Long id, String ownerEmail) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Veículo não encontrado: " + id));
+
+        // Verificar que o user autenticado é o owner do veículo
+        if (!vehicle.getOwner().getEmail().equals(ownerEmail)) {
+            throw new IllegalArgumentException("Apenas o proprietário pode eliminar este veículo");
+        }
+
+        vehicleRepository.delete(vehicle);
     }
 }

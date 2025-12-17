@@ -56,6 +56,7 @@ public class UserService {
                 .build();
     }
 
+    @SuppressWarnings("null")
     public UserProfileResponse updateUserProfile(String email, UpdateProfileRequest request) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
