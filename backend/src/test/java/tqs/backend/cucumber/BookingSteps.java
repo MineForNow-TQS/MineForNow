@@ -94,16 +94,20 @@ public class BookingSteps {
 
     @Dado("que sou um utilizador do tipo {string} autenticado")
     public void souUtilizadorAutenticado(String role) {
-        // Navigate to home and login
+        // Navigate to home and register a new user
         page.navigate("http://localhost:3000/");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Criar conta")).click();
 
-        // Use default test user credentials (renter@minefornow.com)
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Email")).fill("renter@minefornow.com");
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Password")).fill("password");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar").setExact(true)).click();
+        // Fill registration form
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("João Silva")).fill("Maria Silva");
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).fill("maria@email.com");
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Mínimo 8 caracteres")).fill("Aa123456");
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Confirme a password")).fill("Aa123456");
+        page.getByRole(AriaRole.CHECKBOX, new Page.GetByRoleOptions().setName("Aceito os Termos de Serviço e")).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Criar conta")).click();
 
-        // Wait for login to complete
+        // Wait for registration and auto-login to complete
         page.waitForTimeout(2000);
     }
 
