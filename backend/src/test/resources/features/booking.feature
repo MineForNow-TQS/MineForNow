@@ -27,5 +27,5 @@ Funcionalidade: Intenção de Reserva (Booking Intent)
     Então devo ser redirecionado para a página de checkout
     E devo ver o preço total calculado para 5 dias
     Quando clico no botão "Confirmar e Pagar"
-    Então devo ver uma mensagem de sucesso "Reserva Iniciada com sucesso!"
-    E devo ser redirecionado para o dashboard
+    Então devo ser redirecionado para a página de pagamento
+    E devo ver os detalhes da reserva para pagamento

@@ -27,31 +27,17 @@ export function AuthProvider({ children }) {
     // Store the JWT token
     authService.setToken(authResponse.token);
 
-    // Get user details from backend
-    try {
-      const userResponse = await userService.getByEmail(email);
-      const userData = {
-        id: userResponse.data.id,
-        email: userResponse.data.email,
-        full_name: userResponse.data.full_name || userResponse.data.name,
-        user_role: userResponse.data.role,
-      };
+    // Use data from authResponse directly (no need to fetch from userService)
+    const userData = {
+      id: authResponse.id,
+      email: authResponse.email,
+      full_name: authResponse.fullName,
+      user_role: authResponse.role,
+    };
 
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return userData;
-    } catch (error) {
-      // If user details fetch fails, use basic info from email
-      console.error('Failed to fetch user details:', error);
-      const basicUser = {
-        email: email,
-        full_name: email.split('@')[0],
-        user_role: 'RENTER',
-      };
-      setUser(basicUser);
-      localStorage.setItem('user', JSON.stringify(basicUser));
-      return basicUser;
-    }
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    return userData;
   };
 
   const register = async ({ fullName, email, password, confirmPassword }) => {
