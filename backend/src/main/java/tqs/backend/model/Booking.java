@@ -1,7 +1,6 @@
 package tqs.backend.model;
 
 import jakarta.persistence.*;
-// lombok removed: generate constructors/getters/setters manually
 
 import java.time.LocalDate;
 import java.util.Objects;
