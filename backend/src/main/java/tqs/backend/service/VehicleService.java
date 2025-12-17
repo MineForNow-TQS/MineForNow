@@ -47,7 +47,6 @@ public class VehicleService {
      * @return o veículo criado
      * @throws IllegalArgumentException se o user não existir ou não for OWNER
      */
-    @SuppressWarnings("null")
     public Vehicle createVehicle(CreateVehicleRequest request, String ownerEmail) {
         // Buscar user pelo email
         User owner = userRepository.findByEmail(ownerEmail)
@@ -95,7 +94,6 @@ public class VehicleService {
      * @throws IllegalArgumentException se o veículo não existir ou o user não for o
      *                                  owner
      */
-    @SuppressWarnings("null")
     public Vehicle updateVehicle(Long id, CreateVehicleRequest request, String ownerEmail) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Veículo não encontrado: " + id));
@@ -137,7 +135,6 @@ public class VehicleService {
      * @throws IllegalArgumentException se o veículo não existir ou o user não for o
      *                                  owner
      */
-    @SuppressWarnings("null")
     public void deleteVehicle(Long id, String ownerEmail) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Veículo não encontrado: " + id));
