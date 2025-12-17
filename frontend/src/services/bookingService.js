@@ -4,17 +4,13 @@ export const bookingService = {
     async create(bookingData) {
         try {
             const token = localStorage.getItem('authToken');
-            const headers = {
-                'Content-Type': 'application/json',
-            };
-
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
 
             const response = await fetch(`${API_BASE_URL}/bookings`, {
                 method: 'POST',
-                headers,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
                 body: JSON.stringify(bookingData),
             });
 

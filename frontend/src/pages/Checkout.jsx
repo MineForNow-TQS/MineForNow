@@ -71,17 +71,12 @@ export default function Checkout() {
 
         setIsSubmitting(true);
         try {
-            const bookingPayload = {
+            await bookingService.create({
                 vehicleId: parseInt(carId),
                 startDate: startDate,
                 endDate: endDate,
                 renterId: user.id
-            };
-
-            console.log('Booking payload:', bookingPayload);
-            console.log('User object:', user);
-
-            await bookingService.create(bookingPayload);
+            });
 
             setSuccess("Reserva Iniciada com sucesso!");
 
