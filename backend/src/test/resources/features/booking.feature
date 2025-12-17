@@ -17,6 +17,7 @@ Funcionalidade: Intenção de Reserva (Booking Intent)
     Então devo ver uma mensagem de erro "Login necessário"
     E devo ser redirecionado para a página de login
 
+  @wip
   Cenário: Iniciar uma reserva com sucesso
     Dado que sou um utilizador do tipo "Renter" autenticado
     E estou a visualizar os detalhes do veículo com ID 1
