@@ -44,7 +44,7 @@ class BookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        renter = User.builder().id(2L).name("Renter").build();
+        renter = User.builder().id(2L).fullName("Renter").build();
         vehicle = Vehicle.builder().id(1L).pricePerDay(100.0).brand("Audi").build();
     }
 
