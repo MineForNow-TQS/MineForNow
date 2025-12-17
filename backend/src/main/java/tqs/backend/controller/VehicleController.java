@@ -4,15 +4,23 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-// lombok removed: add explicit constructor for dependency injection
+import jakarta.validation.Valid;
+import tqs.backend.dto.CreateVehicleRequest;
 import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.VehicleRepository;
@@ -26,7 +34,6 @@ public class VehicleController {
     private final VehicleRepository vehicleRepository;
     private final VehicleService vehicleService;
 
-    // Explicit constructor replacing Lombok @RequiredArgsConstructor
     public VehicleController(VehicleRepository vehicleRepository, VehicleService vehicleService) {
         this.vehicleRepository = vehicleRepository;
         this.vehicleService = vehicleService;
@@ -35,6 +42,51 @@ public class VehicleController {
     @GetMapping
     public List<Vehicle> getAllVehicles() {
         return vehicleRepository.findAll();
+    }
+
+    /**
+     * Endpoint para criar um novo veículo (SCRUM-7).
+     * Requer autenticação - apenas Owners podem criar veículos.
+     * 
+     * @param request     dados do veículo a criar
+     * @param userDetails informação do utilizador autenticado
+     * @return 201 Created com o veículo criado, ou 400 Bad Request se validação
+     *         falhar
+     */
+    @PostMapping
+    public ResponseEntity<Vehicle> createVehicle(
+            @Valid @RequestBody CreateVehicleRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            Vehicle vehicle = vehicleService.createVehicle(request, userDetails.getUsername());
+            return ResponseEntity.status(HttpStatus.CREATED).body(vehicle);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Endpoint para buscar os veículos do owner autenticado (SCRUM-7).
+     * Requer autenticação - retorna apenas veículos do utilizador logado.
+     * 
+     * @param userDetails informação do utilizador autenticado
+     * @return lista de veículos do owner
+     */
+    @GetMapping("/my-vehicles")
+    public ResponseEntity<List<Vehicle>> getMyVehicles(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        List<Vehicle> vehicles = vehicleRepository.findByOwnerEmail(userDetails.getUsername());
+        return ResponseEntity.ok(vehicles);
     }
 
     /**
@@ -50,7 +102,14 @@ public class VehicleController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // NOVO ENDPOINT: /api/vehicles/search?city=Lisboa&pickup=2025-12-10&dropoff=2025-12-12
+    /**
+     * Endpoint para buscar veículos disponíveis para aluguer (SCRUM-12).
+     * 
+     * @param city    cidade de origem
+     * @param pickup  data de retirada
+     * @param dropoff data de devolução
+     * @return lista de veículos disponíveis para aluguer
+     */
     @GetMapping("/search")
     public List<Vehicle> searchVehicles(
             @RequestParam(required = false) String city,
@@ -67,7 +126,8 @@ public class VehicleController {
             return vehicleRepository.findAvailableVehicles(city, pickup, dropoff);
         }
 
-        // Se só tiver datas (sem cidade), filtra por disponibilidade em todas as cidades
+        // Se só tiver datas (sem cidade), filtra por disponibilidade em todas as
+        // cidades
         if (pickup != null && dropoff != null) {
             return vehicleRepository.findAvailableVehiclesByDates(pickup, dropoff);
         }
@@ -77,7 +137,59 @@ public class VehicleController {
             return vehicleRepository.findByCityContainingIgnoreCase(city);
         }
 
-        // Se não tiver filtros, retorna todos
+        // Se não tiver filtros, retorna tudo
         return vehicleRepository.findAll();
+    }
+
+    /**
+     * Endpoint para atualizar um veículo existente (SCRUM-7).
+     * Requer autenticação - apenas o owner do veículo pode atualizá-lo.
+     * 
+     * @param id          ID do veículo
+     * @param request     dados atualizados do veículo
+     * @param userDetails informação do utilizador autenticado
+     * @return 200 OK com o veículo atualizado, ou 403 se não for o owner
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Vehicle> updateVehicle(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateVehicleRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            Vehicle vehicle = vehicleService.updateVehicle(id, request, userDetails.getUsername());
+            return ResponseEntity.ok(vehicle);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    /**
+     * Endpoint para eliminar um veículo existente (SCRUM-7).
+     * Requer autenticação - apenas o owner do veículo pode eliminá-lo.
+     * 
+     * @param id          ID do veículo
+     * @param userDetails informação do utilizador autenticado
+     * @return 204 No Content se eliminado com sucesso, ou 403 se não for o owner
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteVehicle(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            vehicleService.deleteVehicle(id, userDetails.getUsername());
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 }
