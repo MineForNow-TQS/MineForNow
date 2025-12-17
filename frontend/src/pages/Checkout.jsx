@@ -69,25 +69,12 @@ export default function Checkout() {
             return;
         }
 
-        setIsSubmitting(true);
-        try {
-            await bookingService.create({
-                vehicleId: parseInt(carId),
-                startDate: startDate,
-                endDate: endDate,
-                renterId: user.id
-            });
-
-            setSuccess("Reserva Iniciada com sucesso!");
-
-            // Redirect to success/dashboard/payment page (mocked for now)
-            setTimeout(() => navigate('/dashboard'), 2000);
-
-        } catch (err) {
-            setError(err.message || "Não foi possível criar a reserva.");
-        } finally {
-            setIsSubmitting(false);
-        }
+        // For now, just redirect to payment page (SCRUM-15)
+        // Backend booking creation will be handled in SCRUM-16
+        setSuccess("Reserva Iniciada com sucesso!");
+        setTimeout(() => {
+            navigate(`/payment?carId=${carId}&start=${startDate}&end=${endDate}`);
+        }, 1500);
     };
 
     return (
