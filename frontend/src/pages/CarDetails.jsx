@@ -273,7 +273,7 @@ export default function CarDetails() {
                             <Button
                                 className="w-full h-12 text-base font-semibold mb-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{ backgroundColor: canReserve ? '#6366f1' : '#9ca3af' }}
-                                onClick={() => canReserve && navigate(`/checkout?carId=${car.id}`)}
+                                onClick={() => canReserve && navigate(`/checkout?carId=${car.id}&start=${startDate}&end=${endDate}`)}
                                 disabled={!canReserve}
                             >
                                 Reservar Agora
