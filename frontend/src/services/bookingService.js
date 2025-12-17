@@ -3,11 +3,18 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 export const bookingService = {
     async create(bookingData) {
         try {
+            const token = localStorage.getItem('authToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_BASE_URL}/bookings`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers,
                 body: JSON.stringify(bookingData),
             });
 
