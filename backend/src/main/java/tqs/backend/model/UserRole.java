@@ -1,5 +1,8 @@
 package tqs.backend.model;
 
 public enum UserRole {
-    RENTER, OWNER, ADMIN
+    RENTER,
+    PENDING_OWNER,
+    OWNER,
+    ADMIN
 }
