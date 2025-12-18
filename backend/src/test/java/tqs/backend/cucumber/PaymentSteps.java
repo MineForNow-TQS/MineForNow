@@ -124,21 +124,6 @@ public class PaymentSteps {
         testBooking = bookingRepository.save(testBooking);
     }
 
-    @Dado("que sou um utilizador do tipo {string} autenticado")
-    public void souUtilizadorAutenticado(String tipo) {
-        // Navigate and login
-        page.navigate("http://localhost:3000/");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).click();
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).fill("maria@email.com");
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).click();
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).fill("Aa123456");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar").setExact(true)).click();
-
-        // Wait for navigation to complete
-        page.waitForURL("http://localhost:3000/dashboard");
-    }
-
     @Dado("estou na página de pagamento da reserva com ID {int}")
     public void estouNaPaginaPagamento(int bookingId) {
         // Navigate to payment page with booking details
