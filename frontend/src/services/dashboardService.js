@@ -43,7 +43,7 @@ export const dashboardService = {
      * @returns {Promise} Promise with array of pending bookings
      */
     getPendingBookings: async () => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
 
         if (!token) {
             throw new Error('No authentication token found');
