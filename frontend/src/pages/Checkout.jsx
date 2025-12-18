@@ -60,21 +60,38 @@ export default function Checkout() {
     const handleConfirmBooking = async () => {
         setError('');
         setSuccess('');
+        setIsSubmitting(true);
 
         if (!user) {
             setError("Login necessário. Redirecionando...");
             setTimeout(() => {
                 navigate('/login', { state: { from: `/checkout?${searchParams.toString()}` } });
             }, 1500);
+            setIsSubmitting(false);
             return;
         }
 
-        // For now, just redirect to payment page (SCRUM-15)
-        // Backend booking creation will be handled in SCRUM-16
-        setSuccess("Reserva Iniciada com sucesso!");
-        setTimeout(() => {
-            navigate(`/payment?carId=${carId}&start=${startDate}&end=${endDate}`);
-        }, 1500);
+        try {
+            // Create booking via API
+            const bookingData = {
+                vehicleId: parseInt(carId),
+                startDate: startDate,
+                endDate: endDate,
+                renterId: user.id
+            };
+
+            const createdBooking = await bookingService.create(bookingData);
+
+            setSuccess("Reserva criada com sucesso!");
+            setTimeout(() => {
+                navigate(`/payment?bookingId=${createdBooking.id}&carId=${carId}&start=${startDate}&end=${endDate}`);
+            }, 1500);
+        } catch (err) {
+            console.error('Erro ao criar reserva:', err);
+            setError(err.message || 'Erro ao criar reserva. Tente novamente.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
