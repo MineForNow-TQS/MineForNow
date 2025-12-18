@@ -45,10 +45,7 @@ jobs:
     - name: Build Backend
       working-directory: ./backend
       run: |
-        # Dá permissão de execução ao wrapper
-        chmod +x mvnw
-        # Usa o wrapper local em vez do comando global
-        ./mvnw clean package -DskipTests
+        mvn clean package -DskipTests
 
     # --- 5. DEPLOY LOCAL (Diretamente na VM) ---
     - name: Atualizar Serviço
