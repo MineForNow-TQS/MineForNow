@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { carService } from '@/services/carService';
+import { dashboardService } from '@/services/dashboardService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Car, Plus, Edit, Trash2, MapPin, Eye } from 'lucide-react';
@@ -11,9 +12,21 @@ export default function OwnerCarsDashboard() {
     const queryClient = useQueryClient();
 
     // Fetch cars owned by this user (using JWT token)
-    const { data: cars = [], isLoading } = useQuery(
+    const { data: cars = [], isLoading: carsLoading } = useQuery(
         ['ownerCars'],
         () => carService.getCarsByOwner().then(res => res.data)
+    );
+
+    // Fetch dashboard statistics
+    const { data: stats, isLoading: statsLoading, error: statsError } = useQuery(
+        ['ownerStats'],
+        () => dashboardService.getOwnerStats(),
+        {
+            retry: 1,
+            onError: (error) => {
+                console.error('Failed to fetch dashboard stats:', error);
+            }
+        }
     );
 
     // Mutation to delete car
@@ -22,6 +35,7 @@ export default function OwnerCarsDashboard() {
         {
             onSuccess: () => {
                 queryClient.invalidateQueries(['ownerCars']);
+                queryClient.invalidateQueries(['ownerStats']);
             }
         }
     );
@@ -32,11 +46,13 @@ export default function OwnerCarsDashboard() {
         }
     };
 
-    // Calculate stats
-    const totalCars = cars.length;
-    const pendingReservations = 0; // TODO: Get from reservations
-    const completedReservations = 0; // TODO: Get from reservations
-    const totalEarnings = 0; // TODO: Calculate from reservations
+    // Use stats from API or fallback to defaults
+    const totalCars = stats?.activeVehicles ?? cars.length;
+    const pendingReservations = stats?.pendingBookings ?? 0;
+    const completedReservations = stats?.completedBookings ?? 0;
+    const totalEarnings = stats?.totalRevenue ?? 0;
+
+    const isLoading = carsLoading || statsLoading;
 
     if (isLoading) {
         return <div className="text-center py-8">A carregar...</div>;
