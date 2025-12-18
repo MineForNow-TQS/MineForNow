@@ -24,4 +24,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         Double sumTotalPrice();
 
         List<Booking> findByRenter(User renter);
+
+        List<Booking> findByVehicleId(Long vehicleId);
 }

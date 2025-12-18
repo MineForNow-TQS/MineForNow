@@ -44,5 +44,10 @@ public class User {
 
     private String phone;
     private String address;
+
+    // Owner specific fields
     private String drivingLicense;
+
+    private String citizenCardNumber;
+    private String ownerMotivation;
 }
