@@ -1,4 +1,4 @@
-name: Build and Deploy to VM
+name: Build and Deploy (Staging VM)
 
 on:
   push:
@@ -6,22 +6,23 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    # AQUI ESTÁ A MUDANÇA: Usa as labels que vi na tua imagem
+    runs-on: [self-hosted, linux, staging]
 
     steps:
     # --- 1. PREPARAÇÃO ---
     - name: Checkout do Código
       uses: actions/checkout@v4
 
-    - name: Setup Node.js (para o React)
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
 
-    - name: Setup Java (para o Spring)
+    - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        java-version: '21' 
+        java-version: '21'
         distribution: 'temurin'
         cache: 'maven'
 
@@ -35,35 +36,29 @@ jobs:
     # --- 3. UNIR TUDO ---
     - name: Copiar React para dentro do Spring
       run: |
+        # Garante que a pasta static existe
         mkdir -p backend/src/main/resources/static
+        # Copia o build do React para lá
         cp -r frontend/dist/* backend/src/main/resources/static/
 
     # --- 4. CONSTRUIR O JAR FINAL ---
-    - name: Build Backend (com React lá dentro)
+    - name: Build Backend
       working-directory: ./backend
       run: |
         mvn clean package -DskipTests
 
-    # --- 5. ENVIAR PARA A VM (SCP) ---
-    - name: Copy JAR to VM
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        source: "backend/target/*.jar"
-        target: "/home/${{ secrets.SSH_USERNAME }}/deploy-temp"
-        strip_components: 2
-
-    # --- 6. REINICIAR SERVIÇO NA VM (SSH) ---
-    - name: Restart Service
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          mv ~/deploy-temp/*.jar ~/app.jar
-          echo "A reiniciar a aplicação..."
-          sudo systemctl restart myapp
-          systemctl status myapp --no-pager
+    # --- 5. DEPLOY LOCAL (Diretamente na VM) ---
+    - name: Atualizar Serviço
+      run: |
+        echo "A parar o serviço..."
+        sudo systemctl stop minefornow
+        
+        echo "A copiar o novo JAR..."
+        # Copia da pasta de build (backend/target) para a pasta de instalação (/opt)
+        cp backend/target/*.jar /opt/minefornow/minefornow-backend.jar
+        
+        echo "A reiniciar..."
+        sudo systemctl start minefornow
+        
+        # Verifica se ficou tudo bem
+        systemctl status minefornow --no-pager
