@@ -1,68 +1,53 @@
-// Mock data para pedidos de proprietário
-const mockOwnerRequests = [];
+import { authService } from './authService';
+import { userService } from './userService';
 
-// Simular delay de rede
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const API_BASE_URL = 'http://localhost:8080';
 
-// Serviço de API para pedidos de proprietário
 export const ownerRequestService = {
-  // Listar todos os pedidos com filtros opcionais
-  async list(filters = {}) {
-    await delay(300);
-    let requests = [...mockOwnerRequests];
-
-    if (filters.user_email) {
-      requests = requests.filter(r => r.user_email === filters.user_email);
+  // RESTAURA ESTA FUNCIÓN PARA EL DASHBOARD
+  async list() {
+    try {
+      // Obtenemos los datos del usuario real desde el backend
+      const { data: user } = await userService.getCurrentUser();
+      
+      // Si el rol en el backend es PENDING_OWNER, devolvemos un array con un objeto
+      // para que el Dashboard muestre el estado "Pendiente".
+      if (user.role === 'PENDING_OWNER') {
+        return {
+          data: [{
+            id: user.id,
+            user_email: user.email,
+            status: 'pending',
+            created_at: new Date().toISOString()
+          }]
+        };
+      }
+      return { data: [] }; 
+    } catch (error) {
+      return { data: [] };
     }
-    if (filters.status) {
-      requests = requests.filter(r => r.status === filters.status);
-    }
-
-    return { data: requests };
   },
 
-  // Obter um pedido específico
-  async get(id) {
-    await delay(200);
-    const request = mockOwnerRequests.find(r => r.id === id);
-    if (!request) {
-      throw new Error('Pedido não encontrado');
-    }
-    return { data: request };
-  },
+  async create(formData) {
+    const token = authService.getToken();
+    const response = await fetch(`${API_BASE_URL}/api/users/upgrade`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone: formData.phone,
+        citizenCardNumber: formData.citizenCardNumber,
+        drivingLicense: formData.drivingLicense,
+        motivation: formData.motivation
+      }),
+    });
 
-  // Criar um novo pedido
-  async create(requestData) {
-    await delay(300);
-    const newRequest = {
-      id: Date.now().toString(),
-      ...requestData,
-      status: 'pending',
-      created_at: new Date().toISOString(),
-    };
-    mockOwnerRequests.push(newRequest);
-    return { data: newRequest };
-  },
-
-  // Atualizar um pedido
-  async update(id, requestData) {
-    await delay(300);
-    const index = mockOwnerRequests.findIndex(r => r.id === id);
-    if (index === -1) {
-      throw new Error('Pedido não encontrado');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Erro ao processar upgrade');
     }
-    mockOwnerRequests[index] = { ...mockOwnerRequests[index], ...requestData };
-    return { data: mockOwnerRequests[index] };
-  },
-
-  // Deletar um pedido
-  async delete(id) {
-    await delay(300);
-    const index = mockOwnerRequests.findIndex(r => r.id === id);
-    if (index === -1) {
-      throw new Error('Pedido não encontrado');
-    }
-    mockOwnerRequests.splice(index, 1);
-    return { success: true };
-  },
+    return response;
+  }
 };

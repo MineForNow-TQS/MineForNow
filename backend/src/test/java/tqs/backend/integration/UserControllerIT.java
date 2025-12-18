@@ -1,9 +1,8 @@
 package tqs.backend.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Objects;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,6 +15,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,13 +24,13 @@ import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.backend.dto.AuthResponse;
 import tqs.backend.dto.LoginRequest;
 import tqs.backend.dto.UpdateProfileRequest;
+import tqs.backend.dto.UpgradeOwnerRequest;
 import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
 import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
-import org.springframework.http.MediaType;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -238,4 +238,99 @@ class UserControllerIT {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         }
     }
+
+        @Nested
+        @DisplayName("POST /api/users/upgrade")
+        class RequestOwnerUpgrade {
+
+        @Test
+        @DisplayName("Should submit upgrade request successfully")
+        void whenValidUpgradeRequest_thenReturns200() {
+            UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
+            upgradeRequest.setPhone("+351912345678");
+            upgradeRequest.setCitizenCardNumber("12345678");
+            upgradeRequest.setDrivingLicense("AB123456");
+            upgradeRequest.setMotivation("Quero ser proprietário");
+
+            HttpEntity<UpgradeOwnerRequest> request = new HttpEntity<>(upgradeRequest, createAuthHeaders());
+
+            ResponseEntity<Void> response = restTemplate.exchange(
+                    baseUrl + "/api/users/upgrade",
+                    HttpMethod.POST,
+                    request,
+                    Void.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+            // Verifica que el usuario en BD quedó como PENDING_OWNER
+            User updated = userRepository.findByEmail("testuser@test.com").orElseThrow();
+            assertThat(updated.getRole()).isEqualTo(UserRole.PENDING_OWNER);
+            assertThat(updated.getCitizenCardNumber()).isEqualTo("12345678");
+            assertThat(updated.getOwnerMotivation()).isEqualTo("Quero ser proprietário");
+        }
+
+        @Test
+        @DisplayName("Should return 400 when driving license invalid")
+        void whenInvalidDrivingLicense_thenReturns400() {
+            UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
+            upgradeRequest.setPhone("+351912345678");
+            upgradeRequest.setCitizenCardNumber("12345678");
+            upgradeRequest.setDrivingLicense("123456"); // inválido
+            upgradeRequest.setMotivation("Motivação");
+
+            HttpEntity<UpgradeOwnerRequest> request = new HttpEntity<>(upgradeRequest, createAuthHeaders());
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    baseUrl + "/api/users/upgrade",
+                    HttpMethod.POST,
+                    request,
+                    String.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).contains("Formato inválido da carta de condução");
+        }
+
+        @Test
+        @DisplayName("Should return 409 when user already owner")
+        void whenAlreadyOwner_thenReturns409() {
+            // Cambia el rol del usuario a OWNER antes de llamar
+            testUser.setRole(UserRole.OWNER);
+            userRepository.save(testUser);
+
+            UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
+            upgradeRequest.setPhone("+351912345678");
+            upgradeRequest.setCitizenCardNumber("12345678");
+            upgradeRequest.setDrivingLicense("AB123456");
+            upgradeRequest.setMotivation("Motivação");
+
+            HttpEntity<UpgradeOwnerRequest> request = new HttpEntity<>(upgradeRequest, createAuthHeaders());
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    baseUrl + "/api/users/upgrade",
+                    HttpMethod.POST,
+                    request,
+                    String.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+            assertThat(response.getBody()).contains("Pedido já submetido ou utilizador já é Owner");
+        }
+
+        @Test
+        @DisplayName("Should return 401 when no token provided")
+        void whenUpgradeWithoutToken_thenReturns401() {
+            UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
+            upgradeRequest.setPhone("+351912345678");
+            upgradeRequest.setCitizenCardNumber("12345678");
+            upgradeRequest.setDrivingLicense("AB123456");
+            upgradeRequest.setMotivation("Motivação");
+
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    baseUrl + "/api/users/upgrade",
+                    upgradeRequest,
+                    String.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
 }
