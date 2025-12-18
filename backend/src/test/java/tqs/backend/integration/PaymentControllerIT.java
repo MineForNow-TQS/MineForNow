@@ -28,6 +28,8 @@ import tqs.backend.repository.VehicleRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -96,12 +98,17 @@ class PaymentControllerIT {
 
         // Create test booking
         Booking booking = new Booking(
-                LocalDate.now().plusDays(1),
-                LocalDate.now().plusDays(5),
+                null,
                 vehicle,
                 renter,
+                LocalDate.now().atStartOfDay().atOffset(ZoneOffset.UTC),
+                LocalDate.now().plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC),
                 "WAITING_PAYMENT",
-                200.0);
+                BigDecimal.valueOf(100.0),
+                "UNPAID",
+                OffsetDateTime.now(ZoneOffset.UTC)
+        );
+
         booking = bookingRepository.save(booking);
         testBookingId = booking.getId();
 

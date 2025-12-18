@@ -17,6 +17,8 @@ import tqs.backend.repository.VehicleRepository;
 import java.math.BigDecimal;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
@@ -88,13 +90,17 @@ public class PaymentSteps {
         }
 
         // Create booking
-        testBooking = new Booking(
-                LocalDate.now().plusDays(1),
-                LocalDate.now().plusDays(5),
-                testVehicle,
-                testUser,
-                status,
-                400.0);
+        Booking booking = new Booking(
+            null,
+            testVehicle,
+            testUser,
+            LocalDate.now().atStartOfDay().atOffset(ZoneOffset.UTC),
+            LocalDate.now().plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC),
+            "WAITING_PAYMENT",
+            BigDecimal.valueOf(100.0),
+            "UNPAID",
+            OffsetDateTime.now(ZoneOffset.UTC)
+        );
         testBooking = bookingRepository.save(testBooking);
     }
 

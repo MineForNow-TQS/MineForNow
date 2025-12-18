@@ -19,6 +19,8 @@ import tqs.backend.repository.VehicleRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +45,15 @@ class BookingServiceTest {
 
     private User renter;
     private Vehicle vehicle;
+
+    LocalDate pickupDate = LocalDate.of(2025, 12, 19);
+    LocalDate returnDate = LocalDate.of(2025, 12, 23);
+
+    OffsetDateTime pickupDateTime =
+            pickupDate.atStartOfDay().atOffset(ZoneOffset.UTC);
+
+    OffsetDateTime returnDateTime =
+            returnDate.atStartOfDay().atOffset(ZoneOffset.UTC);
 
     @BeforeEach
     void setUp() {
@@ -125,13 +136,17 @@ class BookingServiceTest {
         PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
 
         Booking booking = new Booking(
-                LocalDate.now().plusDays(1),
-                LocalDate.now().plusDays(5),
+                null,
                 vehicle,
                 renter,
-                "WAITING_PAYMENT",
-                500.0);
-        booking.setId(bookingId);
+                pickupDateTime,
+                returnDateTime,
+                "CONFIRMED",
+                BigDecimal.valueOf(500.0),
+                "UNPAID",
+                OffsetDateTime.now(ZoneOffset.UTC)
+        );
+        booking.setId(1L);
 
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -168,12 +183,16 @@ class BookingServiceTest {
     @Requirement("SCRUM-16")
     void confirmPayment_InvalidStatus_ThrowsException() {
         Booking booking = new Booking(
-                LocalDate.of(2025, 12, 19),
-                LocalDate.of(2025, 12, 23),
+                null,
                 vehicle,
                 renter,
+                pickupDateTime,
+                returnDateTime,
                 "CONFIRMED",
-                500.0);
+                BigDecimal.valueOf(500.0),
+                "UNPAID",
+                OffsetDateTime.now(ZoneOffset.UTC)
+        );
         booking.setId(1L);
 
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
@@ -190,21 +209,33 @@ class BookingServiceTest {
     void getBookingsByUser_Success() {
         renter.setEmail("maria@email.com");
         Booking booking1 = new Booking(
-                LocalDate.of(2025, 12, 19),
-                LocalDate.of(2025, 12, 23),
+                null,
                 vehicle,
                 renter,
+                pickupDateTime,
+                returnDateTime,
                 "CONFIRMED",
-                500.0);
+                BigDecimal.valueOf(500.0),
+                "UNPAID",
+                OffsetDateTime.now(ZoneOffset.UTC)
+        );
         booking1.setId(1L);
 
+        LocalDate pickupDate2 = LocalDate.of(2025, 12, 25);
+        LocalDate returnDate2 = LocalDate.of(2025, 12, 30);
+
         Booking booking2 = new Booking(
-                LocalDate.of(2025, 12, 25),
-                LocalDate.of(2025, 12, 30),
+                null,
                 vehicle,
                 renter,
+                pickupDate2.atStartOfDay().atOffset(ZoneOffset.UTC),
+                returnDate2.atStartOfDay().atOffset(ZoneOffset.UTC),
                 "WAITING_PAYMENT",
-                600.0);
+                BigDecimal.valueOf(600.0),
+                "UNPAID",
+                OffsetDateTime.now(ZoneOffset.UTC)
+        );
+
         booking2.setId(2L);
 
         when(userRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(renter));
@@ -231,13 +262,19 @@ class BookingServiceTest {
     @Requirement("SCRUM-16")
     void getBookingsByUserEmail_Success() {
         renter.setEmail("maria@email.com");
+                
         Booking booking = new Booking(
-                LocalDate.of(2025, 12, 19),
-                LocalDate.of(2025, 12, 23),
+                null,
                 vehicle,
                 renter,
-                "CONFIRMED",
-                500.0);
+                pickupDate.atStartOfDay().atOffset(ZoneOffset.UTC),
+                returnDate.atStartOfDay().atOffset(ZoneOffset.UTC),
+                "CONFIRMED",               // ou o status que o teste espera
+                BigDecimal.valueOf(500.0), // ajusta o valor conforme o teste
+                "UNPAID",
+                OffsetDateTime.now(ZoneOffset.UTC)
+        );
+
         booking.setId(1L);
 
         when(userRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(renter));

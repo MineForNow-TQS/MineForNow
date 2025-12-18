@@ -1,7 +1,10 @@
 package tqs.backend.cucumber;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.math.BigDecimal;
 import java.nio.file.Paths;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -123,7 +126,20 @@ public class VehicleSearchSteps {
         // Salvar reserva que irá bloquear o veículo nas datas indicadas
         // Usar saveAndFlush para garantir que a reserva está persistida antes de
         // consultarmos a API
-        bookingRepository.saveAndFlush(new Booking(null, start, end, found));
+        OffsetDateTime startDt = start.atStartOfDay().atOffset(ZoneOffset.UTC);
+        OffsetDateTime endDt = end.atStartOfDay().atOffset(ZoneOffset.UTC);
+
+        bookingRepository.saveAndFlush(new Booking(
+                null,
+                found,
+                null, // renter (não interessa para bloquear o veículo neste cenário)
+                startDt,
+                endDt,
+                "CONFIRMED",
+                BigDecimal.ZERO,
+                "UNPAID",
+                OffsetDateTime.now(ZoneOffset.UTC)
+        ));
     }
 
     @Dado("que estou na página de pesquisa")
