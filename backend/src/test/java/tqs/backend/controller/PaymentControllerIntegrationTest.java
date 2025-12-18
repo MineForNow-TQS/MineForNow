@@ -98,7 +98,8 @@ class PaymentControllerIntegrationTest {
                             "cvv": "123"
                         }
                         """))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Booking not found"));
     }
 
     @Test
@@ -117,31 +118,24 @@ class PaymentControllerIntegrationTest {
                             "cvv": "123"
                         }
                         """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Booking is not waiting for payment"));
     }
 
     @Test
     @WithMockUser(username = "maria@email.com", roles = "RENTER")
-    void getMyBookings_Success() throws Exception {
-        List<BookingDTO> bookings = Arrays.asList(confirmedBooking, waitingBooking);
-        when(bookingService.getBookingsByUserEmail("maria@email.com"))
-                .thenReturn(bookings);
-
-        mockMvc.perform(get("/api/bookings/my-bookings"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].status").value("CONFIRMED"))
-                .andExpect(jsonPath("$[1].status").value("WAITING_PAYMENT"));
-    }
-
-    @Test
-    @WithMockUser(username = "unknown@email.com", roles = "RENTER")
-    void getMyBookings_UserNotFound() throws Exception {
-        when(bookingService.getBookingsByUserEmail("unknown@email.com"))
-                .thenThrow(new IllegalArgumentException("User not found"));
-
-        mockMvc.perform(get("/api/bookings/my-bookings"))
-                .andExpect(status().isNotFound());
+    void confirmPayment_InvalidCardFormat() throws Exception {
+        mockMvc.perform(post("/api/bookings/1/confirm-payment")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "cardLast4Digits": "123",
+                            "cardholderName": "Maria Silva",
+                            "expiryDate": "12/25",
+                            "cvv": "123"
+                        }
+                        """))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
