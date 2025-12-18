@@ -29,14 +29,14 @@ export default function OwnerCarsDashboard() {
         }
     );
 
-    // Fetch pending bookings list
-    const { data: pendingBookingsList = [], isLoading: pendingLoading } = useQuery(
-        ['ownerPendingBookings'],
-        () => dashboardService.getPendingBookings(),
+    // Fetch active bookings list (confirmed rentals)
+    const { data: activeBookingsList = [], isLoading: activeLoading } = useQuery(
+        ['ownerActiveBookings'],
+        () => dashboardService.getActiveBookings(),
         {
             retry: 1,
             onError: (error) => {
-                console.error('Failed to fetch pending bookings:', error);
+                console.error('Failed to fetch active bookings:', error);
             }
         }
     );
@@ -92,11 +92,11 @@ export default function OwnerCarsDashboard() {
                 </Card>
             </div>
 
-            {/* Pending Reservations */}
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Reservas Pendentes</h2>
-            {pendingBookingsList && pendingBookingsList.length > 0 ? (
+            {/* Active Reservations */}
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Reservas em Curso</h2>
+            {activeBookingsList && activeBookingsList.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4 mb-8">
-                    {pendingBookingsList.map((booking) => (
+                    {activeBookingsList.map((booking) => (
                         <Card key={booking.id} className="p-6 border border-slate-200">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -124,7 +124,7 @@ export default function OwnerCarsDashboard() {
                 </div>
             ) : (
                 <Card className="p-8 text-center border border-slate-200 mb-8">
-                    <p className="text-slate-500">Nenhuma reserva pendente.</p>
+                    <p className="text-slate-500">Nenhuma reserva em curso.</p>
                 </Card>
             )}
 

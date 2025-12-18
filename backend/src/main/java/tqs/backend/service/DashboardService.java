@@ -1,5 +1,8 @@
 package tqs.backend.service;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tqs.backend.dto.BookingDTO;
@@ -46,10 +49,16 @@ public class DashboardService {
                                 .toList();
 
                 // 5. Calculate metrics
+                System.out.println("=== Calculating metrics ===");
+                System.out.println("Owner bookings count: " + ownerBookings.size());
+                ownerBookings.forEach(b -> System.out.println("  Booking " + b.getId() + ": status=" + b.getStatus()
+                                + ", price=" + b.getTotalPrice()));
+
                 Double totalRevenue = ownerBookings.stream()
                                 .filter(b -> "CONFIRMED".equals(b.getStatus()))
                                 .mapToDouble(Booking::getTotalPrice)
                                 .sum();
+                System.out.println("Total revenue (sum of CONFIRMED): " + totalRevenue);
 
                 Integer activeVehicles = vehicles.size();
 
@@ -60,6 +69,7 @@ public class DashboardService {
                 Integer completedBookings = (int) ownerBookings.stream()
                                 .filter(b -> "CONFIRMED".equals(b.getStatus()))
                                 .count();
+                System.out.println("Completed bookings count: " + completedBookings);
 
                 return new DashboardStatsDTO(
                                 totalRevenue,
@@ -68,9 +78,9 @@ public class DashboardService {
                                 completedBookings);
         }
 
-        public List<BookingDTO> getPendingBookings(String ownerEmail) {
-                System.out.println("=== DEBUG getPendingBookings for: " + ownerEmail);
-                
+        public List<BookingDTO> getActiveBookings(String ownerEmail) {
+                System.out.println("=== DEBUG getActiveBookings for: " + ownerEmail);
+
                 // 1. Find owner by email
                 User owner = userRepository.findByEmail(ownerEmail)
                                 .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
@@ -84,19 +94,32 @@ public class DashboardService {
                 List<Booking> allBookings = bookingRepository.findAll();
                 System.out.println("Total bookings in DB: " + allBookings.size());
 
-                // 4. Filter bookings for this owner's vehicles with WAITING_PAYMENT status
+                // 4. Filter bookings for this owner's vehicles that are currently active
+                // (date-based)
                 List<Long> vehicleIds = vehicles.stream()
                                 .map(Vehicle::getId)
                                 .toList();
                 System.out.println("Vehicle IDs: " + vehicleIds);
 
+                LocalDate today = LocalDate.now();
+                System.out.println("Today: " + today);
+
                 List<Booking> filtered = allBookings.stream()
                                 .filter(b -> vehicleIds.contains(b.getVehicle().getId()))
-                                .filter(b -> "WAITING_PAYMENT".equals(b.getStatus()))
+                                .filter(b -> {
+                                        // Active if today is between pickup and return date (inclusive)
+                                        boolean isActive = !today.isBefore(b.getPickupDate())
+                                                        && !today.isAfter(b.getReturnDate());
+                                        if (isActive) {
+                                                System.out.println("  Active booking " + b.getId() + ": "
+                                                                + b.getPickupDate() + " to " + b.getReturnDate()
+                                                                + " (status: " + b.getStatus() + ")");
+                                        }
+                                        return isActive;
+                                })
                                 .toList();
-                
-                System.out.println("Filtered pending bookings: " + filtered.size());
-                filtered.forEach(b -> System.out.println("  - Booking " + b.getId() + " status: " + b.getStatus() + " vehicle: " + b.getVehicle().getId()));
+
+                System.out.println("Filtered active bookings (by date): " + filtered.size());
 
                 return filtered.stream()
                                 .map(b -> new BookingDTO(

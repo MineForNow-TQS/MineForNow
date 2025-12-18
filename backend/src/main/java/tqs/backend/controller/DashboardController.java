@@ -49,14 +49,14 @@ public class DashboardController {
         }
     }
 
-    @GetMapping("/owner/pending-bookings")
-    public ResponseEntity<Object> getOwnerPendingBookings() {
+    @GetMapping("/owner/active-bookings")
+    public ResponseEntity<Object> getOwnerActiveBookings() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String ownerEmail = authentication.getName();
 
-            var pendingBookings = dashboardService.getPendingBookings(ownerEmail);
-            return ResponseEntity.ok(pendingBookings);
+            var activeBookings = dashboardService.getActiveBookings(ownerEmail);
+            return ResponseEntity.ok(activeBookings);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         } catch (Exception e) {

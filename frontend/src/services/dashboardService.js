@@ -71,17 +71,17 @@ export const dashboardService = {
     },
 
     /**
-     * Get owner pending bookings
-     * @returns {Promise} Promise with list of pending bookings
+     * Get owner active bookings (confirmed rentals in progress)
+     * @returns {Promise} Promise with array of active bookings
      */
-    getPendingBookings: async () => {
-        const token = localStorage.getItem('token');
+    getActiveBookings: async () => {
+        const token = localStorage.getItem('authToken');
 
         if (!token) {
             throw new Error('No authentication token found');
         }
 
-        const response = await fetch(`${API_BASE_URL}/dashboard/owner/pending-bookings`, {
+        const response = await fetch(`${API_BASE_URL}/dashboard/owner/active-bookings`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export const dashboardService = {
             if (response.status === 404) {
                 throw new Error('Owner not found');
             }
-            throw new Error(`Failed to fetch pending bookings: ${response.statusText}`);
+            throw new Error(`Failed to fetch active bookings: ${response.statusText}`);
         }
 
         return response.json();
