@@ -1,7 +1,5 @@
 import { authService } from './authService';
-
-// API URL for backend
-const API_BASE_URL = 'http://localhost:8080';
+import { API_BASE_URL } from '../config/api';
 
 // Mock data para Utilizadors - carrega do localStorage se existir
 const loadUsers = () => {
