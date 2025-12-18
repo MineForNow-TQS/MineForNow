@@ -84,7 +84,7 @@ export default function OwnerCarsDashboard() {
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-green-500 mb-1">{completedReservations}</div>
-                    <div className="text-sm text-slate-500">Completadas</div>
+                    <div className="text-sm text-slate-500">Pagas</div>
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-blue-500 mb-1">{totalEarnings.toFixed(2)} €</div>
@@ -94,38 +94,48 @@ export default function OwnerCarsDashboard() {
 
             {/* Active Reservations */}
             <h2 className="text-xl font-bold text-slate-900 mb-4">Reservas em Curso</h2>
-            {activeBookingsList && activeBookingsList.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4 mb-8">
-                    {activeBookingsList.map((booking) => (
-                        <Card key={booking.id} className="p-6 border border-slate-200">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="font-semibold text-slate-900 mb-2">
-                                        Reserva #{booking.id}
-                                    </h3>
-                                    <p className="text-sm text-slate-600">
-                                        <span className="font-medium">Datas:</span> {new Date(booking.pickupDate).toLocaleDateString('pt-PT')} - {new Date(booking.returnDate).toLocaleDateString('pt-PT')}
-                                    </p>
-                                    <p className="text-sm text-slate-600">
-                                        <span className="font-medium">Veículo ID:</span> {booking.vehicleId}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-lg font-bold text-orange-600">
-                                        {booking.totalPrice.toFixed(2)} €
-                                    </p>
-                                    <span className="inline-block px-3 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full mt-2">
-                                        Aguarda Pagamento
-                                    </span>
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            ) : (
+            {activeLoading ? (
+                <Card className="p-8 text-center border border-slate-200 mb-8">
+                    <p className="text-slate-500">A carregar reservas...</p>
+                </Card>
+            ) : activeBookingsList.length === 0 ? (
                 <Card className="p-8 text-center border border-slate-200 mb-8">
                     <p className="text-slate-500">Nenhuma reserva em curso.</p>
                 </Card>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    {activeBookingsList.map((booking) => {
+                        const vehicle = cars.find(c => c.id === booking.vehicleId);
+                        const today = new Date();
+                        const returnDate = new Date(booking.returnDate);
+                        const isCompleted = returnDate < today;
+                        const isPaid = booking.status === 'CONFIRMED';
+
+                        return (
+                            <Card key={booking.id} className={`p-4 border ${isPaid ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-slate-900">
+                                            {vehicle ? `${vehicle.brand} ${vehicle.model}` : `Veículo #${booking.vehicleId}`}
+                                        </p>
+                                        <p className="text-sm text-slate-600">
+                                            {new Date(booking.pickupDate).toLocaleDateString('pt-PT')} - {new Date(booking.returnDate).toLocaleDateString('pt-PT')}
+                                        </p>
+                                        <p className="text-lg font-bold text-slate-900 mt-2">{booking.totalPrice.toFixed(2)} €</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 items-end">
+                                        <span className={`px-2 py-1 text-xs rounded ${isPaid ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'}`}>
+                                            {isPaid ? 'Paga' : 'Pendente'}
+                                        </span>
+                                        <span className={`px-2 py-1 text-xs rounded ${isCompleted ? 'bg-gray-500 text-white' : 'bg-blue-500 text-white'}`}>
+                                            {isCompleted ? 'Completa' : 'Em Curso'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </Card>
+                        );
+                    })}
+                </div>
             )}
 
             {/* My Cars Section */}
