@@ -3,6 +3,7 @@ package tqs.backend.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -24,7 +25,7 @@ public class Booking {
     private Vehicle vehicle;
 
     @Column(nullable = false)
-    private String status;
+    private String status; // WAITING_PAYMENT, CONFIRMED, CANCELLED
 
     @Column(nullable = false)
     private Double totalPrice;
@@ -32,6 +33,13 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "renter_id")
     private User renter;
+
+    // SCRUM-16: Payment fields
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
+
+    @Column(name = "payment_method")
+    private String paymentMethod; // CREDIT_CARD, DEBIT_CARD
 
     // No-arg constructor
     public Booking() {
@@ -120,6 +128,22 @@ public class Booking {
 
     public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public LocalDateTime getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(LocalDateTime paymentDate) {
+        this.paymentDate = paymentDate;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     @Override
