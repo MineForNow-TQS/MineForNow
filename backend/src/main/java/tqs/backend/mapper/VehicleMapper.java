@@ -1,6 +1,8 @@
 package tqs.backend.mapper;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 import tqs.backend.dto.VehicleDetailDTO;
 import tqs.backend.model.Vehicle;
@@ -85,10 +87,12 @@ public class VehicleMapper {
      * Formata o preço para exibição.
      * Formato: "XX.XX €/dia" (ex: "25.00 €/dia")
      */
-    private static String formatPrice(Double price) {
-        if (price == null) {
-            return "N/A";
-        }
-        return PRICE_FORMAT.format(price) + " €/dia";
+    private static String formatPrice(Double pricePerDay) {
+        if (pricePerDay == null) return "N/A";
+
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US); // força "."
+        DecimalFormat df = new DecimalFormat("#0.00", symbols);
+
+        return df.format(pricePerDay) + " €/dia";
     }
 }
