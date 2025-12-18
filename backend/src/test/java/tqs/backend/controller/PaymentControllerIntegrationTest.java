@@ -16,15 +16,12 @@ import tqs.backend.dto.PaymentDTO;
 import tqs.backend.service.BookingService;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.hamcrest.Matchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,7 +35,6 @@ class PaymentControllerIntegrationTest {
     private BookingService bookingService;
 
     private BookingDTO confirmedBooking;
-    private BookingDTO waitingBooking;
 
     @BeforeEach
     void setUp() {
@@ -49,15 +45,6 @@ class PaymentControllerIntegrationTest {
                 "CONFIRMED",
                 500.0,
                 1L,
-                1L);
-
-        waitingBooking = new BookingDTO(
-                2L,
-                LocalDate.of(2025, 12, 25),
-                LocalDate.of(2025, 12, 30),
-                "WAITING_PAYMENT",
-                600.0,
-                2L,
                 1L);
     }
 
