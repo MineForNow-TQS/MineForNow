@@ -94,9 +94,9 @@ export default function OwnerCarsDashboard() {
 
             {/* Pending Reservations */}
             <h2 className="text-xl font-bold text-slate-900 mb-4">Reservas Pendentes</h2>
-            {pendingBookingsData && pendingBookingsData.length > 0 ? (
+            {pendingBookingsList && pendingBookingsList.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4 mb-8">
-                    {pendingBookingsData.map((booking) => (
+                    {pendingBookingsList.map((booking) => (
                         <Card key={booking.id} className="p-6 border border-slate-200">
                             <div className="flex justify-between items-start">
                                 <div>
