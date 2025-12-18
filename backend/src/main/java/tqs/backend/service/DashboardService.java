@@ -2,6 +2,7 @@ package tqs.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tqs.backend.dto.BookingDTO;
 import tqs.backend.dto.DashboardStatsDTO;
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
@@ -65,5 +66,35 @@ public class DashboardService {
                                 activeVehicles,
                                 pendingBookings,
                                 completedBookings);
+        }
+
+        public List<BookingDTO> getPendingBookings(String ownerEmail) {
+                // 1. Find owner by email
+                User owner = userRepository.findByEmail(ownerEmail)
+                                .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
+
+                // 2. Get all vehicles owned by this user
+                List<Vehicle> vehicles = vehicleRepository.findByOwnerEmail(ownerEmail);
+
+                // 3. Get all bookings
+                List<Booking> allBookings = bookingRepository.findAll();
+
+                // 4. Filter bookings for this owner's vehicles with WAITING_PAYMENT status
+                List<Long> vehicleIds = vehicles.stream()
+                                .map(Vehicle::getId)
+                                .toList();
+
+                return allBookings.stream()
+                                .filter(b -> vehicleIds.contains(b.getVehicle().getId()))
+                                .filter(b -> "WAITING_PAYMENT".equals(b.getStatus()))
+                                .map(b -> new BookingDTO(
+                                                b.getId(),
+                                                b.getPickupDate(),
+                                                b.getReturnDate(),
+                                                b.getStatus(),
+                                                b.getTotalPrice(),
+                                                b.getVehicle().getId(),
+                                                b.getRenter().getId()))
+                                .toList();
         }
 }

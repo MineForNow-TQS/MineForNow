@@ -29,6 +29,18 @@ export default function OwnerCarsDashboard() {
         }
     );
 
+    // Fetch pending bookings list
+    const { data: pendingBookingsList = [], isLoading: pendingLoading } = useQuery(
+        ['ownerPendingBookings'],
+        () => dashboardService.getPendingBookings(),
+        {
+            retry: 1,
+            onError: (error) => {
+                console.error('Failed to fetch pending bookings:', error);
+            }
+        }
+    );
+
     // Mutation to delete car
     const deleteMutation = useMutation(
         (carId) => carService.deleteCar(carId),
@@ -82,9 +94,39 @@ export default function OwnerCarsDashboard() {
 
             {/* Pending Reservations */}
             <h2 className="text-xl font-bold text-slate-900 mb-4">Reservas Pendentes</h2>
-            <Card className="p-8 text-center border border-slate-200 mb-8">
-                <p className="text-slate-500">Nenhuma reserva pendente.</p>
-            </Card>
+            {pendingBookingsData && pendingBookingsData.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 mb-8">
+                    {pendingBookingsData.map((booking) => (
+                        <Card key={booking.id} className="p-6 border border-slate-200">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-semibold text-slate-900 mb-2">
+                                        Reserva #{booking.id}
+                                    </h3>
+                                    <p className="text-sm text-slate-600">
+                                        <span className="font-medium">Datas:</span> {new Date(booking.pickupDate).toLocaleDateString('pt-PT')} - {new Date(booking.returnDate).toLocaleDateString('pt-PT')}
+                                    </p>
+                                    <p className="text-sm text-slate-600">
+                                        <span className="font-medium">Veículo ID:</span> {booking.vehicleId}
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-lg font-bold text-orange-600">
+                                        {booking.totalPrice.toFixed(2)} €
+                                    </p>
+                                    <span className="inline-block px-3 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full mt-2">
+                                        Aguarda Pagamento
+                                    </span>
+                                </div>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+            ) : (
+                <Card className="p-8 text-center border border-slate-200 mb-8">
+                    <p className="text-slate-500">Nenhuma reserva pendente.</p>
+                </Card>
+            )}
 
             {/* My Cars Section */}
             <div className="flex items-center justify-between mb-4">
