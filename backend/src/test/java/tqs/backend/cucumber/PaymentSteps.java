@@ -15,6 +15,7 @@ import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
+import java.nio.file.Paths;
 import java.time.LocalDate;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -104,11 +105,16 @@ public class PaymentSteps {
         // Navigate and login
         bookingSteps.getPage().navigate("http://localhost:3000/");
         bookingSteps.getPage().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
-        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).click();
-        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).fill("maria@email.com");
-        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).click();
-        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).fill("Aa123456");
-        bookingSteps.getPage().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar").setExact(true)).click();
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com"))
+                .click();
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com"))
+                .fill("maria@email.com");
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password"))
+                .click();
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password"))
+                .fill("Aa123456");
+        bookingSteps.getPage().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar").setExact(true))
+                .click();
 
         // Wait for navigation to complete
         bookingSteps.getPage().waitForURL("http://localhost:3000/dashboard");
@@ -128,7 +134,8 @@ public class PaymentSteps {
     @Quando("preencho o campo {string} com {string}")
     public void preenchoCampo(String campo, String valor) {
         bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).click();
-        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).fill(valor);
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *"))
+                .fill(valor);
     }
 
     @Então("a reserva deve ter o estado {string}")
@@ -142,9 +149,22 @@ public class PaymentSteps {
 
     @Então("devo ver uma mensagem de erro contendo {string}")
     public void devoVerMensagemErroContendo(String mensagem) {
-        // Wait for error message to appear
-        bookingSteps.getPage().waitForSelector("text=" + mensagem, new Page.WaitForSelectorOptions().setTimeout(5000));
-        assertThat(bookingSteps.getPage().getByText(mensagem, new Page.GetByTextOptions().setExact(false))).isVisible();
+        // Wait for error message to appear with longer timeout
+        try {
+            bookingSteps.getPage().waitForSelector("text=" + mensagem,
+                    new Page.WaitForSelectorOptions().setTimeout(10000));
+            System.out.println("✓ Mensagem de erro encontrada: " + mensagem);
+        } catch (Exception e) {
+            bookingSteps.getPage().screenshot(new Page.ScreenshotOptions()
+                    .setPath(Paths.get("/tmp/payment-error-message.png")));
+            System.out.println("✗ Mensagem de erro NÃO encontrada: " + mensagem);
+            System.out.println("Screenshot saved to /tmp/payment-error-message.png");
+            System.out.println("Current URL: " + bookingSteps.getPage().url());
+            throw e;
+        }
+
+        assertThat(bookingSteps.getPage().getByText(mensagem,
+                new Page.GetByTextOptions().setExact(false))).isVisible();
     }
 
     @Então("devo ver mensagens de erro de validação nos campos obrigatórios")
