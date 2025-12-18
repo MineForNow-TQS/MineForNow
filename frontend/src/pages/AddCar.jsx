@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { carService } from '@/services/carService';
+import { Upload, X } from 'lucide-react';
 
 export default function AddCar() {
     const navigate = useNavigate();
-    const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [formData, setFormData] = useState({
         brand: '',
         model: '',
         year: '',
         type: 'citadino',
         mileage: '',
+        license_plate: '',
         fuel_type: 'gasoline',
         transmission: 'automatic',
         seats: '',
@@ -30,12 +32,60 @@ export default function AddCar() {
         description: ''
     });
 
+    // Formata a matrícula automaticamente para o formato AA-00-BB
+    const formatLicensePlate = (value) => {
+        // Remove todos os caracteres não alfanuméricos e converte para maiúsculas
+        const cleaned = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+
+        // Aplica o formato AA-00-BB (2-2-2)
+        let formatted = '';
+        for (let i = 0; i < cleaned.length && i < 6; i++) {
+            if (i === 2 || i === 4) {
+                formatted += '-';
+            }
+            formatted += cleaned[i];
+        }
+        return formatted;
+    };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
+
+        let processedValue = value;
+        if (name === 'license_plate') {
+            processedValue = formatLicensePlate(value);
+        }
+
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: type === 'checkbox' ? checked : processedValue
         }));
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validar tipo de ficheiro
+            if (!file.type.startsWith('image/')) {
+                alert('Por favor, selecione um ficheiro de imagem válido.');
+                return;
+            }
+            // Validar tamanho (máx 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('A imagem não pode ter mais de 5MB.');
+                return;
+            }
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const removeImage = () => {
+        setImageFile(null);
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        setImagePreview(null);
     };
 
     const handleSubmit = async (e) => {
@@ -43,6 +93,14 @@ export default function AddCar() {
         setIsSubmitting(true);
 
         try {
+            let imageUrl = null;
+
+            // Upload da imagem primeiro, se houver
+            if (imageFile) {
+                const uploadResult = await carService.uploadImage(imageFile);
+                imageUrl = uploadResult.url;
+            }
+
             await carService.create({
                 ...formData,
                 year: parseInt(formData.year),
@@ -50,8 +108,7 @@ export default function AddCar() {
                 seats: parseInt(formData.seats),
                 doors: parseInt(formData.doors),
                 price_per_day: parseFloat(formData.price_per_day),
-                owner_id: user?.id,
-                owner_email: user?.email
+                image_url: imageUrl,
             });
 
             alert('Carro adicionado com sucesso!');
@@ -68,12 +125,12 @@ export default function AddCar() {
         <div className="min-h-screen bg-white py-12">
             <div className="max-w-3xl mx-auto px-4 sm:px-6">
                 <h1 className="text-3xl font-bold text-slate-900 mb-8">Adicionar Novo Carro</h1>
-                
+
                 <form onSubmit={handleSubmit}>
                     {/* Informações Básicas */}
                     <Card className="p-6 mb-6 border border-slate-200">
                         <h2 className="text-lg font-semibold text-slate-900 mb-4">Informações Básicas</h2>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -135,7 +192,7 @@ export default function AddCar() {
                                 </select>
                             </div>
 
-                            <div className="col-span-2">
+                            <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
                                     Quilometragem (km) <span className="text-red-500">*</span>
                                 </label>
@@ -148,13 +205,27 @@ export default function AddCar() {
                                     className="bg-white border-slate-300"
                                 />
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    Matrícula <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    name="license_plate"
+                                    value={formData.license_plate}
+                                    onChange={handleChange}
+                                    placeholder="Ex: AA-00-BB"
+                                    required
+                                    className="bg-white border-slate-300"
+                                />
+                            </div>
                         </div>
                     </Card>
 
                     {/* Especificações */}
                     <Card className="p-6 mb-6 border border-slate-200">
                         <h2 className="text-lg font-semibold text-slate-900 mb-4">Especificações</h2>
-                        
+
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -263,7 +334,7 @@ export default function AddCar() {
                     {/* Localização e Preço */}
                     <Card className="p-6 mb-6 border border-slate-200">
                         <h2 className="text-lg font-semibold text-slate-900 mb-4">Localização e Preço</h2>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -326,20 +397,49 @@ export default function AddCar() {
 
                     {/* Imagens */}
                     <Card className="p-6 mb-6 border border-slate-200">
-                        <h2 className="text-lg font-semibold text-slate-900 mb-2">Imagens</h2>
-                        <p className="text-sm text-slate-500 mb-4">Imagens serão placeholders por enquanto.</p>
+                        <h2 className="text-lg font-semibold text-slate-900 mb-2">Imagem do Veículo</h2>
+                        <p className="text-sm text-slate-500 mb-4">Adicione uma foto do seu carro (máx. 5MB)</p>
+
+                        {imagePreview ? (
+                            <div className="relative inline-block">
+                                <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="w-64 h-48 object-cover rounded-lg border border-slate-200"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={removeImage}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ) : (
+                            <label className="flex flex-col items-center justify-center w-64 h-48 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-indigo-500 hover:bg-slate-50 transition-colors">
+                                <Upload className="w-10 h-10 text-slate-400 mb-2" />
+                                <span className="text-sm text-slate-500">Clique para selecionar</span>
+                                <span className="text-xs text-slate-400 mt-1">JPG, PNG, GIF ou WEBP</span>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                />
+                            </label>
+                        )}
                     </Card>
 
                     {/* Buttons */}
                     <div className="flex gap-3">
-                        <Button 
+                        <Button
                             type="submit"
                             disabled={isSubmitting}
                             className="bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50"
                         >
                             {isSubmitting ? 'A adicionar...' : 'Adicionar Carro'}
                         </Button>
-                        <Button 
+                        <Button
                             type="button"
                             onClick={() => navigate('/dashboard')}
                             variant="outline"

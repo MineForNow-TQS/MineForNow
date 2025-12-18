@@ -1,18 +1,31 @@
-name: Basic CI Pipeline
+name: Backend CI
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "develop" ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/**'
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "develop" ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Define que todos os comandos correm automaticamente dentro da pasta 'backend'
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Importante para o SonarCloud analisar o histórico corretamente
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
@@ -21,6 +34,47 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      - name: Build backend with Maven
-        working-directory: backend
+      # 1. Compila e corre os testes (Unitários apenas)
+      - name: Build and Test with Maven
         run: mvn -B clean verify
+
+      # 2. Análise do SonarCloud (SÓ corre se NÃO for o Dependabot)
+      - name: SonarCloud Scan
+        if: github.actor != 'dependabot[bot]'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=MineForNow-TQS_MineForNow \
+            -Dsonar.organization=minefornow-tqs \
+            -Dsonar.host.url=https://sonarcloud.io
+
+      # 3. Gera o Relatório Visual (Badge)
+      - name: Generate JaCoCo Badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          generate-branches-badge: true
+          jacoco-csv-file: backend/target/site/jacoco-merged-test-coverage-report/jacoco.csv
+
+      - name: Log coverage percentage
+        run: |
+          echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
+          echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
+
+      # 4. Envia resultados para o Jira (Xray) usando o Maven Plugin
+      - name: Push results to Xray on Jira Cloud
+        if: always() && github.actor != 'dependabot[bot]'
+        env:
+          XRAYCLOUD_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+          XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+          XRAYCLOUD_TEST_PLAN_KEY: ${{ secrets.XRAY_TEST_PLAN_KEY }}
+          REVISION: ${{ github.ref_name }}
+        run: |
+          mvn -Dxray.clientId=${{ env.XRAYCLOUD_CLIENT_ID }} \
+              -Dxray.clientSecret=${{ env.XRAYCLOUD_CLIENT_SECRET }} \
+              -Dxray.testPlanKey=${{ env.XRAYCLOUD_TEST_PLAN_KEY }} \
+              -Dxray.revision=${{ env.REVISION }} \
+              -Dxray.useInternalTestProxy=false \
+              xray:import-results

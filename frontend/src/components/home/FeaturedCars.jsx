@@ -35,7 +35,7 @@ export default function FeaturedCars() {
     const [titleRef, titleInView] = useInView(); 
 
     const { data, isLoading } = useQuery('featured-cars', async () => {
-        const result = await carService.list({ status: 'available' });
+        const result = await carService.list();
         return result.data.slice(0, 6);
     });
 
