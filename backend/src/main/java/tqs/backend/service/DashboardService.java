@@ -136,7 +136,8 @@ public class DashboardService {
                                                 b.getStatus(),
                                                 b.getTotalPrice(),
                                                 b.getVehicle().getId(),
-                                                b.getRenter().getId()))
+                                                b.getRenter() != null ? b.getRenter().getId() : null)) // Handle null
+                                                                                                       // renter
                                 .toList();
         }
 }
