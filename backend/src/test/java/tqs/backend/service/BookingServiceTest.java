@@ -177,11 +177,7 @@ class BookingServiceTest {
 
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
 
-        PaymentDTO paymentData = new PaymentDTO();
-        paymentData.setCardLast4Digits("1234");
-        paymentData.setCardholderName("Maria Silva");
-        paymentData.setExpiryDate("12/25");
-        paymentData.setCvv("123");
+        PaymentDTO paymentData = new PaymentDTO("1234", "Maria Silva", "12/25", "123");
 
         assertThatThrownBy(() -> bookingService.confirmPayment(1L, paymentData))
                 .isInstanceOf(IllegalStateException.class)
@@ -211,9 +207,9 @@ class BookingServiceTest {
         booking2.setId(2L);
 
         when(userRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(renter));
-        when(bookingRepository.findByRenterId(2L)).thenReturn(java.util.Arrays.asList(booking1, booking2));
+        when(bookingRepository.findByRenter(renter)).thenReturn(java.util.Arrays.asList(booking1, booking2));
 
-        var result = bookingService.getBookingsByUser("maria@email.com");
+        var result = bookingService.getBookingsByUserEmail("maria@email.com");
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getStatus()).isEqualTo("CONFIRMED");
@@ -225,7 +221,7 @@ class BookingServiceTest {
     void getBookingsByUser_UserNotFound() {
         when(userRepository.findByEmail("unknown@email.com")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> bookingService.getBookingsByUser("unknown@email.com"))
+        assertThatThrownBy(() -> bookingService.getBookingsByUserEmail("unknown@email.com"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("User not found");
     }

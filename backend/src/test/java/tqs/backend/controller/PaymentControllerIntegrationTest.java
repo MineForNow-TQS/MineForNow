@@ -124,7 +124,7 @@ class PaymentControllerIntegrationTest {
     @WithMockUser(username = "maria@email.com", roles = "RENTER")
     void getMyBookings_Success() throws Exception {
         List<BookingDTO> bookings = Arrays.asList(confirmedBooking, waitingBooking);
-        when(bookingService.getBookingsByUser("maria@email.com"))
+        when(bookingService.getBookingsByUserEmail("maria@email.com"))
                 .thenReturn(bookings);
 
         mockMvc.perform(get("/api/bookings/my-bookings"))
@@ -137,7 +137,7 @@ class PaymentControllerIntegrationTest {
     @Test
     @WithMockUser(username = "unknown@email.com", roles = "RENTER")
     void getMyBookings_UserNotFound() throws Exception {
-        when(bookingService.getBookingsByUser("unknown@email.com"))
+        when(bookingService.getBookingsByUserEmail("unknown@email.com"))
                 .thenThrow(new IllegalArgumentException("User not found"));
 
         mockMvc.perform(get("/api/bookings/my-bookings"))
