@@ -48,6 +48,12 @@ public class PaymentSteps {
 
     @Before("@SCRUM-16")
     public void setUp() {
+        // Clean database before each scenario
+        bookingRepository.deleteAll();
+        vehicleRepository.deleteAll();
+        userRepository.deleteAll();
+
+        // Initialize Playwright
         playwright = Playwright.create();
         boolean headless = false;
         String ci = System.getenv("CI");
