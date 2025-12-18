@@ -15,6 +15,8 @@ import tqs.backend.repository.VehicleRepository;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,5 +140,23 @@ public class BookingService {
                                 confirmed.getTotalPrice(),
                                 confirmed.getVehicle().getId(),
                                 confirmed.getRenter().getId());
+        }
+
+        public List<BookingDTO> getBookingsByUserEmail(String email) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                List<Booking> bookings = bookingRepository.findByRenter(user);
+
+                return bookings.stream()
+                                .map(booking -> new BookingDTO(
+                                                booking.getId(),
+                                                booking.getPickupDate(),
+                                                booking.getReturnDate(),
+                                                booking.getStatus(),
+                                                booking.getTotalPrice(),
+                                                booking.getVehicle().getId(),
+                                                booking.getRenter().getId()))
+                                .collect(Collectors.toList());
         }
 }

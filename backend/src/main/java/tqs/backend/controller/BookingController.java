@@ -38,4 +38,17 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
+
+    @GetMapping("/my-bookings")
+    public ResponseEntity<Object> getMyBookings() {
+        try {
+            // Get authenticated user email from JWT
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String userEmail = authentication.getName();
+
+            return ResponseEntity.ok(bookingService.getBookingsByUserEmail(userEmail));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
