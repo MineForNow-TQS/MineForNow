@@ -1,33 +1,64 @@
 // Base URL do backend
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
+// Imagens placeholder para veículos sem imagem
+const PLACEHOLDER_IMAGES = [
+  '/Images/photo-1449965408869-eaa3f722e40d.jpeg',
+  '/Images/photo-1494976388531-d1058494cdd8.jpeg',
+  '/Images/photo-1503376780353-7e6692767b70.jpeg',
+  '/Images/photo-1549317661-bd32c8ce0db2.jpeg',
+  '/Images/photo-1560958089-b8a1929cea89.jpeg',
+  '/Images/photo-1606220838315-056192d5e927.jpeg',
+  '/Images/photo-1609521263047-f8f205293f24.jpeg',
+  '/Images/photo-1617814076367-b759c7d7e738.jpeg',
+  '/Images/photo-1618843479313-40f8afb4b4d8.jpeg',
+];
+
+// Obtém URL da imagem do carro - usa imageUrl se existir, senão usa placeholder
+const getCarImageUrl = (imageUrl, carId) => {
+  // Se tem imageUrl válida
+  if (imageUrl && imageUrl.trim() !== '') {
+    // Se a URL começa com /api, adiciona o host do backend
+    if (imageUrl.startsWith('/api')) {
+      return `http://localhost:8080${imageUrl}`;
+    }
+    return imageUrl;
+  }
+  // Usa placeholder baseado no ID do carro para consistência
+  const index = carId ? Math.abs(carId) % PLACEHOLDER_IMAGES.length : Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+  return PLACEHOLDER_IMAGES[index];
+};
+
 // Adaptador: Converte dados do backend (camelCase) para o formato do frontend (snake_case)
-const adaptVehicleFromBackend = (vehicle) => ({
-  id: vehicle.id,
-  brand: vehicle.brand,
-  model: vehicle.model,
-  year: vehicle.year,
-  type: vehicle.type,
-  fuel_type: vehicle.fuelType,
-  transmission: vehicle.transmission,
-  seats: vehicle.seats,
-  doors: vehicle.doors,
-  air_conditioning: vehicle.hasAC,
-  gps: vehicle.hasGPS,
-  bluetooth: vehicle.hasBluetooth,
-  price_per_day: vehicle.pricePerDay,
-  location: vehicle.exactLocation,
-  city: vehicle.city,
-  description: vehicle.description,
-  images: vehicle.imageUrl ? [vehicle.imageUrl] : [],
-  image_url: vehicle.imageUrl,
-  license_plate: vehicle.licensePlate,
-  mileage: vehicle.mileage,
-  display_name: vehicle.displayName,
-  formatted_price: vehicle.formattedPrice,
-  owner_name: vehicle.ownerName,
-  owner_email: vehicle.ownerEmail,
-});
+const adaptVehicleFromBackend = (vehicle) => {
+  const imageUrl = getCarImageUrl(vehicle.imageUrl, vehicle.id);
+  return {
+    id: vehicle.id,
+    brand: vehicle.brand,
+    model: vehicle.model,
+    year: vehicle.year,
+    type: vehicle.type,
+    fuel_type: vehicle.fuelType,
+    transmission: vehicle.transmission,
+    seats: vehicle.seats,
+    doors: vehicle.doors,
+    air_conditioning: vehicle.hasAC,
+    gps: vehicle.hasGPS,
+    bluetooth: vehicle.hasBluetooth,
+    price_per_day: vehicle.pricePerDay,
+    location: vehicle.exactLocation,
+    city: vehicle.city,
+    description: vehicle.description,
+    images: [imageUrl],
+    image_url: imageUrl,
+    license_plate: vehicle.licensePlate,
+    mileage: vehicle.mileage,
+    display_name: vehicle.displayName,
+    formatted_price: vehicle.formattedPrice,
+    owner_name: vehicle.ownerName,
+    owner_email: vehicle.ownerEmail,
+  };
+};
 
 export const carService = {
   // Listar todos os carros com filtros opcionais
@@ -35,7 +66,7 @@ export const carService = {
     try {
       // Construir query parameters
       const params = new URLSearchParams();
-      
+
       if (filters.city) {
         params.append('city', filters.city);
       }
@@ -48,13 +79,13 @@ export const carService = {
 
       const url = `${API_BASE_URL}/vehicles/search${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       let cars = await response.json();
-      
+
       // Adaptar dados do backend para o formato do frontend
       cars = cars.map(adaptVehicleFromBackend);
 
@@ -89,14 +120,14 @@ export const carService = {
   async get(id) {
     try {
       const response = await fetch(`${API_BASE_URL}/vehicles/${id}`);
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Carro não encontrado');
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const car = await response.json();
       return { data: adaptVehicleFromBackend(car) };
     } catch (error) {
@@ -105,33 +136,83 @@ export const carService = {
     }
   },
 
-  // Obter carros de um owner específico
-  async getCarsByOwner(ownerId) {
+  // Obter carros do owner autenticado
+  async getCarsByOwner() {
     try {
-      // Por enquanto usa o list com filtro
-      const result = await this.list({ owner_id: ownerId });
-      return result;
+      const token = localStorage.getItem('authToken');
+      const headers = {};
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/vehicles/my-vehicles`, {
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      let cars = await response.json();
+      // Adaptar dados do backend para o formato do frontend
+      cars = cars.map(adaptVehicleFromBackend);
+      return { data: cars };
     } catch (error) {
       console.error('Erro ao buscar carros do owner:', error);
       throw error;
     }
   },
 
+  // Adaptador: Converte dados do frontend (snake_case) para o formato do backend (camelCase)
+  adaptVehicleToBackend(carData) {
+    return {
+      brand: carData.brand,
+      model: carData.model,
+      year: carData.year,
+      type: carData.type,
+      fuelType: carData.fuel_type,
+      transmission: carData.transmission,
+      seats: carData.seats,
+      doors: carData.doors,
+      hasAC: carData.air_conditioning,
+      hasGPS: carData.gps,
+      hasBluetooth: carData.bluetooth,
+      pricePerDay: carData.price_per_day,
+      exactLocation: carData.location,
+      city: carData.city,
+      description: carData.description,
+      licensePlate: carData.license_plate,
+      mileage: carData.mileage,
+      imageUrl: carData.image_url,
+    };
+  },
+
   // Criar um novo carro
   async create(carData) {
     try {
+      const token = localStorage.getItem('authToken');
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // Converter para o formato do backend
+      const backendData = this.adaptVehicleToBackend(carData);
+
       const response = await fetch(`${API_BASE_URL}/vehicles`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(carData),
+        headers,
+        body: JSON.stringify(backendData),
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const newCar = await response.json();
       return { data: newCar };
     } catch (error) {
@@ -143,21 +224,34 @@ export const carService = {
   // Atualizar um carro
   async update(id, carData) {
     try {
+      const token = localStorage.getItem('authToken');
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // Converter para o formato do backend
+      const backendData = this.adaptVehicleToBackend(carData);
+
       const response = await fetch(`${API_BASE_URL}/vehicles/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(carData),
+        headers,
+        body: JSON.stringify(backendData),
       });
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Carro não encontrado');
         }
+        if (response.status === 403) {
+          throw new Error('Não tem permissão para editar este carro');
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const updatedCar = await response.json();
       return { data: updatedCar };
     } catch (error) {
@@ -174,17 +268,28 @@ export const carService = {
   // Deletar um carro
   async delete(id) {
     try {
+      const token = localStorage.getItem('authToken');
+      const headers = {};
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/vehicles/${id}`, {
         method: 'DELETE',
+        headers,
       });
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Carro não encontrado');
         }
+        if (response.status === 403) {
+          throw new Error('Não tem permissão para eliminar este carro');
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       return { success: true };
     } catch (error) {
       console.error('Erro ao deletar carro:', error);
@@ -200,5 +305,36 @@ export const carService = {
   // Alias para list (para compatibilidade com AdminStatsDashboard)
   async searchCars(filters = {}) {
     return this.list(filters);
+  },
+
+  // Upload de imagem
+  async uploadImage(file) {
+    try {
+      const token = localStorage.getItem('authToken');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/files/upload`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return { url: result.url };
+    } catch (error) {
+      console.error('Erro ao fazer upload da imagem:', error);
+      throw error;
+    }
   },
 };

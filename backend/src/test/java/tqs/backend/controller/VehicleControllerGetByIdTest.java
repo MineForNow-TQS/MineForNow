@@ -1,7 +1,6 @@
 package tqs.backend.controller;
 
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.test.context.support.WithMockUser;
 
 /**
  * Testes unitários do VehicleController - Endpoint GET /{id} (SCRUM-12).
@@ -29,19 +29,16 @@ import org.springframework.test.context.ActiveProfiles;
 import tqs.backend.config.SecurityConfig;
 import tqs.backend.security.JwtUtils;
 import tqs.backend.security.UserDetailsServiceImpl;
-import tqs.backend.security.JwtAuthenticationFilter;
 
 @WebMvcTest(VehicleController.class)
 @ActiveProfiles("test")
 @Import(SecurityConfig.class)
 @DisplayName("VehicleController GET /{id} Tests")
+@WithMockUser
 class VehicleControllerGetByIdTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockBean
     private VehicleRepository vehicleRepository;

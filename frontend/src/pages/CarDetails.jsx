@@ -6,7 +6,7 @@ import { reviewService } from '@/services/reviewService';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Star, MapPin, Fuel, Users, Calendar, Shield, Check, ArrowLeft, ChevronLeft, ChevronRight, Car, Snowflake, Bluetooth as BluetoothIcon } from "lucide-react";
+import { Star, MapPin, Fuel, Users, Calendar, Shield, Check, ArrowLeft, ChevronLeft, ChevronRight, Car, Snowflake, Bluetooth as BluetoothIcon, Navigation2 } from "lucide-react";
 import { formatCurrency } from '@/utils';
 
 export default function CarDetails() {
@@ -20,7 +20,7 @@ export default function CarDetails() {
         const result = await carService.get(id);
         return result.data;
     });
-    
+
     const { data: reviewsData } = useQuery(['reviews', id], async () => {
         const result = await reviewService.list({ car_id: id });
         return result.data;
@@ -51,9 +51,9 @@ export default function CarDetails() {
     }
 
     const car = data;
-    // Criar array de imagens (repetir 3 vezes se houver apenas 1)
-    const baseImage = car.images?.[0] || '/Images/photo-1494976388531-d1058494cdd8.jpeg';
-    const images = car.images?.length > 1 ? car.images : [baseImage, baseImage, baseImage];
+    // O adapter já garante que car.images[0] tem uma URL válida (imagem real ou placeholder)
+    const baseImage = car.images?.[0] || car.image_url || '/Images/photo-1494976388531-d1058494cdd8.jpeg';
+    const images = [baseImage, baseImage, baseImage];
     const reviews = reviewsData || [];
 
     const nextImage = () => {
@@ -63,12 +63,20 @@ export default function CarDetails() {
     const prevImage = () => {
         setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
     };
-    
+
     const canReserve = startDate && endDate;
-    
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('pt-PT', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
+
+    // Formata a matrícula para o formato AA-00-BB
+    const formatLicensePlate = (plate) => {
+        if (!plate) return null;
+        const cleaned = plate.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        if (cleaned.length !== 6) return plate; // Se não tiver 6 caracteres, retorna como está
+        return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 4)}-${cleaned.slice(4, 6)}`;
     };
 
     return (
@@ -98,7 +106,7 @@ export default function CarDetails() {
                                     alt={`${car.brand} ${car.model}`}
                                     className="w-full h-full object-cover"
                                 />
-                                
+
                                 {images.length > 1 && (
                                     <>
                                         <button
@@ -116,7 +124,7 @@ export default function CarDetails() {
                                     </>
                                 )}
                             </div>
-                            
+
                             {/* Thumbnail Preview */}
                             {images.length > 1 && (
                                 <div className="flex gap-2 mt-3">
@@ -124,9 +132,8 @@ export default function CarDetails() {
                                         <button
                                             key={idx}
                                             onClick={() => setCurrentImageIndex(idx)}
-                                            className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                                                idx === currentImageIndex ? 'border-slate-900' : 'border-slate-200'
-                                            }`}
+                                            className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${idx === currentImageIndex ? 'border-slate-900' : 'border-slate-200'
+                                                }`}
                                         >
                                             <img src={img} alt="" className="w-full h-full object-cover" />
                                         </button>
@@ -138,19 +145,22 @@ export default function CarDetails() {
                         {/* Title and Badge */}
                         <div>
                             <span className="inline-block bg-slate-900 text-white px-3 py-1 rounded-lg text-xs font-semibold mb-3 capitalize">
-                                {car.type === 'citadino' ? 'Citadino' : 
-                                 car.type === 'suv' ? 'SUV' : 
-                                 car.type === 'hatchback' ? 'Hatchback' : 
-                                 car.type === 'desportivo' ? 'Desportivo' : 'Sedan'}
+                                {car.type === 'citadino' ? 'Citadino' :
+                                    car.type === 'suv' ? 'SUV' :
+                                        car.type === 'hatchback' ? 'Hatchback' :
+                                            car.type === 'desportivo' ? 'Desportivo' : 'Sedan'}
                             </span>
                             <h1 className="text-3xl font-bold text-slate-900 mb-1">
                                 {car.brand} {car.model}
                             </h1>
-                            <p className="text-slate-500 mb-3">{car.year}</p>
-                            
+                            <p className="text-slate-500 mb-1">{car.year}</p>
+                            {car.license_plate && (
+                                <p className="text-slate-400 text-sm mb-3">{formatLicensePlate(car.license_plate)}</p>
+                            )}
+
                             <div className="flex items-center gap-2 text-slate-600">
                                 <MapPin className="w-4 h-4" />
-                                <span>Estação de Comboios, {car.city}</span>
+                                <span>{car.location ? `${car.location}, ${car.city}` : car.city}</span>
                             </div>
                         </div>
 
@@ -160,10 +170,10 @@ export default function CarDetails() {
                                 <Fuel className="w-6 h-6 text-indigo-600 mx-auto mb-2" />
                                 <p className="text-xs text-slate-500 mb-1">Combustível</p>
                                 <p className="font-semibold text-slate-900 text-sm">
-                                    {car.fuel_type === 'gasoline' ? 'Gasolina' : 
-                                     car.fuel_type === 'diesel' ? 'Diesel' : 
-                                     car.fuel_type === 'electric' ? 'Elétrico' : 
-                                     car.fuel_type === 'hybrid' ? 'Híbrido' : car.fuel_type}
+                                    {car.fuel_type === 'gasoline' ? 'Gasolina' :
+                                        car.fuel_type === 'diesel' ? 'Diesel' :
+                                            car.fuel_type === 'electric' ? 'Elétrico' :
+                                                car.fuel_type === 'hybrid' ? 'Híbrido' : car.fuel_type}
                                 </p>
                             </div>
                             <div className="bg-white rounded-xl p-4 border border-slate-200 text-center">
@@ -191,6 +201,12 @@ export default function CarDetails() {
                                     <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm border border-slate-200">
                                         <Snowflake className="w-5 h-5 text-slate-700" />
                                         <span className="text-slate-900">Ar Condicionado</span>
+                                    </div>
+                                )}
+                                {car.gps && (
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm border border-slate-200">
+                                        <Navigation2 className="w-5 h-5 text-slate-700" />
+                                        <span className="text-slate-900">GPS</span>
                                     </div>
                                 )}
                                 {car.bluetooth && (
@@ -227,7 +243,7 @@ export default function CarDetails() {
                                     </div>
                                 )}
                             </div>
-                            
+
                             <div className="space-y-3 mb-6">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -240,7 +256,7 @@ export default function CarDetails() {
                                         className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg"
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Data de Entrega
@@ -253,11 +269,11 @@ export default function CarDetails() {
                                     />
                                 </div>
                             </div>
-                            
-                            <Button 
+
+                            <Button
                                 className="w-full h-12 text-base font-semibold mb-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{ backgroundColor: canReserve ? '#6366f1' : '#9ca3af' }}
-                                onClick={() => canReserve && navigate(`/checkout?carId=${car.id}`)}
+                                onClick={() => canReserve && navigate(`/checkout?carId=${car.id}&start=${startDate}&end=${endDate}`)}
                                 disabled={!canReserve}
                             >
                                 Reservar Agora
@@ -276,7 +292,7 @@ export default function CarDetails() {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Reviews Section - Full Width at Bottom */}
                 <div className="mt-8 lg:col-span-2">
                     <div className="bg-white rounded-xl p-6 border border-slate-200">
@@ -293,7 +309,7 @@ export default function CarDetails() {
                                 Escrever Avaliação
                             </Button>
                         </div>
-                        
+
                         {reviews.length > 0 ? (
                             <div className="space-y-4">
                                 {reviews.map((review) => (
@@ -307,11 +323,10 @@ export default function CarDetails() {
                                                 {[...Array(5)].map((_, i) => (
                                                     <Star
                                                         key={i}
-                                                        className={`w-4 h-4 ${
-                                                            i < review.rating
-                                                                ? 'fill-amber-400 text-amber-400'
-                                                                : 'text-slate-300'
-                                                        }`}
+                                                        className={`w-4 h-4 ${i < review.rating
+                                                            ? 'fill-amber-400 text-amber-400'
+                                                            : 'text-slate-300'
+                                                            }`}
                                                     />
                                                 ))}
                                             </div>
