@@ -3,12 +3,14 @@ package tqs.backend.controller;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -42,6 +44,10 @@ import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.service.VehicleService;
+
+import org.mockito.ArgumentCaptor;
+import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.nullable;
 
 @WebMvcTest(VehicleController.class)
 @ActiveProfiles("test")
@@ -112,8 +118,16 @@ class VehicleControllerTest {
                                 .build();
 
                 // Mock: Se pedirem datas, devolve o Tesla
-                given(vehicleRepository.findAvailableVehicles(eq("Porto"), any(LocalDate.class), any(LocalDate.class)))
-                                .willReturn(Arrays.asList(car));
+                given(vehicleService.searchVehicles(
+                                eq("Porto"),
+                                any(LocalDate.class),
+                                any(LocalDate.class),
+                                nullable(Double.class),
+                                nullable(Double.class),
+                                nullable(List.class),
+                                nullable(List.class)))
+                        .willReturn(Arrays.asList(car));
+
 
                 mvc.perform(get("/api/vehicles/search")
                                 .param("city", "Porto")
@@ -173,8 +187,15 @@ class VehicleControllerTest {
                                 .model("Leaf")
                                 .build();
 
-                given(vehicleRepository.findAvailableVehiclesByDates(any(LocalDate.class), any(LocalDate.class)))
-                                .willReturn(Arrays.asList(car));
+                given(vehicleService.searchVehicles(
+                                nullable(String.class),
+                                any(LocalDate.class),
+                                any(LocalDate.class),
+                                nullable(Double.class),
+                                nullable(Double.class),
+                                nullable(List.class),
+                                nullable(List.class)))
+                        .willReturn(Arrays.asList(car));
 
                 mvc.perform(get("/api/vehicles/search")
                                 .param("pickup", "2025-12-10")
@@ -308,4 +329,95 @@ class VehicleControllerTest {
                                 .content(new ObjectMapper().writeValueAsString(request)))
                                 .andExpect(status().isBadRequest());
         }
+
+        @Test
+        void givenVehicles_whenSearchVehiclesWithCombinedFiltersCsv_thenCallsServiceWithNormalizedLists() throws Exception {
+                Vehicle v1 = Vehicle.builder().id(1L).brand("Fiat").model("500").build();
+                List<Vehicle> vehicles = List.of(v1);
+
+                given(vehicleService.searchVehicles(
+                        eq("Lisboa"),
+                        eq(LocalDate.parse("2025-12-20")),
+                        eq(LocalDate.parse("2025-12-22")),
+                        eq(40.0),
+                        eq(100.0),
+                        anyList(),
+                        anyList()
+                )).willReturn(vehicles);
+
+                mvc.perform(get("/api/vehicles/search")
+                                .param("city", "Lisboa")
+                                .param("pickup", "2025-12-20")
+                                .param("dropoff", "2025-12-22")
+                                .param("minPrice", "40")
+                                .param("maxPrice", "100")
+                                .param("categories", "SUV,Citadino")
+                                .param("fuelTypes", "Gasolina,Elétrico")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$", hasSize(1)))
+                        .andExpect(jsonPath("$[0].id", is(1)));
+
+                ArgumentCaptor<List<String>> categoriesCaptor = ArgumentCaptor.forClass(List.class);
+                ArgumentCaptor<List<String>> fuelTypesCaptor = ArgumentCaptor.forClass(List.class);
+
+                verify(vehicleService).searchVehicles(
+                        eq("Lisboa"),
+                        eq(LocalDate.parse("2025-12-20")),
+                        eq(LocalDate.parse("2025-12-22")),
+                        eq(40.0),
+                        eq(100.0),
+                        categoriesCaptor.capture(),
+                        fuelTypesCaptor.capture()
+                );
+
+                // normalização esperada
+                org.junit.jupiter.api.Assertions.assertEquals(List.of("SUV", "Citadino"), categoriesCaptor.getValue());
+                org.junit.jupiter.api.Assertions.assertEquals(List.of("Gasolina", "Elétrico"), fuelTypesCaptor.getValue());
+        }
+
+        @Test
+        void givenVehicles_whenSearchVehiclesWithCombinedFiltersRepeatedParams_thenCallsServiceWithNormalizedLists() throws Exception {
+                Vehicle v1 = Vehicle.builder().id(2L).brand("Nissan").model("Juke").build();
+                List<Vehicle> vehicles = List.of(v1);
+
+                given(vehicleService.searchVehicles(
+                        eq(null),
+                        eq(LocalDate.parse("2025-12-20")),
+                        eq(LocalDate.parse("2025-12-22")),
+                        eq(null),
+                        eq(null),
+                        anyList(),
+                        anyList()
+                )).willReturn(vehicles);
+
+                mvc.perform(get("/api/vehicles/search")
+                                .param("pickup", "2025-12-20")
+                                .param("dropoff", "2025-12-22")
+                                .param("categories", "SUV")
+                                .param("categories", "Citadino")
+                                .param("fuelTypes", "Gasolina")
+                                .param("fuelTypes", "Elétrico")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$", hasSize(1)))
+                        .andExpect(jsonPath("$[0].id", is(2)));
+
+                ArgumentCaptor<List<String>> categoriesCaptor = ArgumentCaptor.forClass(List.class);
+                ArgumentCaptor<List<String>> fuelTypesCaptor = ArgumentCaptor.forClass(List.class);
+
+                verify(vehicleService).searchVehicles(
+                        eq(null),
+                        eq(LocalDate.parse("2025-12-20")),
+                        eq(LocalDate.parse("2025-12-22")),
+                        eq(null),
+                        eq(null),
+                        categoriesCaptor.capture(),
+                        fuelTypesCaptor.capture()
+                );
+
+                org.junit.jupiter.api.Assertions.assertEquals(List.of("SUV", "Citadino"), categoriesCaptor.getValue());
+                org.junit.jupiter.api.Assertions.assertEquals(List.of("Gasolina", "Elétrico"), fuelTypesCaptor.getValue());
+        }
+
 }

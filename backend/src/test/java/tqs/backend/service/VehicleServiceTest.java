@@ -16,14 +16,22 @@ import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.model.UserRole;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
+
+import org.junit.jupiter.api.Nested;
+import org.mockito.ArgumentCaptor;
+import static org.mockito.BDDMockito.given;
 
 /**
  * Testes unitários do VehicleService.
@@ -406,5 +414,86 @@ class VehicleServiceTest {
 
         // Assert
         verify(vehicleRepository).delete(testVehicle);
+    }
+
+    @Test
+    void whenSearchVehiclesWithEmptyLists_thenRepositoryReceivesNullLists() {
+        // Arrange
+        given(vehicleRepository.searchAvailableWithFilters(
+                eq("Lisboa"),
+                eq(LocalDate.parse("2025-12-20")),
+                eq(LocalDate.parse("2025-12-22")),
+                eq(10.0),
+                eq(100.0),
+                isNull(),
+                isNull()
+        )).willReturn(List.of());
+
+        // Act
+        vehicleService.searchVehicles(
+                "Lisboa",
+                LocalDate.parse("2025-12-20"),
+                LocalDate.parse("2025-12-22"),
+                10.0,
+                100.0,
+                List.of(),     // <- vazio
+                List.of()      // <- vazio
+        );
+
+        // Assert: capturar o que o service realmente passou ao repository
+        ArgumentCaptor<List<String>> categoriesCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<String>> fuelCaptor = ArgumentCaptor.forClass(List.class);
+
+        verify(vehicleRepository).searchAvailableWithFilters(
+                eq("Lisboa"),
+                eq(LocalDate.parse("2025-12-20")),
+                eq(LocalDate.parse("2025-12-22")),
+                eq(10.0),
+                eq(100.0),
+                categoriesCaptor.capture(),
+                fuelCaptor.capture()
+        );
+
+        org.junit.jupiter.api.Assertions.assertNull(categoriesCaptor.getValue());
+        org.junit.jupiter.api.Assertions.assertNull(fuelCaptor.getValue());
+    }
+
+    @Test
+    void whenSearchVehiclesWithLists_thenRepositoryReceivesSameLists() {
+        // Arrange
+        List<String> categories = List.of("SUV", "Citadino");
+        List<String> fuelTypes = List.of("Gasolina", "Elétrico");
+
+        given(vehicleRepository.searchAvailableWithFilters(
+                eq(null),
+                eq(LocalDate.parse("2025-12-20")),
+                eq(LocalDate.parse("2025-12-22")),
+                eq(null),
+                eq(null),
+                eq(categories),
+                eq(fuelTypes)
+        )).willReturn(List.of());
+
+        // Act
+        vehicleService.searchVehicles(
+                null,
+                LocalDate.parse("2025-12-20"),
+                LocalDate.parse("2025-12-22"),
+                null,
+                null,
+                categories,
+                fuelTypes
+        );
+
+        // Assert
+        verify(vehicleRepository).searchAvailableWithFilters(
+                eq(null),
+                eq(LocalDate.parse("2025-12-20")),
+                eq(LocalDate.parse("2025-12-22")),
+                eq(null),
+                eq(null),
+                eq(categories),
+                eq(fuelTypes)
+        );
     }
 }
