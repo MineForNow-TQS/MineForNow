@@ -69,24 +69,36 @@ public class DashboardService {
         }
 
         public List<BookingDTO> getPendingBookings(String ownerEmail) {
+                System.out.println("=== DEBUG getPendingBookings for: " + ownerEmail);
+                
                 // 1. Find owner by email
                 User owner = userRepository.findByEmail(ownerEmail)
                                 .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
+                System.out.println("Owner found: " + owner.getId());
 
                 // 2. Get all vehicles owned by this user
                 List<Vehicle> vehicles = vehicleRepository.findByOwnerEmail(ownerEmail);
+                System.out.println("Owner has " + vehicles.size() + " vehicles");
 
                 // 3. Get all bookings
                 List<Booking> allBookings = bookingRepository.findAll();
+                System.out.println("Total bookings in DB: " + allBookings.size());
 
                 // 4. Filter bookings for this owner's vehicles with WAITING_PAYMENT status
                 List<Long> vehicleIds = vehicles.stream()
                                 .map(Vehicle::getId)
                                 .toList();
+                System.out.println("Vehicle IDs: " + vehicleIds);
 
-                return allBookings.stream()
+                List<Booking> filtered = allBookings.stream()
                                 .filter(b -> vehicleIds.contains(b.getVehicle().getId()))
                                 .filter(b -> "WAITING_PAYMENT".equals(b.getStatus()))
+                                .toList();
+                
+                System.out.println("Filtered pending bookings: " + filtered.size());
+                filtered.forEach(b -> System.out.println("  - Booking " + b.getId() + " status: " + b.getStatus() + " vehicle: " + b.getVehicle().getId()));
+
+                return filtered.stream()
                                 .map(b -> new BookingDTO(
                                                 b.getId(),
                                                 b.getPickupDate(),

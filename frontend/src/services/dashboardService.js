@@ -11,7 +11,7 @@ export const dashboardService = {
      * @returns {Promise} Promise with dashboard stats (totalRevenue, activeVehicles, pendingBookings, completedBookings)
      */
     getOwnerStats: async () => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
 
         if (!token) {
             throw new Error('No authentication token found');
