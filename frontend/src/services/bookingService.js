@@ -35,5 +35,35 @@ export const bookingService = {
             console.error('Erro ao criar reserva:', error);
             throw error;
         }
+    },
+
+    async getMyBookings() {
+        try {
+            const token = localStorage.getItem('authToken');
+
+            if (!token) {
+                throw new Error('Não autenticado. Por favor, faça login novamente.');
+            }
+
+            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Sessão expirada. Por favor, faça login novamente.');
+                }
+                const errorText = await response.text();
+                throw new Error(errorText || `HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Erro ao buscar reservas:', error);
+            throw error;
+        }
     }
 };
