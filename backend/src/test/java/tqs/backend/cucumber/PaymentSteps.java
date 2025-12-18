@@ -172,4 +172,11 @@ public class PaymentSteps {
         // Check for validation error messages
         assertThat(bookingSteps.getPage().getByText("Insira os últimos 4 dígitos do cartão")).isVisible();
     }
+
+    @Então("devo ser redirecionado para o dashboard")
+    public void devoSerRedirecionadoParaDashboard() {
+        // Wait for redirect to dashboard (happens after 2 seconds)
+        bookingSteps.getPage().waitForURL("**/dashboard", new Page.WaitForURLOptions().setTimeout(5000));
+        System.out.println("✓ Redirecionado para dashboard: " + bookingSteps.getPage().url());
+    }
 }

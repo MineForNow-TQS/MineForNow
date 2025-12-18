@@ -17,8 +17,8 @@ Funcionalidade: Simulação de Pagamento e Confirmação
     E preencho o campo "Validade (MM/YY)" com "12/25"
     E preencho o campo "CVV" com "123"
     E aciono o botão "Confirmar Pagamento"
-    Então devo ver a mensagem "Pagamento Confirmado!"
-    E a reserva deve ter o estado "CONFIRMED"
+    Então a reserva deve ter o estado "CONFIRMED"
+    E devo ser redirecionado para o dashboard
 
   @SCRUM-16
   Cenário: Tentar confirmar pagamento de reserva já confirmada
