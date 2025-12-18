@@ -18,7 +18,7 @@ public class BookingSteps {
     private BrowserContext context;
     private Page page;
 
-    @Before({ "@SCRUM-15", "@SCRUM-16" })
+    @Before(value = "@SCRUM-15 or @SCRUM-16")
     public void setUp() {
         playwright = Playwright.create();
         boolean headless = false;
@@ -37,7 +37,7 @@ public class BookingSteps {
         page.setDefaultTimeout(60000);
     }
 
-    @After({ "@SCRUM-15", "@SCRUM-16" })
+    @After(value = "@SCRUM-15 or @SCRUM-16")
     public void tearDown() {
         if (page != null)
             page.close();
