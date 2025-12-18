@@ -1,8 +1,11 @@
 package tqs.backend.cucumber;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.nio.file.Paths;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -295,7 +298,14 @@ public class VehicleSearchSteps {
 
     @E("devo ver a mensagem {string}")
     public void devoVerAMensagem(String mensagem) {
-        page.waitForTimeout(1000); // Wait for message to appear
+        // Wait for the message to appear with a longer timeout
+        try {
+            page.waitForSelector("text=" + mensagem, new Page.WaitForSelectorOptions().setTimeout(5000));
+        } catch (Exception e) {
+            // Take screenshot for debugging
+            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("/tmp/payment-error.png")));
+            System.out.println("Screenshot saved to /tmp/payment-error.png");
+        }
 
         // Procurar pela mensagem na página
         Locator elemento = page.getByText(mensagem);
