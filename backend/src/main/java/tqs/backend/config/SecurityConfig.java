@@ -66,6 +66,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // NOSONAR CSRF is not required for stateless JWT authentication
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()               // Actuator endpoints
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll() // Allow viewing vehicles
                         .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // Allow viewing uploaded images
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger
