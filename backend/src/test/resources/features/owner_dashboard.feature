@@ -1,10 +1,11 @@
 # language: pt
-@SCRUM-24
+
 Funcionalidade: Dashboard de Gestão do Proprietário
   Como Owner
   Quero visualizar métricas do meu negócio
   Para acompanhar o desempenho dos meus alugueres
 
+  @SCRUM-24
   Cenário: Owner visualiza dashboard com métricas corretas
     Dado que existe um owner autenticado com email "owner@minefornow.com"
     E que o owner tem 3 veículos cadastrados

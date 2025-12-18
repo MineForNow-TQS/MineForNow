@@ -1,5 +1,6 @@
 package tqs.backend.service;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -101,6 +102,7 @@ class DashboardServiceTest {
         }
 
         @Test
+        @Requirement("SCRUM-24")
         void getOwnerStats_Success() {
                 // Given
                 when(userRepository.findByEmail("owner@test.com")).thenReturn(Optional.of(owner));
@@ -121,6 +123,7 @@ class DashboardServiceTest {
         }
 
         @Test
+        @Requirement("SCRUM-24")
         void getOwnerStats_NoVehicles() {
                 // Given
                 when(userRepository.findByEmail("owner@test.com")).thenReturn(Optional.of(owner));
@@ -139,6 +142,7 @@ class DashboardServiceTest {
         }
 
         @Test
+        @Requirement("SCRUM-24")
         void getOwnerStats_MultipleConfirmedBookings() {
                 // Given
                 Booking confirmedBooking2 = new Booking(
@@ -165,6 +169,7 @@ class DashboardServiceTest {
         }
 
         @Test
+        @Requirement("SCRUM-24")
         void getOwnerStats_UserNotFound() {
                 // Given
                 when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
@@ -176,6 +181,7 @@ class DashboardServiceTest {
         }
 
         @Test
+        @Requirement("SCRUM-24")
         void getOwnerStats_OnlyPendingBookings() {
                 // Given
                 when(userRepository.findByEmail("owner@test.com")).thenReturn(Optional.of(owner));

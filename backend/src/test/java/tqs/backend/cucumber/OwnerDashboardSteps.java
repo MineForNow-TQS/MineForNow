@@ -44,12 +44,9 @@ public class OwnerDashboardSteps {
 
     @Dado("que existe um owner autenticado com email {string}")
     public void queExisteUmOwnerAutenticadoComEmail(String email) {
-        // Create owner user
-        owner = new User();
-        owner.setEmail(email);
-        owner.setPassword("$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"); // password123
-        owner.setRole(UserRole.OWNER);
-        owner = userRepository.save(owner);
+        // Use existing owner from TestDataInitializer
+        owner = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Owner not found: " + email));
 
         // Login to get token
         Map<String, String> loginRequest = Map.of(
@@ -61,12 +58,22 @@ public class OwnerDashboardSteps {
                 loginRequest,
                 Map.class);
 
+        assertNotNull(loginResponse.getBody(),
+                "Login response body should not be null. Status: " + loginResponse.getStatusCode());
         authToken = (String) loginResponse.getBody().get("token");
-        assertNotNull(authToken, "Auth token should not be null");
+        assertNotNull(authToken, "Auth token should not be null. Response: " + loginResponse.getBody());
     }
 
     @Dado("que o owner tem {int} veículos cadastrados")
     public void queOOwnerTemVeiculosCadastrados(int numVehicles) {
+        // Clear existing vehicles and their bookings for this owner
+        List<Vehicle> existingVehicles = vehicleRepository.findByOwnerEmail(owner.getEmail());
+        for (Vehicle v : existingVehicles) {
+            bookingRepository.deleteAll(bookingRepository.findByVehicleId(v.getId()));
+        }
+        vehicleRepository.deleteAll(existingVehicles);
+
+        // Create new vehicles
         for (int i = 1; i <= numVehicles; i++) {
             Vehicle vehicle = new Vehicle();
             vehicle.setOwner(owner);
@@ -87,12 +94,15 @@ public class OwnerDashboardSteps {
         List<Vehicle> vehicles = vehicleRepository.findByOwnerEmail(owner.getEmail());
         Vehicle vehicle = vehicles.get(0); // Use first vehicle
 
-        // Create a renter user
-        User renter = new User();
-        renter.setEmail("renter@test.com");
-        renter.setPassword("password");
-        renter.setRole(UserRole.RENTER);
-        renter = userRepository.save(renter);
+        // Use existing renter or create a new one with unique email
+        User renter = userRepository.findByEmail("test-renter@test.com")
+                .orElseGet(() -> {
+                    User newRenter = new User();
+                    newRenter.setEmail("test-renter@test.com");
+                    newRenter.setPassword("password");
+                    newRenter.setRole(UserRole.RENTER);
+                    return userRepository.save(newRenter);
+                });
 
         List<Map<String, String>> rows = dataTable.asMaps();
         for (Map<String, String> row : rows) {

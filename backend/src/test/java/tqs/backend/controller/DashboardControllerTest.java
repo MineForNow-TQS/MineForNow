@@ -1,5 +1,6 @@
 package tqs.backend.controller;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ class DashboardControllerTest {
     }
 
     @Test
+    @Requirement("SCRUM-24")
     @WithMockUser(username = "owner@test.com", roles = "OWNER")
     void getOwnerDashboard_Success() throws Exception {
         // Given
@@ -55,6 +57,7 @@ class DashboardControllerTest {
     }
 
     @Test
+    @Requirement("SCRUM-24")
     @WithMockUser(username = "owner@test.com", roles = "OWNER")
     void getOwnerDashboard_NoVehicles() throws Exception {
         // Given
@@ -71,6 +74,7 @@ class DashboardControllerTest {
     }
 
     @Test
+    @Requirement("SCRUM-24")
     @WithMockUser(username = "unknown@test.com", roles = "OWNER")
     void getOwnerDashboard_OwnerNotFound() throws Exception {
         // Given
@@ -84,6 +88,7 @@ class DashboardControllerTest {
     }
 
     @Test
+    @Requirement("SCRUM-24")
     void getOwnerDashboard_Unauthorized() throws Exception {
         // When & Then
         mockMvc.perform(get("/api/dashboard/owner"))
@@ -91,6 +96,7 @@ class DashboardControllerTest {
     }
 
     @Test
+    @Requirement("SCRUM-24")
     @WithMockUser(username = "owner@test.com", roles = "RENTER")
     void getOwnerDashboard_WrongRole() throws Exception {
         // When & Then - Should still work as long as authenticated
