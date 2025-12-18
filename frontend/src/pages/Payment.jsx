@@ -114,11 +114,11 @@ export default function Payment() {
             }, 2000);
         } catch (error) {
             console.error('Payment error:', error);
-            setSubmitError(
-                error.response?.data?.message ||
+            // Show the specific backend error message
+            const errorMessage = error.response?.data?.message ||
                 error.response?.data ||
-                'Erro ao processar pagamento. Tente novamente.'
-            );
+                'Erro ao processar pagamento. Tente novamente.';
+            setSubmitError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
