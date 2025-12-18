@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -47,11 +48,10 @@ public class VehicleController {
     /**
      * Endpoint para criar um novo veículo (SCRUM-7).
      * Requer autenticação - apenas Owners podem criar veículos.
-     * 
+     *
      * @param request     dados do veículo a criar
      * @param userDetails informação do utilizador autenticado
-     * @return 201 Created com o veículo criado, ou 400 Bad Request se validação
-     *         falhar
+     * @return 201 Created com o veículo criado, ou 400 Bad Request se validação falhar
      */
     @PostMapping
     public ResponseEntity<Vehicle> createVehicle(
@@ -73,7 +73,7 @@ public class VehicleController {
     /**
      * Endpoint para buscar os veículos do owner autenticado (SCRUM-7).
      * Requer autenticação - retorna apenas veículos do utilizador logado.
-     * 
+     *
      * @param userDetails informação do utilizador autenticado
      * @return lista de veículos do owner
      */
@@ -91,11 +91,11 @@ public class VehicleController {
 
     /**
      * Endpoint para buscar detalhes de um veículo específico (SCRUM-12).
-     * 
+     *
      * @param id ID do veículo
      * @return 200 OK com os detalhes do veículo, ou 404 Not Found se não existir
      */
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public ResponseEntity<VehicleDetailDTO> getVehicleById(@PathVariable Long id) {
         return vehicleService.getVehicleById(id)
                 .map(ResponseEntity::ok)
@@ -104,7 +104,7 @@ public class VehicleController {
 
     /**
      * Endpoint para buscar veículos disponíveis para aluguer (SCRUM-12).
-     * 
+     *
      * @param city    cidade de origem
      * @param pickup  data de retirada
      * @param dropoff data de devolução
@@ -126,8 +126,7 @@ public class VehicleController {
             return vehicleRepository.findAvailableVehicles(city, pickup, dropoff);
         }
 
-        // Se só tiver datas (sem cidade), filtra por disponibilidade em todas as
-        // cidades
+        // Se só tiver datas (sem cidade), filtra por disponibilidade em todas as cidades
         if (pickup != null && dropoff != null) {
             return vehicleRepository.findAvailableVehiclesByDates(pickup, dropoff);
         }
@@ -144,13 +143,13 @@ public class VehicleController {
     /**
      * Endpoint para atualizar um veículo existente (SCRUM-7).
      * Requer autenticação - apenas o owner do veículo pode atualizá-lo.
-     * 
+     *
      * @param id          ID do veículo
      * @param request     dados atualizados do veículo
      * @param userDetails informação do utilizador autenticado
      * @return 200 OK com o veículo atualizado, ou 403 se não for o owner
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     public ResponseEntity<Vehicle> updateVehicle(
             @PathVariable Long id,
             @Valid @RequestBody CreateVehicleRequest request,
@@ -171,12 +170,12 @@ public class VehicleController {
     /**
      * Endpoint para eliminar um veículo existente (SCRUM-7).
      * Requer autenticação - apenas o owner do veículo pode eliminá-lo.
-     * 
+     *
      * @param id          ID do veículo
      * @param userDetails informação do utilizador autenticado
      * @return 204 No Content se eliminado com sucesso, ou 403 se não for o owner
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public ResponseEntity<Void> deleteVehicle(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {

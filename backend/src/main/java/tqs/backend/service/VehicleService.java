@@ -10,6 +10,8 @@ import tqs.backend.model.Vehicle;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -149,4 +151,24 @@ public class VehicleService {
 
         vehicleRepository.delete(vehicle);
     }
+
+    public List<Vehicle> searchVehicles(
+            String city,
+            LocalDate startDate,
+            LocalDate endDate,
+            Double minPrice,
+            Double maxPrice,
+            List<String> categories,
+            List<String> fuelTypes
+    ) {
+        // regra: listas vazias -> null (evita IN ())
+        if (categories != null && categories.isEmpty()) categories = null;
+        if (fuelTypes != null && fuelTypes.isEmpty()) fuelTypes = null;
+
+        // aqui assumes startDate/endDate não-null (como no repo) -> valida no controller
+        return vehicleRepository.searchAvailableWithFilters(
+                city, startDate, endDate, minPrice, maxPrice, categories, fuelTypes
+        );
+    }
+
 }
