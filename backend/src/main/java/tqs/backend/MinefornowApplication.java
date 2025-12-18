@@ -169,4 +169,4 @@ public class MinefornowApplication {
                         System.out.println("✅ E2E Test data: 3 bookings created (2 CONFIRMED, 1 WAITING_PAYMENT)");
                 };
         }
-}```
+}
