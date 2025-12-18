@@ -208,7 +208,6 @@ class UserControllerTest {
                     .content(objectMapper.writeValueAsString(upgradeRequest)))
                     .andExpect(status().isOk());
 
-            // Verifica que el servicio fue llamado con los parámetros correctos
             Mockito.verify(userService)
                    .requestOwnerUpgrade(eq("test@test.com"), any(UpgradeOwnerRequest.class));
         }

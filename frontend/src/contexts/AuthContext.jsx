@@ -9,17 +9,16 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Función para normalizar los datos del usuario (Backend -> Frontend)
   const mapUserData = useCallback((apiData) => {
     return {
       id: apiData.id,
       email: apiData.email,
-      fullName: apiData.fullName || apiData.full_name, // Maneja ambas nomenclaturas
-      role: apiData.role || apiData.user_role,        // Sincroniza con el Enum del Backend
+      fullName: apiData.fullName || apiData.full_name, 
+      role: apiData.role || apiData.user_role,        
     };
   }, []);
 
-  // NUEVA FUNCIÓN: Refresca los datos del usuario desde el servidor
+
   const refreshUser = useCallback(async () => {
     try {
       const response = await userService.getCurrentUser();
@@ -38,7 +37,6 @@ export function AuthProvider({ children }) {
     const initAuth = async () => {
       const token = authService.getToken();
       if (token) {
-        // En lugar de confiar en localStorage, refrescamos los datos al cargar la app
         await refreshUser();
       }
       setLoading(false);
@@ -50,7 +48,6 @@ export function AuthProvider({ children }) {
     const authResponse = await authService.login(email, password);
     authService.setToken(authResponse.token);
 
-    // Usamos la nueva lógica de refresco para obtener los datos tras el login
     return await refreshUser();
   };
 
@@ -74,7 +71,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
-    refreshUser, // Exportamos la función para usarla en BecomeOwner.jsx
+    refreshUser,
     isAuthenticated: !!user && authService.isAuthenticated(),
     loading,
   }), [user, loading, refreshUser]);

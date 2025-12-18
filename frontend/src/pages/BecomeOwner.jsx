@@ -34,11 +34,10 @@ export default function BecomeOwner() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
-    // 1. Sincronizar estado con el backend al montar el componente
     useEffect(() => {
         const verifyStatus = async () => {
             setIsInitialLoading(true);
-            await refreshUser(); // Actualiza el rol en el AuthContext
+            await refreshUser(); 
             setIsInitialLoading(false);
         };
         verifyStatus();
@@ -55,24 +54,18 @@ export default function BecomeOwner() {
         try {
             await ownerRequestService.create(formData);
             
-            // Forzamos actualización del contexto para que el rol cambie a PENDING_OWNER
             await refreshUser(); 
             
             setShowSuccess(true);
-            // Redirigir al dashboard después de un tiempo
             setTimeout(() => navigate('/dashboard'), 4000);
         } catch (error) {
             console.error('Erro:', error);
-            // Captura el mensaje de tu backend: "Pedido já submetido..."
             const errorMsg = error.message || 'Erro ao submeter candidatura.';
             alert(errorMsg);
             setIsSubmitting(false);
         }
     };
 
-    // --- VISTAS CONDICIONALES ---
-
-    // A. Pantalla de carga inicial (Evita el "flash" del formulario)
     if (isInitialLoading) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
@@ -82,7 +75,6 @@ export default function BecomeOwner() {
         );
     }
 
-    // B. Pantalla si ya es OWNER
     if (isAlreadyOwner) {
         return (
             <div className="min-h-screen bg-slate-50 py-12 flex items-center justify-center px-4">
@@ -100,7 +92,6 @@ export default function BecomeOwner() {
         );
     }
 
-    // C. Pantalla si el pedido está PENDIENTE (Sincronizado con el 409 del backend)
     if (isPending || showSuccess) {
         return (
             <div className="min-h-screen bg-slate-50 py-12 flex items-center justify-center px-4">
