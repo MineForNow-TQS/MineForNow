@@ -69,6 +69,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll() // Allow viewing vehicles
                         .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // Allow viewing uploaded images
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger
+                        .requestMatchers("/", "/index.html", "/assets/**", "/vite.svg", "/Images/**").permitAll() // Frontend
+                                                                                                                  // Static
+                        // Resources
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
