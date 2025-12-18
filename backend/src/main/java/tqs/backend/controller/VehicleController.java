@@ -1,6 +1,7 @@
 package tqs.backend.controller;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -102,42 +103,44 @@ public class VehicleController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Endpoint para buscar veículos disponíveis para aluguer (SCRUM-12).
-     *
-     * @param city    cidade de origem
-     * @param pickup  data de retirada
-     * @param dropoff data de devolução
-     * @return lista de veículos disponíveis para aluguer
-     */
+    // SUBSTITUI o método @GetMapping("/search") atual por este:
+
     @GetMapping("/search")
-    public List<Vehicle> searchVehicles(
+    public ResponseEntity<?> searchVehicles(
             @RequestParam(required = false) String city,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate pickup,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dropoff) {
-
-        // Se não houver nenhum filtro, retorna todos os veículos
-        if (city == null && pickup == null && dropoff == null) {
-            return vehicleRepository.findAll();
+            @RequestParam(name = "pickup", required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate pickup,
+            @RequestParam(name = "dropoff", required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate dropoff,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) List<String> fuelTypes
+    ) {
+        // 1) Sem datas => mantém comportamento antigo (não inventa disponibilidade)
+        if (pickup == null || dropoff == null) {
+            if (city != null && !city.isBlank()) {
+                return ResponseEntity.ok(vehicleRepository.findByCityContainingIgnoreCase(city));
+            }
+            return ResponseEntity.ok(vehicleRepository.findAll());
         }
 
-        // Se tiver datas e cidade, filtra por disponibilidade
-        if (city != null && pickup != null && dropoff != null) {
-            return vehicleRepository.findAvailableVehicles(city, pickup, dropoff);
+        // 2) Validações mínimas e claras
+        if (dropoff.isBefore(pickup)) {
+            return ResponseEntity.badRequest().body("'dropoff' não pode ser anterior a 'pickup'.");
+        }
+        if (minPrice != null && maxPrice != null && maxPrice < minPrice) {
+            return ResponseEntity.badRequest().body("'maxPrice' não pode ser menor que 'minPrice'.");
         }
 
-        // Se só tiver datas (sem cidade), filtra por disponibilidade em todas as cidades
-        if (pickup != null && dropoff != null) {
-            return vehicleRepository.findAvailableVehiclesByDates(pickup, dropoff);
-        }
+        // 3) Normaliza params multi-valor:
+        // aceita categories=SUV,Citadino e também categories=SUV&categories=Citadino
+        List<String> normalizedCategories = normalizeMultiValueParam(categories);
+        List<String> normalizedFuelTypes = normalizeMultiValueParam(fuelTypes);
 
-        // Se só tiver cidade, filtra por cidade
-        if (city != null) {
-            return vehicleRepository.findByCityContainingIgnoreCase(city);
-        }
-
-        // Se não tiver filtros, retorna tudo
-        return vehicleRepository.findAll();
+        return ResponseEntity.ok(
+                vehicleService.searchVehicles(
+                        city, pickup, dropoff, minPrice, maxPrice, normalizedCategories, normalizedFuelTypes
+                )
+        );
     }
 
     /**
@@ -191,4 +194,20 @@ public class VehicleController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
+    private List<String> normalizeMultiValueParam(List<String> raw) {
+        if (raw == null) return null;
+
+        List<String> out = new ArrayList<>();
+        for (String entry : raw) {
+            if (entry == null) continue;
+            String[] parts = entry.split(",");
+            for (String p : parts) {
+                String v = p.trim();
+                if (!v.isBlank()) out.add(v);
+            }
+        }
+        return out.isEmpty() ? null : out;
+    }
+
 }
