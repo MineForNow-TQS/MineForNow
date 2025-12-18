@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 public class BookingService {
 
         private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
+        private static final String USER_NOT_FOUND = "User not found";
 
         @Autowired
         private BookingRepository bookingRepository;
@@ -44,10 +45,10 @@ public class BookingService {
                 User renter;
                 if (request.getRenterEmail() != null) {
                         renter = userRepository.findByEmail(request.getRenterEmail())
-                                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                                        .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
                 } else if (request.getRenterId() != null) {
                         renter = userRepository.findById(request.getRenterId())
-                                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                                        .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
                 } else {
                         throw new IllegalArgumentException("Renter information is required");
                 }
@@ -112,8 +113,7 @@ public class BookingService {
                 }
 
                 // 3. Mock payment processing (always succeeds for MVP)
-                logger.info("Processing payment for booking {}: Card ending in {}",
-                                bookingId, paymentData.getCardNumber());
+                logger.info("Processing payment for booking {}", bookingId);
 
                 // 4. Update booking status
                 booking.setStatus("CONFIRMED");
@@ -124,7 +124,6 @@ public class BookingService {
 
                 // 5. Simulate email confirmation (log only)
                 logger.info("=== EMAIL CONFIRMATION (SIMULATED) ===");
-                logger.info("To: {}", confirmed.getRenter().getEmail());
                 logger.info("Subject: Booking Confirmation #{}", confirmed.getId());
                 logger.info("Your booking for {} {} has been confirmed!",
                                 confirmed.getVehicle().getBrand(), confirmed.getVehicle().getModel());
@@ -144,7 +143,7 @@ public class BookingService {
 
         public List<BookingDTO> getBookingsByUserEmail(String email) {
                 User user = userRepository.findByEmail(email)
-                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                                .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
 
                 List<Booking> bookings = bookingRepository.findByRenter(user);
 

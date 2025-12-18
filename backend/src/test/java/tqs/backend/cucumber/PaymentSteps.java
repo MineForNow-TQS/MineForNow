@@ -2,7 +2,6 @@ package tqs.backend.cucumber;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.AriaRole;
-import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.pt.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,14 +33,12 @@ public class PaymentSteps {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private final CucumberSpringConfiguration config;
     private final BookingSteps bookingSteps;
     private User testUser;
     private Vehicle testVehicle;
     private Booking testBooking;
 
-    public PaymentSteps(CucumberSpringConfiguration config, BookingSteps bookingSteps) {
-        this.config = config;
+    public PaymentSteps(BookingSteps bookingSteps) {
         this.bookingSteps = bookingSteps;
     }
 
