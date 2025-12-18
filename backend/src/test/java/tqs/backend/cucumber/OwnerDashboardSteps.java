@@ -12,6 +12,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
+import tqs.backend.model.UserRole;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
@@ -47,7 +48,7 @@ public class OwnerDashboardSteps {
         owner = new User();
         owner.setEmail(email);
         owner.setPassword("$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"); // password123
-        owner.setRole("OWNER");
+        owner.setRole(UserRole.OWNER);
         owner = userRepository.save(owner);
 
         // Login to get token
@@ -73,13 +74,10 @@ public class OwnerDashboardSteps {
             vehicle.setModel("AMG GT " + i);
             vehicle.setYear(2021 + i);
             vehicle.setLicensePlate("AA-00-0" + i);
-            vehicle.setColor("Black");
             vehicle.setSeats(2);
             vehicle.setTransmission("Automatic");
             vehicle.setFuelType("Gasoline");
             vehicle.setPricePerDay(850.0);
-            vehicle.setLocation("Lisboa");
-            vehicle.setAvailable(true);
             vehicleRepository.save(vehicle);
         }
     }
@@ -93,7 +91,7 @@ public class OwnerDashboardSteps {
         User renter = new User();
         renter.setEmail("renter@test.com");
         renter.setPassword("password");
-        renter.setRole("RENTER");
+        renter.setRole(UserRole.RENTER);
         renter = userRepository.save(renter);
 
         List<Map<String, String>> rows = dataTable.asMaps();
