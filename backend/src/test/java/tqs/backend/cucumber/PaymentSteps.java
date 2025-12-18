@@ -144,11 +144,6 @@ public class PaymentSteps {
         page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).fill(valor);
     }
 
-    @Então("devo ver a mensagem {string}")
-    public void devoVerMensagem(String mensagem) {
-        assertThat(page.getByText(mensagem)).isVisible();
-    }
-
     @Então("a reserva deve ter o estado {string}")
     public void reservaDeveTerEstado(String estado) {
         // Wait a bit for the backend to update
@@ -156,18 +151,5 @@ public class PaymentSteps {
 
         Booking booking = bookingRepository.findById(testBooking.getId()).orElseThrow();
         assert booking.getStatus().equals(estado) : "Expected status " + estado + " but got " + booking.getStatus();
-    }
-
-    @Então("devo ver uma mensagem de erro contendo {string}")
-    public void devoVerMensagemErro(String mensagem) {
-        // Wait for error message to appear
-        page.waitForSelector("text=" + mensagem, new Page.WaitForSelectorOptions().setTimeout(5000));
-        assertThat(page.getByText(mensagem, new Page.GetByTextOptions().setExact(false))).isVisible();
-    }
-
-    @Então("devo ver mensagens de erro de validação nos campos obrigatórios")
-    public void devoVerErrosValidacao() {
-        // Check for validation error messages
-        assertThat(page.getByText("Insira os últimos 4 dígitos do cartão")).isVisible();
     }
 }
