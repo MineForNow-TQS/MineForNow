@@ -70,7 +70,7 @@ class VehicleControllerCreateIT {
                 // Criar utilizador owner
                 ownerUser = User.builder()
                                 .email("owner@test.com")
-                                .password(passwordEncoder.encode("password123"))
+                                .passwordHash("password123")
                                 .fullName("Test Owner")
                                 .role(UserRole.OWNER)
                                 .build();
@@ -80,7 +80,7 @@ class VehicleControllerCreateIT {
                 // Criar utilizador renter
                 renterUser = User.builder()
                                 .email("renter@test.com")
-                                .password(passwordEncoder.encode("password123"))
+                                .passwordHash("password123")
                                 .fullName("Test Renter")
                                 .role(UserRole.RENTER)
                                 .build();

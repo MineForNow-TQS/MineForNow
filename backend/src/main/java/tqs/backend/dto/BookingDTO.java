@@ -1,83 +1,66 @@
 package tqs.backend.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 public class BookingDTO {
     private Long id;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private String status;
-    private Double totalPrice;
+    private LocalDate pickupDate;
+    private LocalDate returnDate;
     private Long vehicleId;
     private Long renterId;
+    private String status;
+    private BigDecimal totalPrice;
+    private String currency;
+    private OffsetDateTime createdAt;
 
-    public BookingDTO() {
-    }
+    public BookingDTO() {}
 
-    public BookingDTO(Long id, LocalDate startDate, LocalDate endDate, String status, Double totalPrice, Long vehicleId,
-            Long renterId) {
+    public BookingDTO(Long id,
+                      LocalDate pickupDate,
+                      LocalDate returnDate,
+                      Long vehicleId,
+                      Long renterId,
+                      String status,
+                      BigDecimal totalPrice,
+                      String currency,
+                      OffsetDateTime createdAt) {
         this.id = id;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.status = status;
-        this.totalPrice = totalPrice;
+        this.pickupDate = pickupDate;
+        this.returnDate = returnDate;
         this.vehicleId = vehicleId;
         this.renterId = renterId;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
         this.status = status;
-    }
-
-    public Double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
+        this.currency = currency;
+        this.createdAt = createdAt;
     }
 
-    public Long getVehicleId() {
-        return vehicleId;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setVehicleId(Long vehicleId) {
-        this.vehicleId = vehicleId;
-    }
+    public LocalDate getPickupDate() { return pickupDate; }
+    public void setPickupDate(LocalDate pickupDate) { this.pickupDate = pickupDate; }
 
-    public Long getRenterId() {
-        return renterId;
-    }
+    public LocalDate getReturnDate() { return returnDate; }
+    public void setReturnDate(LocalDate returnDate) { this.returnDate = returnDate; }
 
-    public void setRenterId(Long renterId) {
-        this.renterId = renterId;
-    }
+    public Long getVehicleId() { return vehicleId; }
+    public void setVehicleId(Long vehicleId) { this.vehicleId = vehicleId; }
+
+    public Long getRenterId() { return renterId; }
+    public void setRenterId(Long renterId) { this.renterId = renterId; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public BigDecimal getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
+
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 }

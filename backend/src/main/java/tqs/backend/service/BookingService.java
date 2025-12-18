@@ -36,68 +36,60 @@ public class BookingService {
         private UserRepository userRepository;
 
         @Transactional
-        public BookingDTO createBooking(BookingRequestDTO request) {
-                // 1. Validate Vehicle
-                Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
-                                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
+        public BookingDTO createBooking(BookingRequestDTO bookingRequest) {
+        Vehicle vehicle = vehicleRepository.findById(bookingRequest.getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-                // 2. Validate User (get from email if renterId not provided)
-                User renter;
-                if (request.getRenterEmail() != null) {
-                        renter = userRepository.findByEmail(request.getRenterEmail())
-                                        .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
-                } else if (request.getRenterId() != null) {
-                        renter = userRepository.findById(request.getRenterId())
-                                        .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
-                } else {
-                        throw new IllegalArgumentException("Renter information is required");
-                }
+        User renter = userRepository.findByEmail(bookingRequest.getRenterEmail())
+                .orElseThrow(() -> new RuntimeException("Renter not found"));
 
-                // 3. Validate Dates
-                if (request.getStartDate().isAfter(request.getEndDate())) {
-                        throw new IllegalArgumentException("Start date must be before end date");
-                }
+        long overlappingBookings = bookingRepository.countOverlappingBookings(
+                vehicle.getId(),
+                bookingRequest.getStartDate(),
+                bookingRequest.getEndDate()
+        );
 
-                // 4. Check Availability
-                long overlapping = bookingRepository.countOverlappingBookings(
-                                request.getVehicleId(), request.getStartDate(), request.getEndDate());
+        if (overlappingBookings > 0) {
+                throw new RuntimeException("Vehicle is not available for the selected dates");
+        }
 
-                if (overlapping > 0) {
-                        throw new IllegalStateException("Vehicle is already booked for these dates");
-                }
+        long days = ChronoUnit.DAYS.between(bookingRequest.getStartDate(), bookingRequest.getEndDate());
+        if (days <= 0) days = 1;
 
-                // 5. Calculate Price
-                // Consider rental as inclusive of start and end date for simplicity, or day
-                // difference
-                long days = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate());
-                if (days == 0)
-                        days = 1; // Minimum 1 day
+        java.math.BigDecimal totalPrice = vehicle.getPricePerDay().multiply(java.math.BigDecimal.valueOf(days));
 
-                // Ensure price is not negative
-                if (days < 0)
-                        throw new IllegalArgumentException("Invalid dates for price calculation");
+        java.time.OffsetDateTime startDateTime = bookingRequest.getStartDate()
+                .atStartOfDay()
+                .atOffset(java.time.ZoneOffset.UTC);
+        java.time.OffsetDateTime endDateTime = bookingRequest.getEndDate()
+                .atStartOfDay()
+                .atOffset(java.time.ZoneOffset.UTC);
 
-                Double totalPrice = days * vehicle.getPricePerDay();
+        Booking booking = new Booking(
+                null,
+                vehicle,
+                renter,
+                startDateTime,
+                endDateTime,
+                "PENDING",
+                totalPrice,
+                "EUR",
+                java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC)
+        );
 
-                // 6. Save Booking
-                Booking booking = new Booking(
-                                request.getStartDate(),
-                                request.getEndDate(),
-                                vehicle,
-                                renter,
-                                "WAITING_PAYMENT",
-                                totalPrice);
+        Booking saved = bookingRepository.save(booking);
 
-                Booking saved = bookingRepository.save(booking);
-
-                return new BookingDTO(
-                                saved.getId(),
-                                saved.getPickupDate(),
-                                saved.getReturnDate(),
-                                saved.getStatus(),
-                                saved.getTotalPrice(),
-                                saved.getVehicle().getId(),
-                                saved.getRenter().getId());
+        return new BookingDTO(
+                saved.getId(),
+                saved.getPickupDate(),
+                saved.getReturnDate(),
+                saved.getVehicle().getId(),
+                saved.getRenter().getId(),
+                saved.getStatus(),
+                saved.getTotalPrice(),
+                saved.getCurrency(),
+                saved.getCreatedAt()
+        );
         }
 
         @Transactional
@@ -131,14 +123,7 @@ public class BookingService {
                 logger.info("Total: €{}", confirmed.getTotalPrice());
                 logger.info("======================================");
 
-                return new BookingDTO(
-                                confirmed.getId(),
-                                confirmed.getPickupDate(),
-                                confirmed.getReturnDate(),
-                                confirmed.getStatus(),
-                                confirmed.getTotalPrice(),
-                                confirmed.getVehicle().getId(),
-                                confirmed.getRenter().getId());
+                return toBookingDTO(confirmed);
         }
 
         public List<BookingDTO> getBookingsByUserEmail(String email) {
@@ -148,14 +133,23 @@ public class BookingService {
                 List<Booking> bookings = bookingRepository.findByRenter(user);
 
                 return bookings.stream()
-                                .map(booking -> new BookingDTO(
-                                                booking.getId(),
-                                                booking.getPickupDate(),
-                                                booking.getReturnDate(),
-                                                booking.getStatus(),
-                                                booking.getTotalPrice(),
-                                                booking.getVehicle().getId(),
-                                                booking.getRenter().getId()))
-                                .collect(Collectors.toList());
+                        .map(this::toBookingDTO)
+                        .collect(Collectors.toList());
+
+        }
+
+        private BookingDTO toBookingDTO(Booking booking) {
+                return new BookingDTO(
+                        booking.getId(),
+                        booking.getPickupDate(),
+                        booking.getReturnDate(),        
+                        booking.getVehicle().getId(),
+                        booking.getRenter().getId(),
+                        booking.getStatus(),
+                        booking.getTotalPrice(),
+                        booking.getCurrency(),
+                        booking.getCreatedAt()
+                );
+        
         }
 }

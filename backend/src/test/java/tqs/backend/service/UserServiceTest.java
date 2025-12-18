@@ -67,7 +67,7 @@ class UserServiceTest {
             assertEquals("João Silva", user.getFullName());
             assertEquals("joao@email.com", user.getEmail());
             assertEquals(UserRole.RENTER, user.getRole());
-            assertNotEquals("Senha123", user.getPassword()); // password encriptada
+            assertNotEquals("Senha123", user.getPasswordHash()); // password encriptada
         }
 
         @Test

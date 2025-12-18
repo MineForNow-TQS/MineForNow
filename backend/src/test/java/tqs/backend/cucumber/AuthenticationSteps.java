@@ -127,7 +127,7 @@ public class AuthenticationSteps {
             User user = new User();
             user.setFullName("João Silva");
             user.setEmail("joaosilva@gmail.com");
-            user.setPassword(passwordEncoder.encode("Aa123456"));
+            user.setPasswordHash("Aa123456");
             user.setRole(tqs.backend.model.UserRole.RENTER);
             userRepository.save(user);
         }

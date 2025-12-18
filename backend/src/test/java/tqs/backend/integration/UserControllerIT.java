@@ -73,7 +73,7 @@ class UserControllerIT {
         testUser = User.builder()
                 .email("testuser@test.com")
                 .fullName("Test User")
-                .password(passwordEncoder.encode("password123"))
+                .passwordHash("password123")
                 .role(UserRole.RENTER)
                 .phone("+351912345678")
                 .drivingLicense("AB123456")

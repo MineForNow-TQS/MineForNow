@@ -17,6 +17,7 @@ import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -46,7 +47,7 @@ class BookingServiceTest {
     @BeforeEach
     void setUp() {
         renter = User.builder().id(2L).fullName("Renter").build();
-        vehicle = Vehicle.builder().id(1L).pricePerDay(100.0).brand("Audi").build();
+        vehicle = Vehicle.builder().id(1L).pricePerDay(BigDecimal.valueOf(100.0)).brand("Audi").build();
     }
 
     @Test

@@ -10,6 +10,7 @@ import tqs.backend.model.Vehicle;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
@@ -20,34 +21,19 @@ public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final UserRepository userRepository;
+    private final VehicleMapper vehicleMapper;
 
-    public VehicleService(VehicleRepository vehicleRepository, UserRepository userRepository) {
+    public VehicleService(VehicleRepository vehicleRepository, UserRepository userRepository, VehicleMapper vehicleMapper) {
         this.vehicleRepository = vehicleRepository;
         this.userRepository = userRepository;
+        this.vehicleMapper = vehicleMapper;
     }
 
-    /**
-     * Busca um veículo por ID e retorna o DTO detalhado.
-     * 
-     * @param id ID do veículo
-     * @return Optional com o DTO se encontrado, vazio caso contrário
-     */
     public Optional<VehicleDetailDTO> getVehicleById(Long id) {
-        if (id == null) {
-            return Optional.empty();
-        }
-        return vehicleRepository.findById(id).map(VehicleMapper::toDetailDTO);
+        if (id == null) return Optional.empty();
+        return vehicleRepository.findById(id).map(vehicleMapper::toDetailDTO);
     }
 
-    /**
-     * Cria um novo veículo associado ao owner identificado pelo email.
-     * 
-     * @param request    DTO com os dados do veículo
-     * @param ownerEmail email do owner autenticado
-     * @return o veículo criado
-     * @throws IllegalArgumentException se o user não existir ou não for OWNER
-     */
-    @SuppressWarnings("null")
     public Vehicle createVehicle(CreateVehicleRequest request, String ownerEmail) {
         // Buscar user pelo email
         User owner = userRepository.findByEmail(ownerEmail)
@@ -58,13 +44,18 @@ public class VehicleService {
             throw new IllegalArgumentException("Apenas proprietários podem registar veículos");
         }
 
+        // Converter pricePerDay (request: Double -> entity: BigDecimal)
+        BigDecimal pricePerDay = (request.getPricePerDay() == null)
+                ? null
+                : BigDecimal.valueOf(request.getPricePerDay());
+
         // Criar o veículo usando o builder
         Vehicle vehicle = Vehicle.builder()
                 .owner(owner)
                 .brand(request.getBrand())
                 .model(request.getModel())
                 .year(request.getYear())
-                .pricePerDay(request.getPricePerDay())
+                .pricePerDay(pricePerDay)
                 .fuelType(request.getFuelType())
                 .city(request.getCity())
                 .type(request.getType())
@@ -84,18 +75,6 @@ public class VehicleService {
         return vehicleRepository.save(vehicle);
     }
 
-    /**
-     * Atualiza um veículo existente.
-     * Apenas o owner do veículo pode atualizá-lo.
-     * 
-     * @param id         ID do veículo a atualizar
-     * @param request    DTO com os novos dados
-     * @param ownerEmail email do owner autenticado
-     * @return o veículo atualizado
-     * @throws IllegalArgumentException se o veículo não existir ou o user não for o
-     *                                  owner
-     */
-    @SuppressWarnings("null")
     public Vehicle updateVehicle(Long id, CreateVehicleRequest request, String ownerEmail) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Veículo não encontrado: " + id));
@@ -105,11 +84,16 @@ public class VehicleService {
             throw new IllegalArgumentException("Apenas o proprietário pode editar este veículo");
         }
 
+        // Converter pricePerDay (request: Double -> entity: BigDecimal)
+        BigDecimal pricePerDay = (request.getPricePerDay() == null)
+                ? null
+                : BigDecimal.valueOf(request.getPricePerDay());
+
         // Atualizar os campos
         vehicle.setBrand(request.getBrand());
         vehicle.setModel(request.getModel());
         vehicle.setYear(request.getYear());
-        vehicle.setPricePerDay(request.getPricePerDay());
+        vehicle.setPricePerDay(pricePerDay);
         vehicle.setFuelType(request.getFuelType());
         vehicle.setCity(request.getCity());
         vehicle.setType(request.getType());
@@ -128,16 +112,6 @@ public class VehicleService {
         return vehicleRepository.save(vehicle);
     }
 
-    /**
-     * Elimina um veículo existente.
-     * Apenas o owner do veículo pode eliminá-lo.
-     * 
-     * @param id         ID do veículo a eliminar
-     * @param ownerEmail email do owner autenticado
-     * @throws IllegalArgumentException se o veículo não existir ou o user não for o
-     *                                  owner
-     */
-    @SuppressWarnings("null")
     public void deleteVehicle(Long id, String ownerEmail) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Veículo não encontrado: " + id));

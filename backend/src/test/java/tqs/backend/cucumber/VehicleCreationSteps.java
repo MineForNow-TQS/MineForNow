@@ -68,7 +68,7 @@ public class VehicleCreationSteps {
             User user = new User();
             user.setFullName("Owner Test");
             user.setEmail(email);
-            user.setPassword(passwordEncoder.encode(password));
+            user.setPasswordHash(password);
             user.setRole(UserRole.OWNER);
             userRepository.save(user);
         }
@@ -80,7 +80,7 @@ public class VehicleCreationSteps {
             User user = new User();
             user.setFullName("Renter Test");
             user.setEmail(email);
-            user.setPassword(passwordEncoder.encode(password));
+            user.setPasswordHash(password);
             user.setRole(UserRole.RENTER);
             userRepository.save(user);
         }

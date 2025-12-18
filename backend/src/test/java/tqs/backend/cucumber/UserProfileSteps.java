@@ -75,7 +75,7 @@ public class UserProfileSteps {
             User user = new User();
             user.setFullName("Joao");
             user.setEmail(email);
-            user.setPassword(passwordEncoder.encode("Aa123456"));
+            user.setPasswordHash("Aa123456");
             user.setRole(UserRole.RENTER);
             userRepository.save(user);
         }

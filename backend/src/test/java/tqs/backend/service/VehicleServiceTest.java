@@ -16,6 +16,7 @@ import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.model.UserRole;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,7 +70,7 @@ class VehicleServiceTest {
                 .model("500")
                 .year(2020)
                 .type("Citadino")
-                .pricePerDay(25.0)
+                .pricePerDay(BigDecimal.valueOf(25.0))
                 .city("Lisboa")
                 .seats(4)
                 .doors(3)
@@ -218,7 +219,7 @@ class VehicleServiceTest {
                 .brand(createRequest.getBrand())
                 .model(createRequest.getModel())
                 .year(createRequest.getYear())
-                .pricePerDay(createRequest.getPricePerDay())
+                .pricePerDay(BigDecimal.valueOf(createRequest.getPricePerDay()))
                 .city(createRequest.getCity())
                 .build();
 

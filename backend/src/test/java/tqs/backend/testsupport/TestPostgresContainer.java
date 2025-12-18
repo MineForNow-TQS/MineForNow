@@ -10,13 +10,14 @@ import java.util.Properties;
 
 public class TestPostgresContainer {
 
-    private static final DockerImageName POSTGRES_IMAGE = DockerImageName.parse("postgres:15.3");
+    private static final DockerImageName POSTGRES_IMAGE = DockerImageName.parse("postgres:16-alpine");
 
     public static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
-            new PostgreSQLContainer<>(POSTGRES_IMAGE)
-                    .withDatabaseName("test_db")
-                    .withUsername("test")
-                    .withPassword("test");
+        new PostgreSQLContainer<>(POSTGRES_IMAGE)
+                .withDatabaseName("test_db")
+                .withUsername("test")
+                .withPassword("test")
+                .withInitScript("db/migration/V1__schema.sql");
 
     @DynamicPropertySource
     static void postgresProperties(DynamicPropertyRegistry registry) {
@@ -71,8 +72,6 @@ public class TestPostgresContainer {
                         registry.add("spring.datasource.username", () -> user != null ? user : "test");
                         registry.add("spring.datasource.password", () -> pass != null ? pass : "test");
                         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
-                        registry.add("spring.flyway.enabled", () -> "true");
-                        registry.add("spring.flyway.baseline-on-migrate", () -> "true");
                         registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
                         registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.PostgreSQLDialect");
                         registry.add("spring.test.database.replace", () -> "NONE");

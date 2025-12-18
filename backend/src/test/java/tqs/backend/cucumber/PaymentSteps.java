@@ -14,6 +14,7 @@ import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
+import java.math.BigDecimal;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 
@@ -56,7 +57,7 @@ public class PaymentSteps {
         User owner = User.builder()
                 .email("owner@test.com")
                 .fullName("Test Owner")
-                .password("password123")
+                .passwordHash("password123")
                 .role(UserRole.OWNER)
                 .build();
         owner = userRepository.save(owner);
@@ -68,7 +69,7 @@ public class PaymentSteps {
         testVehicle.setModel("Model 3");
         testVehicle.setYear(2023);
         testVehicle.setLicensePlate("AB-12-CD");
-        testVehicle.setPricePerDay(100.0);
+        testVehicle.setPricePerDay(BigDecimal.valueOf(100.0));
         testVehicle.setCity("Lisboa");
         testVehicle = vehicleRepository.save(testVehicle);
     }
@@ -80,7 +81,7 @@ public class PaymentSteps {
             testUser = User.builder()
                     .email("maria@email.com")
                     .fullName("Maria Silva")
-                    .password(passwordEncoder.encode("Aa123456"))
+                    .passwordHash("Aa123456")
                     .role(UserRole.RENTER)
                     .build();
             testUser = userRepository.save(testUser);

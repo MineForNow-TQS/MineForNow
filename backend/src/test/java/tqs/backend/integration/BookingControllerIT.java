@@ -25,6 +25,7 @@ import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -69,7 +70,7 @@ class BookingControllerIT {
                 User renter = User.builder()
                                 .email("renter@test.com")
                                 .fullName("Test Renter")
-                                .password(passwordEncoder.encode("password123"))
+                                .passwordHash("password123")
                                 .role(UserRole.RENTER)
                                 .build();
                 renter = userRepository.save(Objects.requireNonNull(renter));
@@ -79,7 +80,7 @@ class BookingControllerIT {
                 User owner = User.builder()
                                 .email("owner@test.com")
                                 .fullName("Test Owner")
-                                .password(passwordEncoder.encode("password123"))
+                                .passwordHash("password123")
                                 .role(UserRole.OWNER)
                                 .build();
                 owner = userRepository.save(Objects.requireNonNull(owner));
@@ -91,7 +92,7 @@ class BookingControllerIT {
                 vehicle.setModel("Car");
                 vehicle.setYear(2020);
                 vehicle.setLicensePlate("TEST-123");
-                vehicle.setPricePerDay(50.0);
+                vehicle.setPricePerDay(BigDecimal.valueOf(100.0));
                 vehicle.setCity("Test Location");
                 vehicle = vehicleRepository.save(vehicle);
                 testVehicleId = vehicle.getId();
