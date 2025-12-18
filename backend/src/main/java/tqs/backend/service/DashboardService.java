@@ -104,18 +104,25 @@ public class DashboardService {
                 LocalDate today = LocalDate.now();
                 System.out.println("Today: " + today);
 
+                // Log all bookings with their dates
+                System.out.println("=== All owner bookings with dates ===");
+                allBookings.stream()
+                                .filter(b -> vehicleIds.contains(b.getVehicle().getId()))
+                                .forEach(b -> System.out.println(
+                                                "  Booking " + b.getId() + ": pickup=" + b.getPickupDate() + ", return="
+                                                                + b.getReturnDate() + ", status=" + b.getStatus()));
+
                 List<Booking> filtered = allBookings.stream()
                                 .filter(b -> vehicleIds.contains(b.getVehicle().getId()))
                                 .filter(b -> {
-                                        // Active if today is between pickup and return date (inclusive)
-                                        boolean isActive = !today.isBefore(b.getPickupDate())
-                                                        && !today.isAfter(b.getReturnDate());
-                                        if (isActive) {
-                                                System.out.println("  Active booking " + b.getId() + ": "
+                                        // Show bookings that haven't ended yet (return date >= today)
+                                        boolean isActiveOrFuture = !b.getReturnDate().isBefore(today);
+                                        if (isActiveOrFuture) {
+                                                System.out.println("  Active/Future booking " + b.getId() + ": "
                                                                 + b.getPickupDate() + " to " + b.getReturnDate()
                                                                 + " (status: " + b.getStatus() + ")");
                                         }
-                                        return isActive;
+                                        return isActiveOrFuture;
                                 })
                                 .toList();
 

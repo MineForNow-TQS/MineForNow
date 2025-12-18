@@ -107,9 +107,25 @@ export default function OwnerCarsDashboard() {
                     {activeBookingsList.map((booking) => {
                         const vehicle = cars.find(c => c.id === booking.vehicleId);
                         const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const pickupDate = new Date(booking.pickupDate);
                         const returnDate = new Date(booking.returnDate);
+
+                        // Determine booking status based on dates
+                        const isFuture = pickupDate > today;
                         const isCompleted = returnDate < today;
+                        const isInProgress = !isFuture && !isCompleted;
                         const isPaid = booking.status === 'CONFIRMED';
+
+                        let statusText = 'Em Curso';
+                        let statusColor = 'bg-blue-500';
+                        if (isFuture) {
+                            statusText = 'Futura';
+                            statusColor = 'bg-purple-500';
+                        } else if (isCompleted) {
+                            statusText = 'Completa';
+                            statusColor = 'bg-gray-500';
+                        }
 
                         return (
                             <Card key={booking.id} className={`p-4 border ${isPaid ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
@@ -127,8 +143,8 @@ export default function OwnerCarsDashboard() {
                                         <span className={`px-2 py-1 text-xs rounded ${isPaid ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'}`}>
                                             {isPaid ? 'Paga' : 'Pendente'}
                                         </span>
-                                        <span className={`px-2 py-1 text-xs rounded ${isCompleted ? 'bg-gray-500 text-white' : 'bg-blue-500 text-white'}`}>
-                                            {isCompleted ? 'Completa' : 'Em Curso'}
+                                        <span className={`px-2 py-1 text-xs rounded ${statusColor} text-white`}>
+                                            {statusText}
                                         </span>
                                     </div>
                                 </div>
