@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { authService } from '@/services/authService';
 import { userService } from '@/services/userService';
 
@@ -41,6 +42,7 @@ export function AuthProvider({ children }) {
       return userData;
     } catch (error) {
       // If user details fetch fails, use basic info from email
+      console.error('Failed to fetch user details:', error);
       const basicUser = {
         email: email,
         full_name: email.split('@')[0],
@@ -53,25 +55,16 @@ export function AuthProvider({ children }) {
   };
 
   const register = async ({ fullName, email, password, confirmPassword }) => {
-
-    const data = await authService.register({
+    // Register the user
+    await authService.register({
       fullName,
       email,
       password,
       confirmPassword
     });
 
-    const newUser = {
-      id: data.userId,
-      fullName,
-      email: data.email,
-      role: data.role
-    };
-
-    setUser(newUser);
-    localStorage.setItem("user", JSON.stringify(newUser));
-
-    return newUser;
+    // Auto-login after registration to get JWT token
+    return await login(email, password);
   };
 
 
@@ -90,17 +83,21 @@ export function AuthProvider({ children }) {
     return !!user && authService.isAuthenticated();
   };
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     login,
     register,
     logout,
     isAuthenticated,
     loading,
-  };
+  }), [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export function useAuth() {
   const context = useContext(AuthContext);

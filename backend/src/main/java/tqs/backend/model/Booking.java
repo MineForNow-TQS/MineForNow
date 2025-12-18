@@ -1,47 +1,175 @@
 package tqs.backend.model;
 
 import jakarta.persistence.*;
-import lombok.*;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "bookings")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(nullable = false)
+    private LocalDate pickupDate;
+
+    @Column(nullable = false)
+    private LocalDate returnDate;
+
+    @ManyToOne
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "renter_user_id", nullable = false)
+    @Column(nullable = false)
+    private String status; // WAITING_PAYMENT, CONFIRMED, CANCELLED
+
+    @Column(nullable = false)
+    private Double totalPrice;
+
+    @ManyToOne
+    @JoinColumn(name = "renter_id")
     private User renter;
 
-    @Column(name = "start_datetime", nullable = false)
-    private OffsetDateTime startDateTime;
+    // SCRUM-16: Payment fields
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
 
-    @Column(name = "end_datetime", nullable = false)
-    private OffsetDateTime endDateTime;
+    @Column(name = "payment_method")
+    private String paymentMethod; // CREDIT_CARD, DEBIT_CARD
 
-    @Column(nullable = false)
-    private String status;
+    // No-arg constructor
+    public Booking() {
+    }
 
-    @Column(name = "total_price", nullable = false)
-    private BigDecimal totalPrice;
+    // All-args constructor
+    public Booking(Long id, java.time.LocalDate pickupDate, java.time.LocalDate returnDate, Vehicle vehicle,
+            User renter, String status, Double totalPrice) {
+        this.id = id;
+        this.pickupDate = pickupDate;
+        this.returnDate = returnDate;
+        this.vehicle = vehicle;
+        this.renter = renter;
+        this.status = status;
+        this.totalPrice = totalPrice;
+    }
 
-    @Column(nullable = false)
-    private String currency;
+    // Legacy constructor for backward compatibility (tests)
+    public Booking(Long id, java.time.LocalDate pickupDate, java.time.LocalDate returnDate, Vehicle vehicle) {
+        this(id, pickupDate, returnDate, vehicle, null, "CONFIRMED", 0.0);
+    }
 
-    @Column(name = "created_at", nullable = false)
-    private OffsetDateTime createdAt;
+    // Additional Constructor for easier instantiation (without ID)
+    public Booking(java.time.LocalDate pickupDate, java.time.LocalDate returnDate, Vehicle vehicle, User renter,
+            String status, Double totalPrice) {
+        this.pickupDate = pickupDate;
+        this.returnDate = returnDate;
+        this.vehicle = vehicle;
+        this.renter = renter;
+        this.status = status;
+        this.totalPrice = totalPrice;
+    }
+
+    // Getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public java.time.LocalDate getPickupDate() {
+        return pickupDate;
+    }
+
+    public void setPickupDate(java.time.LocalDate pickupDate) {
+        this.pickupDate = pickupDate;
+    }
+
+    public java.time.LocalDate getReturnDate() {
+        return returnDate;
+    }
+
+    public void setReturnDate(java.time.LocalDate returnDate) {
+        this.returnDate = returnDate;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public User getRenter() {
+        return renter;
+    }
+
+    public void setRenter(User renter) {
+        this.renter = renter;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(Double totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
+    public LocalDateTime getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(LocalDateTime paymentDate) {
+        this.paymentDate = paymentDate;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Booking booking = (Booking) o;
+        return Objects.equals(id, booking.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Booking{" +
+                "id=" + id +
+                ", pickupDate=" + pickupDate +
+                ", returnDate=" + returnDate +
+                ", vehicle=" + (vehicle != null ? vehicle.getBrand() + " " + vehicle.getModel() : null) +
+                ", status='" + status + '\'' +
+                ", totalPrice=" + totalPrice +
+                '}';
+    }
 }

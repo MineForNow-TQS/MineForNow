@@ -55,7 +55,7 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    @Bean // Guarda a password encriptada com salt
+    @Bean // Guarda a password encriptada com salt na base de dados
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -67,7 +67,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll() // Allow viewing vehicles
+                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // Allow viewing uploaded images
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger
+                        .requestMatchers("/", "/index.html", "/assets/**", "/vite.svg", "/Images/**").permitAll() // Frontend
+                                                                                                                  // Static
+                        // Resources
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
@@ -82,7 +86,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);

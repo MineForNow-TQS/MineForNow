@@ -1,5 +1,5 @@
 # language: pt
-@Auth
+@SCRUM-32
 Funcionalidade: Autenticação de Utilizador
   Como utilizador
   Quero poder registar-me, entrar e sair
@@ -9,7 +9,7 @@ Funcionalidade: Autenticação de Utilizador
     Dado que tenho um pedido de registo válido
     Quando submeto o pedido de registo
     Então o estado da resposta deve ser 200
-    E devo conseguir aceder ao perfil de "joaosilva@gmail.com"
+    E devo conseguir aceder ao perfil de "joaosilva"
 
   Cenário: Registo sem sucesso com passwords diferentes
     Dado que tenho um pedido de registo com passwords diferentes
@@ -21,7 +21,7 @@ Funcionalidade: Autenticação de Utilizador
     Dado que tenho credenciais válidas
     Quando submeto o pedido de login
     Então o estado da resposta deve ser 200
-    E devo conseguir aceder ao perfil de "joaosilva@gmail.com"
+    E devo conseguir aceder ao perfil de "joaosilva"
 
   Cenário: Login sem sucesso
     Dado que tenho credenciais inválidas
@@ -31,4 +31,4 @@ Funcionalidade: Autenticação de Utilizador
   Cenário: Logout com sucesso
     Dado que estou autenticado
     Quando faço logout
-    Então devo ver o botão de "Entrar"
+    Então não devo conseguir aceder ao perfil de "joaosilva"
