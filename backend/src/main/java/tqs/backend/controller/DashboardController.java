@@ -33,22 +33,6 @@ public class DashboardController {
         }
     }
 
-    @GetMapping("/owner/pending-bookings")
-    public ResponseEntity<Object> getOwnerPendingBookings() {
-        try {
-            // Get authenticated user email from JWT
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String ownerEmail = authentication.getName();
-
-            var pendingBookings = dashboardService.getPendingBookings(ownerEmail);
-            return ResponseEntity.ok(pendingBookings);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Internal server error");
-        }
-    }
-
     @GetMapping("/owner/active-bookings")
     public ResponseEntity<Object> getOwnerActiveBookings() {
         try {
