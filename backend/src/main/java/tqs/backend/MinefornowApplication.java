@@ -37,6 +37,12 @@ public class MinefornowApplication {
                         UserRepository userRepo, PasswordEncoder passwordEncoder,
                         @Value("${minefornow.app.defaultPassword}") String defaultPassword) {
                 return args -> {
+                        // Check if data already exists
+                        if (userRepo.findByEmail("owner@minefornow.com").isPresent()) {
+                                System.out.println("✅ Test data already exists - skipping initialization");
+                                return;
+                        }
+
                         // --- CRIAR USERS ---
                         User admin = Objects.requireNonNull(User.builder()
                                         .email("admin@minefornow.com")
