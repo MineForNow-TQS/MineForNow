@@ -2,7 +2,7 @@ package tqs.backend.cucumber;
 
 import java.time.LocalDate;
 import java.util.List;
-
+import java.nio.file.Paths;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -295,7 +295,19 @@ public class VehicleSearchSteps {
 
     @E("devo ver a mensagem {string}")
     public void devoVerAMensagem(String mensagem) {
-        page.waitForTimeout(500);
+        // Wait for the message to appear with a longer timeout
+        // This is important because some messages appear briefly before redirect
+        try {
+            page.waitForSelector("text=" + mensagem, new Page.WaitForSelectorOptions().setTimeout(10000));
+            System.out.println("✓ Mensagem encontrada: " + mensagem);
+        } catch (Exception e) {
+            // Take screenshot for debugging
+            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("/tmp/payment-error.png")));
+            System.out.println("✗ Mensagem NÃO encontrada: " + mensagem);
+            System.out.println("Screenshot saved to /tmp/payment-error.png");
+            System.out.println("Current URL: " + page.url());
+            throw e; // Re-throw to fail the test
+        }
 
         // Procurar pela mensagem na página
         Locator elemento = page.getByText(mensagem);

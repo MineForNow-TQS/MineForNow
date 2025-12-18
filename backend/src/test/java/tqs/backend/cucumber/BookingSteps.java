@@ -18,7 +18,7 @@ public class BookingSteps {
     private BrowserContext context;
     private Page page;
 
-    @Before("@SCRUM-15")
+    @Before(value = "@SCRUM-15 or @SCRUM-16")
     public void setUp() {
         playwright = Playwright.create();
         boolean headless = false;
@@ -37,7 +37,7 @@ public class BookingSteps {
         page.setDefaultTimeout(60000);
     }
 
-    @After("@SCRUM-15")
+    @After(value = "@SCRUM-15 or @SCRUM-16")
     public void tearDown() {
         if (page != null)
             page.close();
@@ -47,6 +47,10 @@ public class BookingSteps {
             browser.close();
         if (playwright != null)
             playwright.close();
+    }
+
+    public Page getPage() {
+        return page;
     }
 
     @Dado("que existe um veículo disponível para aluguer com ID {int}")

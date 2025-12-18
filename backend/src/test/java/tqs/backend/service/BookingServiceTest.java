@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.backend.dto.BookingDTO;
 import tqs.backend.dto.BookingRequestDTO;
+import tqs.backend.dto.PaymentDTO;
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
@@ -95,6 +96,7 @@ class BookingServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("already booked");
 
+        verify(bookingRepository).countOverlappingBookings(1L, start, end);
         verify(bookingRepository, never()).save(any(Booking.class));
     }
 
@@ -110,5 +112,149 @@ class BookingServiceTest {
 
         assertThatThrownBy(() -> bookingService.createBooking(request))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    // SCRUM-16: Payment Confirmation Tests
+
+    @Test
+    @Requirement("SCRUM-16")
+    void confirmPayment_Success_UpdatesStatusToConfirmed() {
+        // Given
+        Long bookingId = 1L;
+        PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
+
+        Booking booking = new Booking(
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                vehicle,
+                renter,
+                "WAITING_PAYMENT",
+                500.0);
+        booking.setId(bookingId);
+
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // When
+        BookingDTO result = bookingService.confirmPayment(bookingId, paymentData);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo("CONFIRMED");
+        verify(bookingRepository).findById(bookingId);
+        verify(bookingRepository).save(any(Booking.class));
+    }
+
+    @Test
+    @Requirement("SCRUM-16")
+    void confirmPayment_BookingNotFound_ThrowsException() {
+        // Given
+        Long bookingId = 999L;
+        PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
+
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> bookingService.confirmPayment(bookingId, paymentData))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Booking not found");
+
+        verify(bookingRepository).findById(bookingId);
+        verify(bookingRepository, never()).save(any(Booking.class));
+    }
+
+    @Test
+    @Requirement("SCRUM-16")
+    void confirmPayment_InvalidStatus_ThrowsException() {
+        Booking booking = new Booking(
+                LocalDate.of(2025, 12, 19),
+                LocalDate.of(2025, 12, 23),
+                vehicle,
+                renter,
+                "CONFIRMED",
+                500.0);
+        booking.setId(1L);
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        PaymentDTO paymentData = new PaymentDTO("1234", "Maria Silva", "12/25", "123");
+
+        assertThatThrownBy(() -> bookingService.confirmPayment(1L, paymentData))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Booking is not waiting for payment");
+    }
+
+    @Test
+    @Requirement("SCRUM-16")
+    void getBookingsByUser_Success() {
+        renter.setEmail("maria@email.com");
+        Booking booking1 = new Booking(
+                LocalDate.of(2025, 12, 19),
+                LocalDate.of(2025, 12, 23),
+                vehicle,
+                renter,
+                "CONFIRMED",
+                500.0);
+        booking1.setId(1L);
+
+        Booking booking2 = new Booking(
+                LocalDate.of(2025, 12, 25),
+                LocalDate.of(2025, 12, 30),
+                vehicle,
+                renter,
+                "WAITING_PAYMENT",
+                600.0);
+        booking2.setId(2L);
+
+        when(userRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(renter));
+        when(bookingRepository.findByRenter(renter)).thenReturn(java.util.Arrays.asList(booking1, booking2));
+
+        var result = bookingService.getBookingsByUserEmail("maria@email.com");
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getStatus()).isEqualTo("CONFIRMED");
+        assertThat(result.get(1).getStatus()).isEqualTo("WAITING_PAYMENT");
+    }
+
+    @Test
+    @Requirement("SCRUM-16")
+    void getBookingsByUser_UserNotFound() {
+        when(userRepository.findByEmail("unknown@email.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.getBookingsByUserEmail("unknown@email.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User not found");
+    }
+
+    @Test
+    @Requirement("SCRUM-16")
+    void getBookingsByUserEmail_Success() {
+        renter.setEmail("maria@email.com");
+        Booking booking = new Booking(
+                LocalDate.of(2025, 12, 19),
+                LocalDate.of(2025, 12, 23),
+                vehicle,
+                renter,
+                "CONFIRMED",
+                500.0);
+        booking.setId(1L);
+
+        when(userRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(renter));
+        when(bookingRepository.findByRenter(renter)).thenReturn(java.util.Arrays.asList(booking));
+
+        var result = bookingService.getBookingsByUserEmail("maria@email.com");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getStatus()).isEqualTo("CONFIRMED");
+    }
+
+    @Test
+    @Requirement("SCRUM-16")
+    void getBookingsByUserEmail_UserNotFound() {
+        when(userRepository.findByEmail("unknown@email.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.getBookingsByUserEmail("unknown@email.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User not found");
     }
 }

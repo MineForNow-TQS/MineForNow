@@ -1,5 +1,7 @@
+import { API_BASE_URL, getImageUrl } from '../config/api';
+
 // Base URL do backend
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const FULL_API_URL = `${API_BASE_URL}/api`;
 
 // Imagens placeholder para veículos sem imagem
 const PLACEHOLDER_IMAGES = [
@@ -20,7 +22,7 @@ const getCarImageUrl = (imageUrl, carId) => {
   if (imageUrl && imageUrl.trim() !== '') {
     // Se a URL começa com /api, adiciona o host do backend
     if (imageUrl.startsWith('/api')) {
-      return `http://localhost:8080${imageUrl}`;
+      return getImageUrl(imageUrl);
     }
     return imageUrl;
   }
@@ -77,7 +79,7 @@ export const carService = {
         params.append('dropoff', filters.returnDate);
       }
 
-      const url = `${API_BASE_URL}/vehicles/search${params.toString() ? '?' + params.toString() : ''}`;
+      const url = `${FULL_API_URL}/vehicles/search${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -119,7 +121,7 @@ export const carService = {
   // Obter um carro específico
   async get(id) {
     try {
-      const response = await fetch(`${API_BASE_URL}/vehicles/${id}`);
+      const response = await fetch(`${FULL_API_URL}/vehicles/${id}`);
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -146,7 +148,7 @@ export const carService = {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/vehicles/my-vehicles`, {
+      const response = await fetch(`${FULL_API_URL}/vehicles/my-vehicles`, {
         headers,
       });
 
@@ -203,7 +205,7 @@ export const carService = {
       // Converter para o formato do backend
       const backendData = this.adaptVehicleToBackend(carData);
 
-      const response = await fetch(`${API_BASE_URL}/vehicles`, {
+      const response = await fetch(`${FULL_API_URL}/vehicles`, {
         method: 'POST',
         headers,
         body: JSON.stringify(backendData),
@@ -236,7 +238,7 @@ export const carService = {
       // Converter para o formato do backend
       const backendData = this.adaptVehicleToBackend(carData);
 
-      const response = await fetch(`${API_BASE_URL}/vehicles/${id}`, {
+      const response = await fetch(`${FULL_API_URL}/vehicles/${id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(backendData),
@@ -275,7 +277,7 @@ export const carService = {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/vehicles/${id}`, {
+      const response = await fetch(`${FULL_API_URL}/vehicles/${id}`, {
         method: 'DELETE',
         headers,
       });
@@ -319,7 +321,7 @@ export const carService = {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/files/upload`, {
+      const response = await fetch(`${FULL_API_URL}/files/upload`, {
         method: 'POST',
         headers,
         body: formData,
