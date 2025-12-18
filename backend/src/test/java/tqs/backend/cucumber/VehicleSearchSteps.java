@@ -295,7 +295,7 @@ public class VehicleSearchSteps {
 
     @E("devo ver a mensagem {string}")
     public void devoVerAMensagem(String mensagem) {
-        page.waitForTimeout(500);
+        page.waitForTimeout(1000); // Wait for message to appear
 
         // Procurar pela mensagem na página
         Locator elemento = page.getByText(mensagem);
