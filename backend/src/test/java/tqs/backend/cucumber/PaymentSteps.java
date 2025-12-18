@@ -1,6 +1,9 @@
 package tqs.backend.cucumber;
 
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.AriaRole;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.pt.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import tqs.backend.model.Booking;
@@ -27,6 +30,9 @@ public class PaymentSteps {
     private BookingRepository bookingRepository;
 
     private final CucumberSpringConfiguration config;
+    private Playwright playwright;
+    private Browser browser;
+    private BrowserContext context;
     private Page page;
     private User testUser;
     private Vehicle testVehicle;
@@ -34,6 +40,37 @@ public class PaymentSteps {
 
     public PaymentSteps(CucumberSpringConfiguration config) {
         this.config = config;
+    }
+
+    @Before("@SCRUM-16")
+    public void setUp() {
+        playwright = Playwright.create();
+        boolean headless = false;
+        String ci = System.getenv("CI");
+        String display = System.getenv("DISPLAY");
+        if ((ci != null && !ci.isEmpty()) || display == null || display.isEmpty()) {
+            headless = true;
+        }
+        BrowserType.LaunchOptions opts = new BrowserType.LaunchOptions().setHeadless(headless);
+        if (!headless) {
+            opts.setSlowMo(500);
+        }
+        browser = playwright.chromium().launch(opts);
+        context = browser.newContext();
+        page = context.newPage();
+        page.setDefaultTimeout(60000);
+    }
+
+    @After("@SCRUM-16")
+    public void tearDown() {
+        if (page != null)
+            page.close();
+        if (context != null)
+            context.close();
+        if (browser != null)
+            browser.close();
+        if (playwright != null)
+            playwright.close();
     }
 
     @Dado("que existe um veículo disponível com ID {int}")
@@ -64,9 +101,9 @@ public class PaymentSteps {
         // Create renter if not exists
         if (testUser == null) {
             testUser = User.builder()
-                    .email("renter@test.com")
+                    .email("maria@email.com")
                     .fullName("Maria Silva")
-                    .password("password123")
+                    .password("$2a$10$xFKZvJZGZqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5Y") // Aa123456 hashed
                     .role(UserRole.RENTER)
                     .build();
             testUser = userRepository.save(testUser);
@@ -83,49 +120,70 @@ public class PaymentSteps {
         testBooking = bookingRepository.save(testBooking);
     }
 
+    @Dado("que sou um utilizador do tipo {string} autenticado")
+    public void souUtilizadorAutenticado(String tipo) {
+        // Navigate and login
+        page.navigate("http://localhost:3000/");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).click();
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).fill("maria@email.com");
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).click();
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).fill("Aa123456");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar").setExact(true)).click();
+
+        // Wait for navigation to complete
+        page.waitForURL("http://localhost:3000/dashboard");
+    }
+
     @Dado("estou na página de pagamento da reserva com ID {int}")
     public void estouNaPaginaPagamento(int bookingId) {
-        // TODO: Add Playwright code from recording
-        // page.navigate("http://localhost:3001/payment?bookingId=" + bookingId +
-        // "...");
+        // Navigate to payment page with booking details
+        String url = String.format("http://localhost:3000/payment?bookingId=%d&carId=%d&start=%s&end=%s",
+                testBooking.getId(),
+                testVehicle.getId(),
+                testBooking.getPickupDate().toString(),
+                testBooking.getReturnDate().toString());
+        page.navigate(url);
+
+        // Wait for page to load
+        page.waitForSelector("text=Pagamento");
     }
 
     @Quando("preencho o campo {string} com {string}")
     public void preenchoCampo(String campo, String valor) {
-        // TODO: Add Playwright code from recording
-        // page.getByLabel(campo).fill(valor);
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).click();
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).fill(valor);
     }
 
     @Quando("clico no botão {string}")
     public void clicoBotao(String botao) {
-        // TODO: Add Playwright code from recording
-        // page.getByRole(AriaRole.BUTTON, new
-        // Page.GetByRoleOptions().setName(botao)).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(botao)).click();
     }
 
     @Então("devo ver a mensagem {string}")
     public void devoVerMensagem(String mensagem) {
-        // TODO: Add Playwright code from recording
-        // assertThat(page.getByText(mensagem)).isVisible();
+        assertThat(page.getByText(mensagem)).isVisible();
     }
 
     @Então("a reserva deve ter o estado {string}")
     public void reservaDeveTerEstado(String estado) {
+        // Wait a bit for the backend to update
+        page.waitForTimeout(1000);
+
         Booking booking = bookingRepository.findById(testBooking.getId()).orElseThrow();
-        assert booking.getStatus().equals(estado);
+        assert booking.getStatus().equals(estado) : "Expected status " + estado + " but got " + booking.getStatus();
     }
 
     @Então("devo ver uma mensagem de erro contendo {string}")
     public void devoVerMensagemErro(String mensagem) {
-        // TODO: Add Playwright code from recording
-        // assertThat(page.getByText(mensagem, new
-        // Page.GetByTextOptions().setExact(false))).isVisible();
+        // Wait for error message to appear
+        page.waitForSelector("text=" + mensagem, new Page.WaitForSelectorOptions().setTimeout(5000));
+        assertThat(page.getByText(mensagem, new Page.GetByTextOptions().setExact(false))).isVisible();
     }
 
     @Então("devo ver mensagens de erro de validação nos campos obrigatórios")
     public void devoVerErrosValidacao() {
-        // TODO: Add Playwright code from recording
-        // assertThat(page.getByText("Insira os últimos 4 dígitos do
-        // cartão")).isVisible();
+        // Check for validation error messages
+        assertThat(page.getByText("Insira os últimos 4 dígitos do cartão")).isVisible();
     }
 }
