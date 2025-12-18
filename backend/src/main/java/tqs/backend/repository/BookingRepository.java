@@ -20,5 +20,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 
+        @Query("SELECT SUM(b.totalPrice) FROM Booking b WHERE b.status != 'CANCELLED'")
+        Double sumTotalPrice();
+
         List<Booking> findByRenter(User renter);
 }

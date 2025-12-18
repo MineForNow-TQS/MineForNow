@@ -3,12 +3,19 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { carService } from '@/services/carService';
 import { userService } from '@/services/userService';
 import { ownerRequestService } from '@/services/ownerRequestService';
+import { adminService } from '@/services/adminService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Crown, Car as CarIcon, Clock, Shield, Ban } from 'lucide-react';
+import { Users, Crown, Car as CarIcon, Clock, Shield, Ban, Euro, Calendar } from 'lucide-react';
 
 export default function AdminStatsDashboard() {
     const queryClient = useQueryClient();
+
+    // Fetch dashboard stats from backend
+    const { data: stats } = useQuery(
+        'adminStats',
+        () => adminService.getDashboardStats().then(data => data)
+    );
 
     // Fetch all users
     const { data: users = [] } = useQuery(
@@ -49,16 +56,18 @@ export default function AdminStatsDashboard() {
     );
 
     // Calculate stats
-    const totalUsers = users.length;
-    const totalOwners = users.filter(u => u.role === 'owner' || u.role === 'admin').length;
-    const totalCars = cars.length;
+    const totalUsers = stats?.totalUsers || 0;
+    const totalOwners = users.filter(u => u.role === 'owner' || u.role === 'admin').length; // Keep utilizing user list for now as backend doesn't separate owners yet
+    const totalCars = stats?.totalCars || 0;
+    const totalBookings = stats?.totalBookings || 0;
+    const totalRevenue = stats?.totalRevenue || 0;
     const pendingRequestsCount = ownerRequests.filter(r => r.status === 'pending').length;
 
     const handleChangeRole = (userId, currentRole) => {
         const roles = ['rental', 'owner', 'admin'];
         const currentIndex = roles.indexOf(currentRole);
         const nextRole = roles[(currentIndex + 1) % roles.length];
-        
+
         if (window.confirm(`Alterar role para "${nextRole}"?`)) {
             changeRoleMutation.mutate({ userId, newRole: nextRole });
         }
@@ -86,22 +95,25 @@ export default function AdminStatsDashboard() {
     return (
         <>
             {/* Stats Cards */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-slate-900 mb-1">{totalUsers}</div>
                     <div className="text-sm text-slate-500">Utilizadores</div>
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
-                    <div className="text-3xl font-bold text-amber-600 mb-1">{totalOwners}</div>
-                    <div className="text-sm text-slate-500">Owners</div>
-                </Card>
-                <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-blue-600 mb-1">{totalCars}</div>
                     <div className="text-sm text-slate-500">Carros</div>
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
-                    <div className="text-3xl font-bold text-orange-500 mb-1">{pendingRequestsCount}</div>
-                    <div className="text-sm text-slate-500">Pedidos Pendentes</div>
+                    <div className="text-3xl font-bold text-amber-600 mb-1">{totalBookings}</div>
+                    <div className="text-sm text-slate-500">Reservas</div>
+                </Card>
+                <Card className="p-6 text-center border border-slate-200">
+                    <div className="text-3xl font-bold text-emerald-600 mb-1">
+                        {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(totalRevenue)}
+                    </div>
+                    <div className="text-sm text-slate-500">Receita Total</div>
                 </Card>
             </div>
 
@@ -151,7 +163,7 @@ export default function AdminStatsDashboard() {
                                 <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center">
                                     <Users className="w-6 h-6 text-slate-500" />
                                 </div>
-                                
+
                                 {/* User Info */}
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
@@ -171,7 +183,7 @@ export default function AdminStatsDashboard() {
                                 <span className={`px-3 py-1 rounded-md text-sm font-medium ${getRoleBadgeColor(user.role)}`}>
                                     {user.role}
                                 </span>
-                                
+
                                 {user.email !== 'admin@minefornow.com' && ( // Don't show actions for current admin
                                     <div className="flex gap-2">
                                         <Button
