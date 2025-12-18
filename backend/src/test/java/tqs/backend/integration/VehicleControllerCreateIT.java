@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import tqs.backend.dto.CreateVehicleRequest;
 import tqs.backend.model.User;
@@ -33,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Transactional
 @DisplayName("Vehicle Creation Integration Tests")
 class VehicleControllerCreateIT {
 
@@ -50,6 +48,9 @@ class VehicleControllerCreateIT {
         private VehicleRepository vehicleRepository;
 
         @Autowired
+        private tqs.backend.repository.BookingRepository bookingRepository;
+
+        @Autowired
         private PasswordEncoder passwordEncoder;
 
         @Autowired
@@ -63,7 +64,8 @@ class VehicleControllerCreateIT {
 
         @BeforeEach
         void setUp() {
-                // Limpar repositórios
+                // Limpar repositórios na ordem correta (bookings primeiro devido a FK)
+                bookingRepository.deleteAll();
                 vehicleRepository.deleteAll();
                 userRepository.deleteAll();
 
