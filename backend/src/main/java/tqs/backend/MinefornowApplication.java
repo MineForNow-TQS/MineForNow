@@ -172,7 +172,7 @@ public class MinefornowApplication {
                         testBooking3.setRenter(renter);
                         bookingRepo.save(testBooking3);
 
-                        System.out.println("✅ E2E Test data: 3 bookings created (2 CONFIRMED, 1 WAITING_PAYMENT)");
+                        System.out.println("E2E Test data: 3 bookings created (2 CONFIRMED, 1 WAITING_PAYMENT)");
                 };
         }
 }
