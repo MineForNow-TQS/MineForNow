@@ -132,6 +132,18 @@ public class PaymentSteps {
 
     @Dado("estou na página de pagamento da reserva com ID {int}")
     public void estouNaPaginaPagamento(int bookingId) {
+        // Navigate and login
+        page.navigate("http://localhost:3000/");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).click();
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).fill("maria@email.com");
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).click();
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).fill("Aa123456");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar").setExact(true)).click();
+
+        // Wait for navigation to complete
+        page.waitForURL("http://localhost:3000/dashboard");
+
         // Navigate to payment page with booking details
         String url = String.format("http://localhost:3000/payment?bookingId=%d&carId=%d&start=%s&end=%s",
                 testBooking.getId(),
