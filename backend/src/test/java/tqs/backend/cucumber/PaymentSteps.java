@@ -34,53 +34,22 @@ public class PaymentSteps {
     private PasswordEncoder passwordEncoder;
 
     private final CucumberSpringConfiguration config;
-    private Playwright playwright;
-    private Browser browser;
-    private BrowserContext context;
-    private Page page;
+    private final BookingSteps bookingSteps;
     private User testUser;
     private Vehicle testVehicle;
     private Booking testBooking;
 
-    public PaymentSteps(CucumberSpringConfiguration config) {
+    public PaymentSteps(CucumberSpringConfiguration config, BookingSteps bookingSteps) {
         this.config = config;
+        this.bookingSteps = bookingSteps;
     }
 
-    @Before("@SCRUM-16")
-    public void setUp() {
-        // Clean database before each scenario
+    @Before(value = "@SCRUM-16", order = 0)
+    public void cleanDatabase() {
+        // Clean database before each scenario (runs before Playwright setup)
         bookingRepository.deleteAll();
         vehicleRepository.deleteAll();
         userRepository.deleteAll();
-
-        // Initialize Playwright
-        playwright = Playwright.create();
-        boolean headless = false;
-        String ci = System.getenv("CI");
-        String display = System.getenv("DISPLAY");
-        if ((ci != null && !ci.isEmpty()) || display == null || display.isEmpty()) {
-            headless = true;
-        }
-        BrowserType.LaunchOptions opts = new BrowserType.LaunchOptions().setHeadless(headless);
-        if (!headless) {
-            opts.setSlowMo(500);
-        }
-        browser = playwright.chromium().launch(opts);
-        context = browser.newContext();
-        page = context.newPage();
-        page.setDefaultTimeout(60000);
-    }
-
-    @After("@SCRUM-16")
-    public void tearDown() {
-        if (page != null)
-            page.close();
-        if (context != null)
-            context.close();
-        if (browser != null)
-            browser.close();
-        if (playwright != null)
-            playwright.close();
     }
 
     @Dado("que existe um veículo disponível com ID {int}")
@@ -133,16 +102,16 @@ public class PaymentSteps {
     @Dado("estou na página de pagamento da reserva com ID {int}")
     public void estouNaPaginaPagamento(int bookingId) {
         // Navigate and login
-        page.navigate("http://localhost:3000/");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).click();
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).fill("maria@email.com");
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).click();
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).fill("Aa123456");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar").setExact(true)).click();
+        bookingSteps.getPage().navigate("http://localhost:3000/");
+        bookingSteps.getPage().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar")).click();
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).click();
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("seu@email.com")).fill("maria@email.com");
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).click();
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Digite a sua password")).fill("Aa123456");
+        bookingSteps.getPage().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Entrar").setExact(true)).click();
 
         // Wait for navigation to complete
-        page.waitForURL("http://localhost:3000/dashboard");
+        bookingSteps.getPage().waitForURL("http://localhost:3000/dashboard");
 
         // Navigate to payment page with booking details
         String url = String.format("http://localhost:3000/payment?bookingId=%d&carId=%d&start=%s&end=%s",
@@ -150,22 +119,22 @@ public class PaymentSteps {
                 testVehicle.getId(),
                 testBooking.getPickupDate().toString(),
                 testBooking.getReturnDate().toString());
-        page.navigate(url);
+        bookingSteps.getPage().navigate(url);
 
         // Wait for page to load
-        page.waitForSelector("text=Pagamento");
+        bookingSteps.getPage().waitForSelector("text=Pagamento");
     }
 
     @Quando("preencho o campo {string} com {string}")
     public void preenchoCampo(String campo, String valor) {
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).click();
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).fill(valor);
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).click();
+        bookingSteps.getPage().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).fill(valor);
     }
 
     @Então("a reserva deve ter o estado {string}")
     public void reservaDeveTerEstado(String estado) {
         // Wait a bit for the backend to update
-        page.waitForTimeout(1000);
+        bookingSteps.getPage().waitForTimeout(1000);
 
         Booking booking = bookingRepository.findById(testBooking.getId()).orElseThrow();
         assert booking.getStatus().equals(estado) : "Expected status " + estado + " but got " + booking.getStatus();
@@ -174,13 +143,13 @@ public class PaymentSteps {
     @Então("devo ver uma mensagem de erro contendo {string}")
     public void devoVerMensagemErroContendo(String mensagem) {
         // Wait for error message to appear
-        page.waitForSelector("text=" + mensagem, new Page.WaitForSelectorOptions().setTimeout(5000));
-        assertThat(page.getByText(mensagem, new Page.GetByTextOptions().setExact(false))).isVisible();
+        bookingSteps.getPage().waitForSelector("text=" + mensagem, new Page.WaitForSelectorOptions().setTimeout(5000));
+        assertThat(bookingSteps.getPage().getByText(mensagem, new Page.GetByTextOptions().setExact(false))).isVisible();
     }
 
     @Então("devo ver mensagens de erro de validação nos campos obrigatórios")
     public void devoVerErrosValidacao() {
         // Check for validation error messages
-        assertThat(page.getByText("Insira os últimos 4 dígitos do cartão")).isVisible();
+        assertThat(bookingSteps.getPage().getByText("Insira os últimos 4 dígitos do cartão")).isVisible();
     }
 }
