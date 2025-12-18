@@ -106,4 +106,43 @@ class DashboardControllerTest {
         mockMvc.perform(get("/api/dashboard/owner"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @Requirement("SCRUM-24")
+    @WithMockUser(username = "owner@test.com", roles = "OWNER")
+    void getOwnerActiveBookings_Success() throws Exception {
+        // Given
+        var bookings = java.util.List.of(
+                new tqs.backend.dto.BookingDTO(1L, java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(5),
+                        "CONFIRMED", 500.0, 1L, 2L));
+        when(dashboardService.getActiveBookings("owner@test.com")).thenReturn(bookings);
+
+        // When & Then
+        mockMvc.perform(get("/api/dashboard/owner/active-bookings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].id").value(1));
+    }
+
+    @Test
+    @Requirement("SCRUM-24")
+    @WithMockUser(username = "unknown@test.com", roles = "OWNER")
+    void getOwnerActiveBookings_OwnerNotFound() throws Exception {
+        // Given
+        when(dashboardService.getActiveBookings("unknown@test.com"))
+                .thenThrow(new IllegalArgumentException("Owner not found"));
+
+        // When & Then
+        mockMvc.perform(get("/api/dashboard/owner/active-bookings"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Owner not found"));
+    }
+
+    @Test
+    @Requirement("SCRUM-24")
+    void getOwnerActiveBookings_Unauthorized() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/dashboard/owner/active-bookings"))
+                .andExpect(status().isUnauthorized());
+    }
 }

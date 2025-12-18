@@ -44,8 +44,7 @@ public class DashboardController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace(); // Log the full stack trace
-            return ResponseEntity.status(500).body("Internal server error: " + e.getMessage());
+            return ResponseEntity.status(500).body("Internal server error");
         }
     }
 }

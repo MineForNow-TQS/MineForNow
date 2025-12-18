@@ -198,4 +198,70 @@ class DashboardServiceTest {
                 assertThat(stats.getPendingBookings()).isEqualTo(1);
                 assertThat(stats.getCompletedBookings()).isEqualTo(0);
         }
+
+        @Test
+        @Requirement("SCRUM-24")
+        void getActiveBookings_Success() {
+                // Given
+                when(userRepository.findByEmail("owner@test.com")).thenReturn(Optional.of(owner));
+                when(vehicleRepository.findByOwnerEmail("owner@test.com"))
+                                .thenReturn(Arrays.asList(vehicle1, vehicle2));
+
+                // Create future booking
+                Booking futureBooking = new Booking(
+                                LocalDate.now().plusDays(1),
+                                LocalDate.now().plusDays(5),
+                                vehicle1,
+                                new User(),
+                                "CONFIRMED",
+                                500.0);
+                futureBooking.setId(4L);
+
+                when(bookingRepository.findAll()).thenReturn(Arrays.asList(futureBooking, confirmedBooking));
+
+                // When
+                var activeBookings = dashboardService.getActiveBookings("owner@test.com");
+
+                // Then
+                assertThat(activeBookings).hasSize(1); // Only future booking
+                assertThat(activeBookings.get(0).getId()).isEqualTo(4L);
+        }
+
+        @Test
+        @Requirement("SCRUM-24")
+        void getActiveBookings_OwnerNotFound() {
+                // Given
+                when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+
+                // When & Then
+                assertThatThrownBy(() -> dashboardService.getActiveBookings("unknown@test.com"))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessage("Owner not found");
+        }
+
+        @Test
+        @Requirement("SCRUM-24")
+        void getActiveBookings_NoActiveBookings() {
+                // Given
+                when(userRepository.findByEmail("owner@test.com")).thenReturn(Optional.of(owner));
+                when(vehicleRepository.findByOwnerEmail("owner@test.com"))
+                                .thenReturn(Arrays.asList(vehicle1));
+
+                // All bookings are in the past
+                Booking pastBooking = new Booking(
+                                LocalDate.now().minusDays(10),
+                                LocalDate.now().minusDays(5),
+                                vehicle1,
+                                new User(),
+                                "CONFIRMED",
+                                500.0);
+
+                when(bookingRepository.findAll()).thenReturn(Arrays.asList(pastBooking));
+
+                // When
+                var activeBookings = dashboardService.getActiveBookings("owner@test.com");
+
+                // Then
+                assertThat(activeBookings).isEmpty();
+        }
 }
