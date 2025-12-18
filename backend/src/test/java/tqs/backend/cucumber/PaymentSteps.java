@@ -6,6 +6,7 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.pt.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
@@ -28,6 +29,9 @@ public class PaymentSteps {
 
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final CucumberSpringConfiguration config;
     private Playwright playwright;
@@ -103,7 +107,7 @@ public class PaymentSteps {
             testUser = User.builder()
                     .email("maria@email.com")
                     .fullName("Maria Silva")
-                    .password("$2a$10$xFKZvJZGZqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5Y") // Aa123456 hashed
+                    .password(passwordEncoder.encode("Aa123456"))
                     .role(UserRole.RENTER)
                     .build();
             testUser = userRepository.save(testUser);
