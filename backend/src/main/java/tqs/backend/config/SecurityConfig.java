@@ -83,7 +83,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
+    @Bean // Configuração CORS para permitir pedidos do frontend em desenvolvimento
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001"));
