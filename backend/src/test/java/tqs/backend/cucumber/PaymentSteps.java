@@ -144,11 +144,6 @@ public class PaymentSteps {
         page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName(campo + " *")).fill(valor);
     }
 
-    @Quando("clico no botão {string}")
-    public void clicoBotao(String botao) {
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(botao)).click();
-    }
-
     @Então("devo ver a mensagem {string}")
     public void devoVerMensagem(String mensagem) {
         assertThat(page.getByText(mensagem)).isVisible();
