@@ -49,6 +49,10 @@ public class BookingSteps {
             playwright.close();
     }
 
+    public Page getPage() {
+        return page;
+    }
+
     @Dado("que existe um veículo disponível para aluguer com ID {int}")
     public void existeVeiculoDisponivel(int id) {
         // Assumed pre-condition or managed by DB seed
