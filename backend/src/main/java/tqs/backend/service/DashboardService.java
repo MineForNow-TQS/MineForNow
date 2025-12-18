@@ -131,8 +131,8 @@ public class DashboardService {
                 return filtered.stream()
                                 .map(b -> new BookingDTO(
                                                 b.getId(),
-                                                b.getPickupDate(),
-                                                b.getReturnDate(),
+                                                b.getPickupDate(), // This maps to startDate in DTO
+                                                b.getReturnDate(), // This maps to endDate in DTO
                                                 b.getStatus(),
                                                 b.getTotalPrice(),
                                                 b.getVehicle().getId(),
