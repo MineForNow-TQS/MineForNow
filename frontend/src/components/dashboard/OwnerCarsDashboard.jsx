@@ -37,9 +37,14 @@ export default function OwnerCarsDashboard() {
             retry: 1,
             onError: (error) => {
                 console.error('Failed to fetch active bookings:', error);
+            },
+            onSuccess: (data) => {
+                console.log('✅ Active bookings fetched:', data);
             }
         }
     );
+
+    console.log('🔍 activeBookingsList:', activeBookingsList, 'loading:', activeLoading);
 
     // Mutation to delete car
     const deleteMutation = useMutation(
