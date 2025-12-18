@@ -17,8 +17,11 @@ public class BookingRequestDTO {
     @FutureOrPresent
     private LocalDate endDate;
 
-    @NotNull
+    // Optional - will be set from authenticated user if not provided
     private Long renterId;
+
+    // Email of authenticated user (set by controller)
+    private String renterEmail;
 
     public BookingRequestDTO() {
     }
@@ -60,5 +63,13 @@ public class BookingRequestDTO {
 
     public void setRenterId(Long renterId) {
         this.renterId = renterId;
+    }
+
+    public String getRenterEmail() {
+        return renterEmail;
+    }
+
+    public void setRenterEmail(String renterEmail) {
+        this.renterEmail = renterEmail;
     }
 }

@@ -76,8 +76,8 @@ export default function Checkout() {
             const bookingData = {
                 vehicleId: parseInt(carId),
                 startDate: startDate,
-                endDate: endDate,
-                renterId: user.id
+                endDate: endDate
+                // renterId will be set from JWT token in backend
             };
 
             const createdBooking = await bookingService.create(bookingData);
