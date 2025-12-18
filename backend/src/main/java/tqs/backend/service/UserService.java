@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import tqs.backend.dto.RegisterRequest;
 import tqs.backend.dto.UpdateProfileRequest;
+import tqs.backend.dto.UpgradeOwnerRequest;
 import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
 import tqs.backend.repository.UserRepository;
@@ -79,4 +80,28 @@ public class UserService {
                 .role(savedUser.getRole())
                 .build();
     }
+
+    public void requestOwnerUpgrade(String email, UpgradeOwnerRequest request) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+
+        // Já é owner ou está pendente
+        if (user.getRole() == UserRole.OWNER ||
+            user.getRole() == UserRole.PENDING_OWNER) {
+            throw new IllegalStateException("Pedido já submetido ou utilizador já é Owner");
+        }
+
+        // Atualizar dados legais
+        user.setPhone(request.getPhone());
+        user.setCitizenCardNumber(request.getCitizenCardNumber());
+        user.setDrivingLicense(request.getDrivingLicense());
+        user.setOwnerMotivation(request.getMotivation());
+
+        // Estado intermédio
+        user.setRole(UserRole.PENDING_OWNER);
+
+        userRepository.save(user);
+    }
+
 }
