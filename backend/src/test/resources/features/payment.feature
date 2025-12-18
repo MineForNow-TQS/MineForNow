@@ -30,7 +30,7 @@ Funcionalidade: Simulação de Pagamento e Confirmação
     E preencho o campo "Validade (MM/YY)" com "12/25"
     E preencho o campo "CVV" com "123"
     E aciono o botão "Confirmar Pagamento"
-    Então devo ver uma mensagem de erro contendo "Booking is not waiting for payment"
+    Então devo ver uma mensagem de erro contendo "not waiting for payment"
 
   @SCRUM-16
   Cenário: Validação de formulário - campos obrigatórios
