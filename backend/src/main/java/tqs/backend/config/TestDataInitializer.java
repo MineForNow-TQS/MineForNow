@@ -15,7 +15,7 @@ import tqs.backend.repository.VehicleRepository;
 import java.time.LocalDate;
 
 @Configuration
-@Profile("dev") // Only runs in dev profile
+// @Profile("dev") // Disabled - create data manually via UI
 public class TestDataInitializer {
 
     @Bean
