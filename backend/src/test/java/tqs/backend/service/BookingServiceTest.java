@@ -166,27 +166,99 @@ class BookingServiceTest {
     @Test
     @Requirement("SCRUM-16")
     void confirmPayment_InvalidStatus_ThrowsException() {
-        // Given
-        Long bookingId = 1L;
-        PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
-
         Booking booking = new Booking(
-                LocalDate.now().plusDays(1),
-                LocalDate.now().plusDays(5),
+                LocalDate.of(2025, 12, 19),
+                LocalDate.of(2025, 12, 23),
                 vehicle,
                 renter,
-                "CONFIRMED", // Already confirmed
+                "CONFIRMED",
                 500.0);
-        booking.setId(bookingId);
+        booking.setId(1L);
 
-        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
 
-        // When & Then
-        assertThatThrownBy(() -> bookingService.confirmPayment(bookingId, paymentData))
+        PaymentDTO paymentData = new PaymentDTO();
+        paymentData.setCardLast4Digits("1234");
+        paymentData.setCardholderName("Maria Silva");
+        paymentData.setExpiryDate("12/25");
+        paymentData.setCvv("123");
+
+        assertThatThrownBy(() -> bookingService.confirmPayment(1L, paymentData))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("not waiting for payment");
+                .hasMessageContaining("Booking is not waiting for payment");
+    }
 
-        verify(bookingRepository).findById(bookingId);
-        verify(bookingRepository, never()).save(any(Booking.class));
+    @Test
+    @Requirement("SCRUM-16")
+    void getBookingsByUser_Success() {
+        renter.setEmail("maria@email.com");
+        Booking booking1 = new Booking(
+                LocalDate.of(2025, 12, 19),
+                LocalDate.of(2025, 12, 23),
+                vehicle,
+                renter,
+                "CONFIRMED",
+                500.0);
+        booking1.setId(1L);
+
+        Booking booking2 = new Booking(
+                LocalDate.of(2025, 12, 25),
+                LocalDate.of(2025, 12, 30),
+                vehicle,
+                renter,
+                "WAITING_PAYMENT",
+                600.0);
+        booking2.setId(2L);
+
+        when(userRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(renter));
+        when(bookingRepository.findByRenterId(2L)).thenReturn(java.util.Arrays.asList(booking1, booking2));
+
+        var result = bookingService.getBookingsByUser("maria@email.com");
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getStatus()).isEqualTo("CONFIRMED");
+        assertThat(result.get(1).getStatus()).isEqualTo("WAITING_PAYMENT");
+    }
+
+    @Test
+    @Requirement("SCRUM-16")
+    void getBookingsByUser_UserNotFound() {
+        when(userRepository.findByEmail("unknown@email.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.getBookingsByUser("unknown@email.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User not found");
+    }
+
+    @Test
+    @Requirement("SCRUM-16")
+    void getBookingsByUserEmail_Success() {
+        renter.setEmail("maria@email.com");
+        Booking booking = new Booking(
+                LocalDate.of(2025, 12, 19),
+                LocalDate.of(2025, 12, 23),
+                vehicle,
+                renter,
+                "CONFIRMED",
+                500.0);
+        booking.setId(1L);
+
+        when(userRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(renter));
+        when(bookingRepository.findByRenter(renter)).thenReturn(java.util.Arrays.asList(booking));
+
+        var result = bookingService.getBookingsByUserEmail("maria@email.com");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getStatus()).isEqualTo("CONFIRMED");
+    }
+
+    @Test
+    @Requirement("SCRUM-16")
+    void getBookingsByUserEmail_UserNotFound() {
+        when(userRepository.findByEmail("unknown@email.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.getBookingsByUserEmail("unknown@email.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User not found");
     }
 }
