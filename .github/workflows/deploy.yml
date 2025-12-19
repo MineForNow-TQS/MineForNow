@@ -6,7 +6,6 @@ on:
 
 jobs:
   build-and-deploy:
-    # AQUI ESTÁ A MUDANÇA: Usa as labels que vi na tua imagem
     runs-on: [self-hosted, linux, staging]
 
     steps:
@@ -48,17 +47,78 @@ jobs:
         mvn clean package -DskipTests
 
     # --- 5. DEPLOY LOCAL (Diretamente na VM) ---
-    - name: Atualizar Serviço
+    - name: Iniciar Base de Dados (Docker)
       run: |
-        echo "A parar o serviço..."
-        sudo systemctl stop minefornow
+        echo "[DB] A iniciar PostgreSQL em Docker..."
+        cd /home/xpto/minefornow || cd ~/minefornow || cd .
+        docker compose up -d db
+        sleep 10
         
-        echo "A copiar o novo JAR..."
-        # Copia da pasta de build (backend/target) para a pasta de instalação (/opt)
-        cp backend/target/*.jar /opt/minefornow/minefornow-backend.jar
-        
-        echo "A reiniciar..."
+        # Verifica se BD está pronta
+        echo "[DB] A verificar se a BD está pronta..."
+        docker compose exec -T db pg_isready -U minefornow -d minefornow
+        if [ $? -eq 0 ]; then
+          echo "[DB] PostgreSQL está READY!"
+        else
+          echo "[ERROR] PostgreSQL falhou!"
+          docker compose logs db
+          exit 1
+        fi
+
+    - name: Parar Serviço Antigo
+      run: |
+        echo "[DEPLOY] A parar o serviço anterior..."
+        sudo systemctl stop minefornow || true
+        sleep 3
+
+    - name: Copiar JAR para Produção
+      run: |
+        echo "[DEPLOY] A copiar o novo JAR..."
+        sudo mkdir -p /opt/minefornow
+        sudo cp backend/target/*.jar /opt/minefornow/minefornow-backend.jar
+        sudo chown minefornow:minefornow /opt/minefornow/minefornow-backend.jar
+
+    - name: Iniciar Serviço Spring (com BD)
+      run: |
+        echo "[SPRING] A iniciar o Spring Boot..."
         sudo systemctl start minefornow
+        sleep 8
+
+    - name: Verificar Status do Spring
+      run: |
+        echo "[SPRING] A verificar se o Spring está a correr..."
+        sudo systemctl status minefornow --no-pager
         
-        # Verifica se ficou tudo bem
-        systemctl status minefornow --no-pager
+    - name: Health Check - Conectar ao Spring + BD
+      run: |
+        echo "[HEALTHCHECK] A verificar connection ao Spring + BD..."
+        max_attempts=30
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          response=$(curl -s http://localhost:8080/actuator/health)
+          status=$(echo $response | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+          
+          if [ "$status" = "UP" ]; then
+            echo "[SUCCESS] Spring + BD estão HEALTHY!"
+            echo "Response: $response"
+            exit 0
+          fi
+          
+          echo "[RETRY] Tentativa $attempt/$max_attempts... ($status)"
+          sleep 2
+          attempt=$((attempt + 1))
+        done
+        
+        echo "[ERROR] Spring não conectou à BD!"
+        echo "[LOGS] Logs do Spring:"
+        sudo journalctl -u minefornow -n 100
+        echo "[LOGS] Logs do PostgreSQL:"
+        docker compose logs db --tail 30
+        exit 1
+
+    - name: Teste de Conectividade à BD
+      run: |
+        echo "[TEST] A testar query na BD..."
+        docker compose exec -T db psql -U minefornow -d minefornow -c "SELECT COUNT(*) as users FROM users;" 2>/dev/null || echo "[WARNING] Tabelas ainda não criadas (normal na primeira execução)"
+        echo "[SUCCESS] Deployment bem-sucedido com BD!"
