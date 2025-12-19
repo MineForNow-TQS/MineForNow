@@ -57,4 +57,41 @@ export const reviewService = {
     // Se não tem car_id, retorna array vazio
     return { data: [] };
   },
+
+  /**
+   * Criar uma nova review
+   * @param {Object} reviewData - { rating, comment, bookingId }
+   * @returns {Promise<Object>}
+   */
+  async create(reviewData) {
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${FULL_API_URL}/reviews`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(reviewData),
+      });
+
+      if (!response.ok) {
+        if (response.status === 409) {
+          throw new Error('Já existe uma avaliação para esta reserva ou estado inválido');
+        }
+        const errorText = await response.text();
+        throw new Error(errorText || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erro ao buscar reviews do veículo:', error);
+      throw error;
+    }
+  },
 };
