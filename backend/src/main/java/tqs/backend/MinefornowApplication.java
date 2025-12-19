@@ -35,6 +35,7 @@ public class MinefornowApplication {
         @Profile("!test")
         public CommandLineRunner demo(VehicleRepository vehicleRepo, BookingRepository bookingRepo,
                         UserRepository userRepo, PasswordEncoder passwordEncoder,
+                        tqs.backend.repository.ReviewRepository reviewRepo,
                         @Value("${minefornow.app.defaultPassword}") String defaultPassword) {
                 return args -> {
                         // Check if data already exists
@@ -173,6 +174,34 @@ public class MinefornowApplication {
                         bookingRepo.save(testBooking3);
 
                         System.out.println("E2E Test data: 3 bookings created (2 CONFIRMED, 1 WAITING_PAYMENT)");
+
+                        // === SCRUM-30: Sample Reviews ===
+                        // Add reviews for Mercedes (for testing review visualization)
+                        tqs.backend.model.Review review1 = new tqs.backend.model.Review();
+                        review1.setVehicle(mercedes);
+                        review1.setReviewer(renter);
+                        review1.setRating(5);
+                        review1.setComment("Excelente carro! Experiência incrível de condução.");
+                        review1.setCreatedAt(java.time.LocalDateTime.now().minusDays(5));
+                        reviewRepo.save(review1);
+
+                        tqs.backend.model.Review review2 = new tqs.backend.model.Review();
+                        review2.setVehicle(mercedes);
+                        review2.setReviewer(admin);
+                        review2.setRating(4);
+                        review2.setComment("Muito bom, mas um pouco caro para o meu orçamento.");
+                        review2.setCreatedAt(java.time.LocalDateTime.now().minusDays(2));
+                        reviewRepo.save(review2);
+
+                        tqs.backend.model.Review review3 = new tqs.backend.model.Review();
+                        review3.setVehicle(mercedes);
+                        review3.setReviewer(renter);
+                        review3.setRating(5);
+                        review3.setComment("Perfeito! Recomendo a todos.");
+                        review3.setCreatedAt(java.time.LocalDateTime.now().minusDays(1));
+                        reviewRepo.save(review3);
+
+                        System.out.println("SCRUM-30 Test data: 3 reviews created for Mercedes (avg rating: 4.67)");
                 };
         }
 }
