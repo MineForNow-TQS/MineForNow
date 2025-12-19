@@ -40,7 +40,7 @@ public class MinefornowApplication {
                 return args -> {
                         // Check if data already exists
                         if (userRepo.findByEmail("owner@minefornow.com").isPresent()) {
-                                System.out.println("✅ Test data already exists - skipping initialization");
+                                System.out.println("Test data already exists - skipping initialization");
                                 return;
                         }
 
