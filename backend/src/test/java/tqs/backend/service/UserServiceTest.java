@@ -325,4 +325,110 @@ class UserServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("Approve Owner Request Tests")
+    @Requirement("SCRUM-25")
+    class ApproveOwnerRequestTests {
+
+        @Test
+        @DisplayName("Should approve owner request successfully")
+        void shouldApproveOwnerRequestSuccessfully() {
+            User pendingOwner = User.builder()
+                    .id(1L)
+                    .email("pending@email.com")
+                    .role(UserRole.PENDING_OWNER)
+                    .build();
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(pendingOwner));
+            when(userRepository.save(any(User.class))).thenAnswer(i -> (User) i.getArguments()[0]);
+
+            userService.approveOwnerRequest(1L);
+
+            assertEquals(UserRole.OWNER, pendingOwner.getRole());
+            verify(userRepository).save(pendingOwner);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when user not found")
+        void shouldThrowWhenUserNotFound() {
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> userService.approveOwnerRequest(1L));
+
+            assertEquals("Utilizador não encontrado", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when user not pending owner")
+        void shouldThrowWhenUserNotPending() {
+            User renter = User.builder()
+                    .id(1L)
+                    .role(UserRole.RENTER)
+                    .build();
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(renter));
+
+            IllegalStateException ex = assertThrows(
+                    IllegalStateException.class,
+                    () -> userService.approveOwnerRequest(1L));
+
+            assertEquals("Utilizador não tem pedido pendente", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Reject Owner Request Tests")
+    @Requirement("SCRUM-25")
+    class RejectOwnerRequestTests {
+
+        @Test
+        @DisplayName("Should reject owner request successfully")
+        void shouldRejectOwnerRequestSuccessfully() {
+            User pendingOwner = User.builder()
+                    .id(1L)
+                    .email("pending@email.com")
+                    .role(UserRole.PENDING_OWNER)
+                    .build();
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(pendingOwner));
+            when(userRepository.save(any(User.class))).thenAnswer(i -> (User) i.getArguments()[0]);
+
+            userService.rejectOwnerRequest(1L);
+
+            assertEquals(UserRole.RENTER, pendingOwner.getRole());
+            verify(userRepository).save(pendingOwner);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when user not found")
+        void shouldThrowWhenUserNotFound() {
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> userService.rejectOwnerRequest(1L));
+
+            assertEquals("Utilizador não encontrado", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when user not pending owner")
+        void shouldThrowWhenUserNotPending() {
+            User renter = User.builder()
+                    .id(1L)
+                    .role(UserRole.RENTER)
+                    .build();
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(renter));
+
+            IllegalStateException ex = assertThrows(
+                    IllegalStateException.class,
+                    () -> userService.rejectOwnerRequest(1L));
+
+            assertEquals("Utilizador não tem pedido pendente", ex.getMessage());
+        }
+    }
+
 }

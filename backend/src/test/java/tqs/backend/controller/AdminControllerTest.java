@@ -12,6 +12,7 @@ import tqs.backend.service.AdminService;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -59,6 +60,7 @@ class AdminControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @Requirement("SCRUM-75")
     void whenGetMetadata_thenReturnAdminStats() throws Exception {
         AdminStatsDTO stats = new AdminStatsDTO(10L, 5L, 20L, 1500.0);
         when(adminService.getDashboardStats()).thenReturn(stats);
