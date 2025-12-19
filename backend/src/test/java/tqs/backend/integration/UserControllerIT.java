@@ -29,6 +29,7 @@ import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
 import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.ReviewRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
@@ -53,6 +54,9 @@ class UserControllerIT {
         @Autowired
         private BookingRepository bookingRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
         @Autowired
         private PasswordEncoder passwordEncoder;
 
@@ -66,6 +70,7 @@ class UserControllerIT {
 
                 // Clean up DB strictly in order to avoid FK violations
                 bookingRepository.deleteAll();
+                reviewRepository.deleteAll();
                 vehicleRepository.deleteAll();
                 userRepository.deleteAll();
 

@@ -43,140 +43,144 @@ import tqs.backend.service.UserService;
 @Import(AdminControllerTest.TestSecurityConfig.class)
 class AdminControllerTest {
 
-    @TestConfiguration
-    @EnableMethodSecurity(prePostEnabled = true)
-    static class TestSecurityConfig {
-        @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-            http.csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-                    .exceptionHandling(e -> e.authenticationEntryPoint(
-                            new org.springframework.security.web.authentication.HttpStatusEntryPoint(
-                                    org.springframework.http.HttpStatus.UNAUTHORIZED)));
-            return http.build();
+        @TestConfiguration
+        @EnableMethodSecurity(prePostEnabled = true)
+        static class TestSecurityConfig {
+                @Bean
+                public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                        http.csrf(csrf -> csrf.disable())
+                                        .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                                        .exceptionHandling(e -> e.authenticationEntryPoint(
+                                                        new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+                                                                        org.springframework.http.HttpStatus.UNAUTHORIZED)));
+                        return http.build();
+                }
         }
-    }
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockBean
-    private AdminService adminService;
+        @MockBean
+        private AdminService adminService;
 
-    @MockBean
-    private UserService userService;
+        @MockBean
+        private UserService userService;
 
-    @MockBean
-    private VehicleRepository vehicleRepository;
+        @MockBean
+        private VehicleRepository vehicleRepository;
 
-    @MockBean
-    private UserRepository userRepository;
+        @MockBean
+        private UserRepository userRepository;
 
-    @MockBean
-    private BookingRepository bookingRepository;
+        @MockBean
+        private BookingRepository bookingRepository;
 
-    @MockBean
-    private PasswordEncoder passwordEncoder;
+        @MockBean
+        private tqs.backend.repository.ReviewRepository reviewRepository;
 
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @Requirement("SCRUM-75")
-    void whenGetMetadata_thenReturnAdminStats() throws Exception {
-        AdminStatsDTO stats = new AdminStatsDTO(10L, 5L, 20L, 1500.0);
-        when(adminService.getDashboardStats()).thenReturn(stats);
+        @MockBean
+        private PasswordEncoder passwordEncoder;
 
-        mockMvc.perform(get("/api/admin/stats"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalUsers").value(10))
-                .andExpect(jsonPath("$.totalCars").value(5))
-                .andExpect(jsonPath("$.totalBookings").value(20))
-                .andExpect(jsonPath("$.totalRevenue").value(1500.0));
-    }
-
-    @Test
-    @WithMockUser(roles = "USER")
-    void whenUserGetMetadata_thenReturnForbidden() throws Exception {
-        mockMvc.perform(get("/api/admin/stats"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void whenUnauthenticatedGetMetadata_thenReturnUnauthorized() throws Exception { // Or Forbidden/Unauthorized
-                                                                                    // depending on config, usually 401
-                                                                                    // or 403
-        mockMvc.perform(get("/api/admin/stats"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Nested
-    @DisplayName("POST /api/admin/upgrade")
-    class RequestOwnerUpgradeTests {
-        @SuppressWarnings("null")
         @Test
-        @WithMockUser(username = "test@test.com")
-        @DisplayName("Should submit upgrade request successfully")
-        void whenValidUpgradeRequest_thenReturns200() throws Exception {
-            UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
-            upgradeRequest.setPhone("+351912345678");
-            upgradeRequest.setCitizenCardNumber("12345678");
-            upgradeRequest.setDrivingLicense("AB123456");
-            upgradeRequest.setMotivation("Quero ser proprietário");
+        @WithMockUser(roles = "ADMIN")
+        @Requirement("SCRUM-75")
+        void whenGetMetadata_thenReturnAdminStats() throws Exception {
+                AdminStatsDTO stats = new AdminStatsDTO(10L, 5L, 20L, 1500.0);
+                when(adminService.getDashboardStats()).thenReturn(stats);
 
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            mockMvc.perform(post("/api/admin/upgrade")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(upgradeRequest))
-                    .with(csrf()))
-                    .andExpect(status().isOk());
-
-            verify(userService)
-                    .requestOwnerUpgrade(eq("test@test.com"),
-                            any(UpgradeOwnerRequest.class));
+                mockMvc.perform(get("/api/admin/stats"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.totalUsers").value(10))
+                                .andExpect(jsonPath("$.totalCars").value(5))
+                                .andExpect(jsonPath("$.totalBookings").value(20))
+                                .andExpect(jsonPath("$.totalRevenue").value(1500.0));
         }
 
-        @SuppressWarnings("null")
         @Test
-        @WithMockUser(username = "test@test.com")
-        @DisplayName("Should return 400 when driving license format invalid")
-        void whenInvalidDrivingLicense_thenReturns400() throws Exception {
-            UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
-            upgradeRequest.setPhone("+351912345678");
-            upgradeRequest.setCitizenCardNumber("12345678");
-            upgradeRequest.setDrivingLicense("123456"); // inválido
-            upgradeRequest.setMotivation("Motivação");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            mockMvc.perform(post("/api/admin/upgrade")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(upgradeRequest))
-                    .with(csrf()))
-                    .andExpect(status().isBadRequest());
+        @WithMockUser(roles = "USER")
+        void whenUserGetMetadata_thenReturnForbidden() throws Exception {
+                mockMvc.perform(get("/api/admin/stats"))
+                                .andExpect(status().isForbidden());
         }
 
-        @SuppressWarnings("null")
         @Test
-        @WithMockUser(username = "owner@test.com")
-        @DisplayName("Should return 409 when user already owner or pending")
-        void whenAlreadyOwner_thenReturns409() throws Exception {
-            UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
-            upgradeRequest.setPhone("+351912345678");
-            upgradeRequest.setCitizenCardNumber("12345678");
-            upgradeRequest.setDrivingLicense("AB123456");
-            upgradeRequest.setMotivation("Motivação");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            doThrow(new IllegalStateException("Pedido já submetido ou utilizador já é Owner"))
-                    .when(userService).requestOwnerUpgrade(eq("owner@test.com"),
-                            any(UpgradeOwnerRequest.class));
-
-            mockMvc.perform(post("/api/admin/upgrade")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(upgradeRequest))
-                    .with(csrf()))
-                    .andExpect(status().isConflict());
+        void whenUnauthenticatedGetMetadata_thenReturnUnauthorized() throws Exception { // Or Forbidden/Unauthorized
+                                                                                        // depending on config, usually
+                                                                                        // 401
+                                                                                        // or 403
+                mockMvc.perform(get("/api/admin/stats"))
+                                .andExpect(status().isUnauthorized());
         }
-    }
+
+        @Nested
+        @DisplayName("POST /api/admin/upgrade")
+        class RequestOwnerUpgradeTests {
+                @SuppressWarnings("null")
+                @Test
+                @WithMockUser(username = "test@test.com")
+                @DisplayName("Should submit upgrade request successfully")
+                void whenValidUpgradeRequest_thenReturns200() throws Exception {
+                        UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
+                        upgradeRequest.setPhone("+351912345678");
+                        upgradeRequest.setCitizenCardNumber("12345678");
+                        upgradeRequest.setDrivingLicense("AB123456");
+                        upgradeRequest.setMotivation("Quero ser proprietário");
+
+                        ObjectMapper objectMapper = new ObjectMapper();
+
+                        mockMvc.perform(post("/api/admin/upgrade")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(upgradeRequest))
+                                        .with(csrf()))
+                                        .andExpect(status().isOk());
+
+                        verify(userService)
+                                        .requestOwnerUpgrade(eq("test@test.com"),
+                                                        any(UpgradeOwnerRequest.class));
+                }
+
+                @SuppressWarnings("null")
+                @Test
+                @WithMockUser(username = "test@test.com")
+                @DisplayName("Should return 400 when driving license format invalid")
+                void whenInvalidDrivingLicense_thenReturns400() throws Exception {
+                        UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
+                        upgradeRequest.setPhone("+351912345678");
+                        upgradeRequest.setCitizenCardNumber("12345678");
+                        upgradeRequest.setDrivingLicense("123456"); // inválido
+                        upgradeRequest.setMotivation("Motivação");
+
+                        ObjectMapper objectMapper = new ObjectMapper();
+
+                        mockMvc.perform(post("/api/admin/upgrade")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(upgradeRequest))
+                                        .with(csrf()))
+                                        .andExpect(status().isBadRequest());
+                }
+
+                @SuppressWarnings("null")
+                @Test
+                @WithMockUser(username = "owner@test.com")
+                @DisplayName("Should return 409 when user already owner or pending")
+                void whenAlreadyOwner_thenReturns409() throws Exception {
+                        UpgradeOwnerRequest upgradeRequest = new UpgradeOwnerRequest();
+                        upgradeRequest.setPhone("+351912345678");
+                        upgradeRequest.setCitizenCardNumber("12345678");
+                        upgradeRequest.setDrivingLicense("AB123456");
+                        upgradeRequest.setMotivation("Motivação");
+
+                        ObjectMapper objectMapper = new ObjectMapper();
+
+                        doThrow(new IllegalStateException("Pedido já submetido ou utilizador já é Owner"))
+                                        .when(userService).requestOwnerUpgrade(eq("owner@test.com"),
+                                                        any(UpgradeOwnerRequest.class));
+
+                        mockMvc.perform(post("/api/admin/upgrade")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(upgradeRequest))
+                                        .with(csrf()))
+                                        .andExpect(status().isConflict());
+                }
+        }
 }

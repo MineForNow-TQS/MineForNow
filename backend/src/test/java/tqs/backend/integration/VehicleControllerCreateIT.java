@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.dto.CreateVehicleRequest;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
+import tqs.backend.repository.ReviewRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.security.JwtUtils;
@@ -51,6 +52,9 @@ class VehicleControllerCreateIT {
         private tqs.backend.repository.BookingRepository bookingRepository;
 
         @Autowired
+        private ReviewRepository reviewRepository;
+
+        @Autowired
         private PasswordEncoder passwordEncoder;
 
         @Autowired
@@ -67,6 +71,7 @@ class VehicleControllerCreateIT {
         void setUp() {
                 // Limpar repositórios na ordem correta (bookings primeiro devido a FK)
                 bookingRepository.deleteAll();
+                reviewRepository.deleteAll();
                 vehicleRepository.deleteAll();
                 userRepository.deleteAll();
 
