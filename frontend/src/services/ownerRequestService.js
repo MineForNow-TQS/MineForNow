@@ -1,4 +1,5 @@
 import { authService } from './authService';
+import { userService } from './userService';
 
 import { API_BASE_URL } from '../config/api';
 

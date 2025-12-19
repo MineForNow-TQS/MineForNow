@@ -23,16 +23,16 @@ export default function AdminStatsDashboard() {
         () => userService.list().then(res => res.data)
     );
 
-
+    // Fetch all cars
     const { data: cars = [] } = useQuery(
         'allCars',
         () => carService.searchCars({}).then(res => res.data)
     );
 
-
+    // Fetch owner requests (pending)
     const { data: ownerRequests = [] } = useQuery(
         'allOwnerRequests',
-        () => adminService.getPendingRequests()
+        () => ownerRequestService.list().then(res => res.data)
     );
 
     // Mutation to approve request
@@ -70,16 +70,24 @@ export default function AdminStatsDashboard() {
 
 
 
-    const getRoleBadgeColor = (role) => {
-        switch (role?.toUpperCase()) {
-            case 'ADMIN': return 'bg-purple-100 text-purple-700';
-            case 'OWNER': return 'bg-amber-100 text-amber-700';
-            case 'RENTER': return 'bg-blue-100 text-blue-700';
-            default: return 'bg-slate-100 text-slate-700';
+    const handleBlockUser = (userId, userName) => {
+        if (window.confirm(`Tem certeza que deseja bloquear/desbloquear "${userName}"?`)) {
+            blockUserMutation.mutate(userId);
         }
     };
 
-    if (loadingUsers) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
+    const getRoleBadgeColor = (role) => {
+        switch (role) {
+            case 'admin':
+                return 'bg-purple-100 text-purple-700';
+            case 'owner':
+                return 'bg-amber-100 text-amber-700';
+            case 'rental':
+                return 'bg-blue-100 text-blue-700';
+            default:
+                return 'bg-slate-100 text-slate-700';
+        }
+    };
 
     return (
         <>
@@ -106,7 +114,7 @@ export default function AdminStatsDashboard() {
                 </Card>
             </div>
 
-            {/* Listado de Pedidos Pendientes */}
+            {/* Pending Owner Requests */}
             <h2 className="text-xl font-bold text-slate-900 mb-4">Pedidos Owner Pendentes</h2>
             {pendingRequestsCount === 0 ? (
                 <Card className="p-8 text-center border border-slate-200 mb-8">
@@ -114,12 +122,20 @@ export default function AdminStatsDashboard() {
                 </Card>
             ) : (
                 <div className="space-y-3 mb-8">
-                    {ownerRequests.map((request) => (
-                        <Card key={request.id} className="p-4 border border-slate-200">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                                        <Crown className="w-6 h-6 text-amber-600" />
+                    {ownerRequests
+                        .filter(req => req.status === 'pending')
+                        .map((request) => (
+                            <Card key={request.id} className="p-4 border border-slate-200">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                                            <Crown className="w-6 h-6 text-amber-600" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">{request.user_name}</h3>
+                                            <p className="text-sm text-slate-600">{request.user_email}</p>
+                                            <p className="text-xs text-slate-500 mt-1">Carta: {request.drivingLicense}</p>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -155,7 +171,7 @@ export default function AdminStatsDashboard() {
                 </div >
             )}
 
-            {/* Gestión de Usuarios */}
+            {/* User Management */}
             <h2 className="text-xl font-bold text-slate-900 mb-4">Gerir Utilizadores</h2>
             <div className="space-y-3">
                 {users.map((user) => (
@@ -183,8 +199,9 @@ export default function AdminStatsDashboard() {
                                 </div>
                             </div>
 
+                            {/* Role and Actions */}
                             <div className="flex items-center gap-3">
-                                <span className={`px-3 py-1 rounded-md text-xs font-bold uppercase ${getRoleBadgeColor(user.role)}`}>
+                                <span className={`px-3 py-1 rounded-md text-sm font-medium ${getRoleBadgeColor(user.role)}`}>
                                     {user.role}
                                 </span>
 
@@ -192,11 +209,13 @@ export default function AdminStatsDashboard() {
                                     <div className="flex gap-2">
 
                                         <Button
-                                            onClick={() => handleBlockUser(user.id, user.fullName)}
-                                            variant="outline" size="sm"
-                                            className="text-red-600 border-red-200 hover:bg-red-50"
+                                            onClick={() => handleBlockUser(user.id, user.full_name || user.name)}
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-red-300 text-red-600 hover:bg-red-50"
                                         >
-                                            <Ban className="w-4 h-4 mr-1" /> Status
+                                            <Ban className="w-4 h-4 mr-1" />
+                                            {user.status === 'active' ? 'Bloquear' : 'Desbloquear'}
                                         </Button>
                                     </div>
                                 )}
