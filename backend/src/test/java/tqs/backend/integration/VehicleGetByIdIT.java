@@ -18,6 +18,7 @@ import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.ReviewRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
@@ -44,6 +45,9 @@ class VehicleGetByIdIT {
         @Autowired
         private BookingRepository bookingRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
         @Autowired
         private UserRepository userRepository;
 
@@ -56,6 +60,7 @@ class VehicleGetByIdIT {
                 baseUrl = "http://localhost:" + port + "/api/vehicles";
                 // Remover reservas primeiro para evitar violação de FK ao apagar veículos
                 bookingRepository.deleteAll();
+                reviewRepository.deleteAll();
                 vehicleRepository.deleteAll();
                 userRepository.deleteAll();
 
