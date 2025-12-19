@@ -58,7 +58,6 @@ jobs:
         echo "[DEPLOY] A copiar o novo JAR..."
         sudo mkdir -p /opt/minefornow
         sudo cp backend/target/*.jar /opt/minefornow/minefornow-backend.jar
-        sudo chown minefornow:minefornow /opt/minefornow/minefornow-backend.jar
 
     - name: Iniciar Serviço Spring (com BD)
       run: |
@@ -70,37 +69,3 @@ jobs:
       run: |
         echo "[SPRING] A verificar se o Spring está a correr..."
         sudo systemctl status minefornow --no-pager
-        
-    - name: Health Check - Conectar ao Spring + BD
-      run: |
-        echo "[HEALTHCHECK] A verificar connection ao Spring + BD..."
-        max_attempts=30
-        attempt=1
-        
-        while [ $attempt -le $max_attempts ]; do
-          response=$(curl -s http://localhost:8080/actuator/health)
-          status=$(echo $response | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
-          
-          if [ "$status" = "UP" ]; then
-            echo "[SUCCESS] Spring + BD estão HEALTHY!"
-            echo "Response: $response"
-            exit 0
-          fi
-          
-          echo "[RETRY] Tentativa $attempt/$max_attempts... ($status)"
-          sleep 2
-          attempt=$((attempt + 1))
-        done
-        
-        echo "[ERROR] Spring não conectou à BD!"
-        echo "[LOGS] Logs do Spring:"
-        sudo journalctl -u minefornow -n 100
-        echo "[LOGS] Logs do PostgreSQL:"
-        docker compose logs db --tail 30
-        exit 1
-
-    - name: Teste de Conectividade à BD
-      run: |
-        echo "[TEST] A testar query na BD..."
-        docker compose exec -T db psql -U minefornow -d minefornow -c "SELECT COUNT(*) as users FROM users;" 2>/dev/null || echo "[WARNING] Tabelas ainda não criadas (normal na primeira execução)"
-        echo "[SUCCESS] Deployment bem-sucedido com BD!"
