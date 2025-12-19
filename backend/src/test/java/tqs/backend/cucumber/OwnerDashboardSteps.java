@@ -9,6 +9,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import tqs.backend.model.Booking;
 import tqs.backend.model.User;
@@ -40,7 +41,7 @@ public class OwnerDashboardSteps {
 
     private User owner;
     private String authToken;
-    private ResponseEntity<Map> dashboardResponse;
+    private ResponseEntity<Map<String, Object>> dashboardResponse;
 
     @SuppressWarnings("null")
     @Dado("que existe um owner autenticado com email {string}")
@@ -54,10 +55,12 @@ public class OwnerDashboardSteps {
                 "email", email,
                 "password", "password123");
 
-        ResponseEntity<Map> loginResponse = restTemplate.postForEntity(
+        ResponseEntity<Map<String, Object>> loginResponse = restTemplate.exchange(
                 "/api/auth/login",
-                loginRequest,
-                Map.class);
+                HttpMethod.POST,
+                new HttpEntity<>(loginRequest),
+                new ParameterizedTypeReference<Map<String, Object>>() {
+                });
 
         assertNotNull(loginResponse.getBody(),
                 "Login response body should not be null. Status: " + loginResponse.getStatusCode());
@@ -130,7 +133,8 @@ public class OwnerDashboardSteps {
                 endpoint,
                 HttpMethod.GET,
                 request,
-                Map.class);
+                new ParameterizedTypeReference<Map<String, Object>>() {
+                });
     }
 
     @Então("devo receber status {int}")

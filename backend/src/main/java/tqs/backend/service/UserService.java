@@ -11,9 +11,6 @@ import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.model.UserRole;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +18,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private static final String USER_NOT_FOUND_MSG = "Utilizador não encontrado";
 
     @SuppressWarnings("null")
     public User register(RegisterRequest request) {
@@ -48,7 +47,7 @@ public class UserService {
 
     public UserProfileResponse getUserProfile(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MSG));
 
         return UserProfileResponse.builder()
                 .id(user.getId())
@@ -65,7 +64,7 @@ public class UserService {
     @SuppressWarnings("null")
     public UserProfileResponse updateUserProfile(String email, UpdateProfileRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MSG));
 
         if (request.getPhone() != null) {
             user.setPhone(request.getPhone());
@@ -91,7 +90,7 @@ public class UserService {
     public void requestOwnerUpgrade(String email, UpgradeOwnerRequest request) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MSG));
 
         // Já é owner ou está pendente
         if (user.getRole() == UserRole.OWNER ||
@@ -111,45 +110,4 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public List<UserProfileResponse> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(user -> UserProfileResponse.builder()
-                        .id(user.getId())
-                        .fullName(user.getFullName())
-                        .email(user.getEmail())
-                        .phone(user.getPhone())
-                        .drivingLicense(user.getDrivingLicense())
-                        .citizenCardNumber(user.getCitizenCardNumber())
-                        .ownerMotivation(user.getOwnerMotivation())
-                        .role(user.getRole())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public void approveOwnerRequest(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
-
-        if (user.getRole() != UserRole.PENDING_OWNER) {
-            throw new IllegalStateException("Utilizador não tem pedido pendente");
-        }
-
-        user.setRole(UserRole.OWNER);
-        userRepository.save(user);
-    }
-
-    @Transactional
-    public void rejectOwnerRequest(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
-
-        if (user.getRole() != UserRole.PENDING_OWNER) {
-            throw new IllegalStateException("Utilizador não tem pedido pendente");
-        }
-
-        // Revert to RENTER
-        user.setRole(UserRole.RENTER);
-        userRepository.save(user);
-    }
 }

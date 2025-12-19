@@ -43,6 +43,7 @@ class AdminControllerIT {
         @Autowired
         private PasswordEncoder passwordEncoder;
 
+        @SuppressWarnings("null")
         @BeforeEach
         void setUp() {
                 // Clean DB

@@ -255,7 +255,7 @@ class UserControllerIT {
                         HttpEntity<UpgradeOwnerRequest> request = new HttpEntity<>(upgradeRequest, createAuthHeaders());
 
                         ResponseEntity<Void> response = restTemplate.exchange(
-                                        baseUrl + "/api/users/upgrade",
+                                        baseUrl + "/api/admin/upgrade",
                                         HttpMethod.POST,
                                         request,
                                         Void.class);
@@ -280,7 +280,7 @@ class UserControllerIT {
                         HttpEntity<UpgradeOwnerRequest> request = new HttpEntity<>(upgradeRequest, createAuthHeaders());
 
                         ResponseEntity<String> response = restTemplate.exchange(
-                                        baseUrl + "/api/users/upgrade",
+                                        baseUrl + "/api/admin/upgrade",
                                         HttpMethod.POST,
                                         request,
                                         String.class);
@@ -305,7 +305,7 @@ class UserControllerIT {
                         HttpEntity<UpgradeOwnerRequest> request = new HttpEntity<>(upgradeRequest, createAuthHeaders());
 
                         ResponseEntity<String> response = restTemplate.exchange(
-                                        baseUrl + "/api/users/upgrade",
+                                        baseUrl + "/api/admin/upgrade",
                                         HttpMethod.POST,
                                         request,
                                         String.class);
@@ -324,7 +324,7 @@ class UserControllerIT {
                         upgradeRequest.setMotivation("Motivação");
 
                         ResponseEntity<String> response = restTemplate.postForEntity(
-                                        baseUrl + "/api/users/upgrade",
+                                        baseUrl + "/api/admin/upgrade",
                                         upgradeRequest,
                                         String.class);
 
@@ -337,6 +337,7 @@ class UserControllerIT {
         @Requirement("SCRUM-25")
         class OwnerRequestManagement {
 
+                @SuppressWarnings("null")
                 @Test
                 @DisplayName("Should approve request and change role to OWNER")
                 void whenAdminApprovesRequest_thenReturns200AndUserIsOwner() {
@@ -368,17 +369,19 @@ class UserControllerIT {
                         HttpEntity<Void> request = new HttpEntity<>(headers);
 
                         ResponseEntity<Void> response = restTemplate.exchange(
-                                        baseUrl + "/api/users/" + pendingOwner.getId() + "/approve-owner",
+                                        baseUrl + "/api/admin/" + pendingOwner.getId() + "/approve-owner",
                                         HttpMethod.PUT,
                                         request,
                                         Void.class);
 
                         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
+                        @SuppressWarnings("null")
                         User updatedUser = userRepository.findById(pendingOwner.getId()).orElseThrow();
                         assertThat(updatedUser.getRole()).isEqualTo(UserRole.OWNER);
                 }
 
+                @SuppressWarnings("null")
                 @Test
                 @DisplayName("Should reject request and revert role to RENTER")
                 void whenAdminRejectsRequest_thenReturns200AndUserIsRenter() {
@@ -407,13 +410,14 @@ class UserControllerIT {
                         HttpEntity<Void> request = new HttpEntity<>(headers);
 
                         ResponseEntity<Void> response = restTemplate.exchange(
-                                        baseUrl + "/api/users/" + pendingOwner.getId() + "/reject-owner",
+                                        baseUrl + "/api/admin/" + pendingOwner.getId() + "/reject-owner",
                                         HttpMethod.PUT,
                                         request,
                                         Void.class);
 
                         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
+                        @SuppressWarnings("null")
                         User updatedUser = userRepository.findById(pendingOwner.getId()).orElseThrow();
                         assertThat(updatedUser.getRole()).isEqualTo(UserRole.RENTER);
                 }
@@ -422,11 +426,12 @@ class UserControllerIT {
                 @DisplayName("Should return 403 when non-admin tries to manage requests")
                 void whenNonAdminTriesManagement_thenReturns401() {
                         // Renter tries to approve
+                        @SuppressWarnings("null")
                         HttpEntity<Void> request = new HttpEntity<>(createAuthHeaders()); // Uses default testUser
                                                                                           // (RENTER)
 
                         ResponseEntity<Void> response = restTemplate.exchange(
-                                        baseUrl + "/api/users/999/approve-owner",
+                                        baseUrl + "/api/admin/999/approve-owner",
                                         HttpMethod.PUT,
                                         request,
                                         Void.class);

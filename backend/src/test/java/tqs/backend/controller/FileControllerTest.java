@@ -41,6 +41,7 @@ class FileControllerTest {
         @MockBean
         private JwtUtils jwtUtils;
 
+        @SuppressWarnings("null")
         @Test
         void whenUploadFileAuthenticated_thenReturnUrl() throws Exception {
                 MockMultipartFile file = new MockMultipartFile(
@@ -73,6 +74,7 @@ class FileControllerTest {
                                 .andExpect(status().isUnauthorized());
         }
 
+        @SuppressWarnings("null")
         @Test
         void whenUploadInvalidContentType_thenReturnBadRequest() throws Exception {
                 MockMultipartFile file = new MockMultipartFile(
@@ -88,6 +90,7 @@ class FileControllerTest {
                                 .andExpect(jsonPath("$.error").exists());
         }
 
+        @SuppressWarnings("null")
         @Test
         void whenGetFileExists_thenReturnResource() throws Exception {
                 String fileName = "test.jpg";

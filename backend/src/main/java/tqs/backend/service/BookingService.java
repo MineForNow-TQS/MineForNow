@@ -1,6 +1,5 @@
 package tqs.backend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tqs.backend.dto.BookingDTO;
@@ -16,7 +15,6 @@ import tqs.backend.repository.VehicleRepository;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,15 +24,18 @@ public class BookingService {
         private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
         private static final String USER_NOT_FOUND = "User not found";
 
-        @Autowired
-        private BookingRepository bookingRepository;
+        private final BookingRepository bookingRepository;
+        private final VehicleRepository vehicleRepository;
+        private final UserRepository userRepository;
 
-        @Autowired
-        private VehicleRepository vehicleRepository;
+        public BookingService(BookingRepository bookingRepository, VehicleRepository vehicleRepository,
+                        UserRepository userRepository) {
+                this.bookingRepository = bookingRepository;
+                this.vehicleRepository = vehicleRepository;
+                this.userRepository = userRepository;
+        }
 
-        @Autowired
-        private UserRepository userRepository;
-
+        @SuppressWarnings("null")
         @Transactional
         public BookingDTO createBooking(BookingRequestDTO request) {
                 // 1. Validate Vehicle
@@ -103,6 +104,7 @@ public class BookingService {
         @Transactional
         public BookingDTO confirmPayment(Long bookingId, PaymentDTO paymentData) {
                 // 1. Validate Booking exists
+                @SuppressWarnings("null")
                 Booking booking = bookingRepository.findById(bookingId)
                                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
 
@@ -156,6 +158,6 @@ public class BookingService {
                                                 booking.getTotalPrice(),
                                                 booking.getVehicle().getId(),
                                                 booking.getRenter().getId()))
-                                .collect(Collectors.toList());
+                                .toList();
         }
 }
