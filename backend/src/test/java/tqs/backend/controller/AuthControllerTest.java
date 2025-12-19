@@ -161,7 +161,7 @@ class AuthControllerTest {
         }
 
         @Test
-        @Requirement("SCRUM-40")
+        @Requirement("SCRUM-37")
         @DisplayName("POST /register - Invalid Email")
         void whenPostRegisterInvalidEmail_thenReturns400() throws Exception {
                 RegisterRequest invalidEmailRequest = new RegisterRequest();
@@ -178,7 +178,7 @@ class AuthControllerTest {
         }
 
         @Test
-        @Requirement("SCRUM-40")
+        @Requirement("SCRUM-37")
         @DisplayName("POST /register - Weak Password")
         void whenPostRegisterWeakPassword_thenReturns400() throws Exception {
                 RegisterRequest weakPasswordRequest = new RegisterRequest();

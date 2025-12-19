@@ -14,16 +14,16 @@ import AdminOwnerRequests from '@/components/dashboard/AdminOwnerRequests';
 export default function Dashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const isAdmin = user?.role === 'ADMIN';
-    const isOwner = user?.role === 'OWNER' || user?.user_role === 'ADMIN';
-    
+    const isAdmin = user?.role === 'admin';
+    const isOwner = user?.role === 'owner' || user?.role === 'admin';
+
     // Set default tab based on role
     const getDefaultTab = () => {
         if (isAdmin) return 'estatisticas';
         if (isOwner) return 'carros';
         return 'reservas';
     };
-    
+
     const [activeTab, setActiveTab] = useState(getDefaultTab());
 
     if (!user) {
@@ -36,7 +36,7 @@ export default function Dashboard() {
             </div>
         );
     }
-    const firstName = user.full_name?.split(' ')[0] || 'Utilizador';
+
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -45,12 +45,12 @@ export default function Dashboard() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h1 className="text-3xl font-bold mb-2">Olá, {firstName.toUpperCase()}</h1>
+                            <h1 className="text-3xl font-bold mb-2">Olá, {user.fullName || user.full_name}</h1>
                             <span className="inline-block px-3 py-1 bg-indigo-600 text-white text-sm rounded-md">
                                 {isAdmin ? 'Admin' : isOwner ? 'Owner' : 'Rental'}
                             </span>
                         </div>
-                        <Button 
+                        <Button
                             onClick={() => navigate('/cars')}
                             className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700"
                         >
@@ -70,11 +70,10 @@ export default function Dashboard() {
                         <>
                             <button
                                 onClick={() => setActiveTab('reservas')}
-                                className={`pb-3 px-2 font-medium transition-colors relative ${
-                                    activeTab === 'reservas'
-                                        ? 'text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                className={`pb-3 px-2 font-medium transition-colors relative ${activeTab === 'reservas'
+                                    ? 'text-slate-900'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
                             >
                                 <Calendar className="w-4 h-4 inline-block mr-2" />
                                 Minhas Reservas
@@ -84,11 +83,10 @@ export default function Dashboard() {
                             </button>
                             <button
                                 onClick={() => setActiveTab('definicoes')}
-                                className={`pb-3 px-2 font-medium transition-colors relative ${
-                                    activeTab === 'definicoes'
-                                        ? 'text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                className={`pb-3 px-2 font-medium transition-colors relative ${activeTab === 'definicoes'
+                                    ? 'text-slate-900'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
                             >
                                 <Settings className="w-4 h-4 inline-block mr-2" />
                                 Definições
@@ -104,11 +102,10 @@ export default function Dashboard() {
                         <>
                             <button
                                 onClick={() => setActiveTab('reservas')}
-                                className={`pb-3 px-2 font-medium transition-colors relative ${
-                                    activeTab === 'reservas'
-                                        ? 'text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                className={`pb-3 px-2 font-medium transition-colors relative ${activeTab === 'reservas'
+                                    ? 'text-slate-900'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
                             >
                                 <Calendar className="w-4 h-4 inline-block mr-2" />
                                 Reservas
@@ -118,11 +115,10 @@ export default function Dashboard() {
                             </button>
                             <button
                                 onClick={() => setActiveTab('carros')}
-                                className={`pb-3 px-2 font-medium transition-colors relative ${
-                                    activeTab === 'carros'
-                                        ? 'text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                className={`pb-3 px-2 font-medium transition-colors relative ${activeTab === 'carros'
+                                    ? 'text-slate-900'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
                             >
                                 <Car className="w-4 h-4 inline-block mr-2" />
                                 Meus Carros
@@ -132,11 +128,10 @@ export default function Dashboard() {
                             </button>
                             <button
                                 onClick={() => setActiveTab('definicoes')}
-                                className={`pb-3 px-2 font-medium transition-colors relative ${
-                                    activeTab === 'definicoes'
-                                        ? 'text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                className={`pb-3 px-2 font-medium transition-colors relative ${activeTab === 'definicoes'
+                                    ? 'text-slate-900'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
                             >
                                 <Settings className="w-4 h-4 inline-block mr-2" />
                                 Definições
@@ -152,11 +147,10 @@ export default function Dashboard() {
                         <>
                             <button
                                 onClick={() => setActiveTab('estatisticas')}
-                                className={`pb-3 px-2 font-medium transition-colors relative ${
-                                    activeTab === 'estatisticas'
-                                        ? 'text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                className={`pb-3 px-2 font-medium transition-colors relative ${activeTab === 'estatisticas'
+                                    ? 'text-slate-900'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
                             >
                                 <BarChart3 className="w-4 h-4 inline-block mr-2" />
                                 Estatísticas
@@ -166,11 +160,10 @@ export default function Dashboard() {
                             </button>
                             <button
                                 onClick={() => setActiveTab('pedidos')}
-                                className={`pb-3 px-2 font-medium transition-colors relative ${
-                                    activeTab === 'pedidos'
-                                        ? 'text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                className={`pb-3 px-2 font-medium transition-colors relative ${activeTab === 'pedidos'
+                                    ? 'text-slate-900'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
                             >
                                 <Crown className="w-4 h-4 inline-block mr-2" />
                                 Pedidos Owner
@@ -180,11 +173,10 @@ export default function Dashboard() {
                             </button>
                             <button
                                 onClick={() => setActiveTab('carros')}
-                                className={`pb-3 px-2 font-medium transition-colors relative ${
-                                    activeTab === 'carros'
-                                        ? 'text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                className={`pb-3 px-2 font-medium transition-colors relative ${activeTab === 'carros'
+                                    ? 'text-slate-900'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
                             >
                                 <Car className="w-4 h-4 inline-block mr-2" />
                                 Meus Carros
@@ -192,7 +184,19 @@ export default function Dashboard() {
                                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-900"></div>
                                 )}
                             </button>
-                        
+                            <button
+                                onClick={() => setActiveTab('definicoes')}
+                                className={`pb-3 px-2 font-medium transition-colors relative ${activeTab === 'definicoes'
+                                    ? 'text-slate-900'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
+                            >
+                                <Settings className="w-4 h-4 inline-block mr-2" />
+                                Definições
+                                {activeTab === 'definicoes' && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-900"></div>
+                                )}
+                            </button>
                         </>
                     )}
                 </div>

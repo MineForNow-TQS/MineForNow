@@ -2,15 +2,23 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { carService } from '@/services/carService';
 import { userService } from '@/services/userService';
+import { ownerRequestService } from '@/services/ownerRequestService';
 import { adminService } from '@/services/adminService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Crown, Clock, Shield, Ban, Loader2 } from 'lucide-react';
+import { Users, Crown, Car as CarIcon, Clock, Shield, Ban, Euro, Calendar, Check, X } from 'lucide-react';
 
 export default function AdminStatsDashboard() {
     const queryClient = useQueryClient();
 
-    const { data: users = [], isLoading: loadingUsers } = useQuery(
+    // Fetch dashboard stats from backend
+    const { data: stats } = useQuery(
+        'adminStats',
+        () => adminService.getDashboardStats().then(data => data)
+    );
+
+    // Fetch all users
+    const { data: users = [] } = useQuery(
         'allUsers',
         () => userService.list().then(res => res.data)
     );
@@ -27,32 +35,40 @@ export default function AdminStatsDashboard() {
         () => adminService.getPendingRequests()
     );
 
-    // Mutaciones
-    const changeRoleMutation = useMutation(
-        ({ userId, newRole }) => userService.updateRole(userId, newRole),
-        { onSuccess: () => queryClient.invalidateQueries('allUsers') }
-    );
-
-    const blockUserMutation = useMutation(
-        (userId) => userService.toggleStatus(userId),
-        { onSuccess: () => queryClient.invalidateQueries('allUsers') }
-    );
-
-    const totalUsers = users.length;
-    const totalOwners = users.filter(u => u.role?.toUpperCase() === 'OWNER' || u.role?.toUpperCase() === 'ADMIN').length;
-    const totalCars = cars.length;
-    // adminService ya filtra por pendientes, usamos el length directamente
-    const pendingRequestsCount = ownerRequests.length;
-
-    const handleChangeRole = (userId, currentRole) => {
-        const roles = ['RENTER', 'OWNER', 'ADMIN'];
-        const currentIndex = roles.indexOf(currentRole?.toUpperCase());
-        const nextRole = roles[(currentIndex + 1) % roles.length];
-        
-        if (window.confirm(`Alterar role para "${nextRole}"?`)) {
-            changeRoleMutation.mutate({ userId, newRole: nextRole });
+    // Mutation to approve request
+    const approveRequestMutation = useMutation(
+        (userId) => ownerRequestService.approve(userId),
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries('allOwnerRequests');
+                queryClient.invalidateQueries('allUsers');
+                alert('Pedido aprovado com sucesso!');
+            },
+            onError: () => alert('Erro ao aprovar pedido.')
         }
-    };
+    );
+
+    // Mutation to reject request
+    const rejectRequestMutation = useMutation(
+        (userId) => ownerRequestService.reject(userId),
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries('allOwnerRequests');
+                alert('Pedido rejeitado com sucesso!');
+            },
+            onError: () => alert('Erro ao rejeitar pedido.')
+        }
+    );
+
+    // Calculate stats
+    const totalUsers = stats?.totalUsers || 0;
+    const totalOwners = users.filter(u => u.role === 'owner' || u.role === 'admin').length; // Keep utilizing user list for now as backend doesn't separate owners yet
+    const totalCars = stats?.totalCars || 0;
+    const totalBookings = stats?.totalBookings || 0;
+    const totalRevenue = stats?.totalRevenue || 0;
+    const pendingRequestsCount = ownerRequests.filter(r => r.status === 'pending').length;
+
+
 
     const getRoleBadgeColor = (role) => {
         switch (role?.toUpperCase()) {
@@ -68,22 +84,25 @@ export default function AdminStatsDashboard() {
     return (
         <>
             {/* Stats Cards */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-slate-900 mb-1">{totalUsers}</div>
                     <div className="text-sm text-slate-500">Utilizadores</div>
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
-                    <div className="text-3xl font-bold text-amber-600 mb-1">{totalOwners}</div>
-                    <div className="text-sm text-slate-500">Owners</div>
-                </Card>
-                <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-blue-600 mb-1">{totalCars}</div>
                     <div className="text-sm text-slate-500">Carros</div>
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
-                    <div className="text-3xl font-bold text-orange-500 mb-1">{pendingRequestsCount}</div>
-                    <div className="text-sm text-slate-500">Pedidos Pendentes</div>
+                    <div className="text-3xl font-bold text-amber-600 mb-1">{totalBookings}</div>
+                    <div className="text-sm text-slate-500">Reservas</div>
+                </Card>
+                <Card className="p-6 text-center border border-slate-200">
+                    <div className="text-3xl font-bold text-emerald-600 mb-1">
+                        {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(totalRevenue)}
+                    </div>
+                    <div className="text-sm text-slate-500">Receita Total</div>
                 </Card>
             </div>
 
@@ -102,19 +121,38 @@ export default function AdminStatsDashboard() {
                                     <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
                                         <Crown className="w-6 h-6 text-amber-600" />
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold text-slate-900">{request.fullName}</h3>
-                                        <p className="text-sm text-slate-600">{request.email}</p>
-                                        <p className="text-xs text-slate-400 mt-1">CC: {request.citizenCardNumber}</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 text-sm text-slate-500 mr-4">
+                                        <Clock className="w-4 h-4" />
+                                        <span>{new Date(request.created_at).toLocaleDateString('pt-PT')}</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                            onClick={() => {
+                                                if (window.confirm('Aprovar este pedido?')) approveRequestMutation.mutate(request.id);
+                                            }}
+                                        >
+                                            <Check className="w-4 h-4 mr-1" /> Aprovar
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="border-red-200 text-red-600 hover:bg-red-50"
+                                            onClick={() => {
+                                                if (window.confirm('Rejeitar este pedido?')) rejectRequestMutation.mutate(request.id);
+                                            }}
+                                        >
+                                            <X className="w-4 h-4 mr-1" /> Rejeitar
+                                        </Button>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Aguardando</span>
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
+
+                            </Card>
+                        ))}
+                </div >
             )}
 
             {/* Gestión de Usuarios */}
@@ -124,12 +162,24 @@ export default function AdminStatsDashboard() {
                     <Card key={user.id} className="p-4 border border-slate-200">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
-                                    <Users className="w-5 h-5 text-slate-400" />
+                                {/* User Avatar */}
+                                <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center">
+                                    <span className="text-slate-600 text-lg font-bold">
+                                        {(user.fullName || user.full_name || user.name || '?')[0]?.toUpperCase()}
+                                    </span>
                                 </div>
+
+                                {/* User Info */}
                                 <div>
-                                    <h3 className="font-semibold text-slate-900">{user.fullName || user.full_name}</h3>
-                                    <p className="text-sm text-slate-500">{user.email}</p>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="font-semibold text-slate-900">{user.fullName || user.full_name || user.name}</h3>
+                                        {user.email === 'admin@minefornow.com' && (
+                                            <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                                                (Você)
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-slate-600">{user.email}</p>
                                 </div>
                             </div>
 
@@ -137,15 +187,10 @@ export default function AdminStatsDashboard() {
                                 <span className={`px-3 py-1 rounded-md text-xs font-bold uppercase ${getRoleBadgeColor(user.role)}`}>
                                     {user.role}
                                 </span>
-                                
-                                {user.email !== 'admin@gmail.com' && (
+
+                                {user.email !== 'admin@minefornow.com' && ( // Don't show actions for current admin
                                     <div className="flex gap-2">
-                                        <Button
-                                            onClick={() => handleChangeRole(user.id, user.role)}
-                                            variant="outline" size="sm"
-                                        >
-                                            <Shield className="w-4 h-4 mr-1" /> Role
-                                        </Button>
+
                                         <Button
                                             onClick={() => handleBlockUser(user.id, user.fullName)}
                                             variant="outline" size="sm"

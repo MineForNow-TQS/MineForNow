@@ -42,21 +42,23 @@ public class BecomeOwnerSteps {
 
         playwright = Playwright.create();
         browser = playwright.chromium().launch(
-            new BrowserType.LaunchOptions()
-                .setHeadless(false)
-                .setSlowMo(500)
-        );
+                new BrowserType.LaunchOptions()
+                        .setHeadless(false)
+                        .setSlowMo(500));
         page = browser.newPage();
     }
 
     @After(value = "@SCRUM-65")
     public void tearDown() {
-        if (browser != null) browser.close();
-        if (playwright != null) playwright.close();
+        if (browser != null)
+            browser.close();
+        if (playwright != null)
+            playwright.close();
     }
 
     // ---------- GIVEN ----------
 
+    @SuppressWarnings("null")
     @Dado("que eu estou autenticado como um utilizador comum")
     public void autenticadoComoUtilizadorComum() {
         testUser = User.builder()
@@ -98,7 +100,7 @@ public class BecomeOwnerSteps {
         page.getByPlaceholder("12345678").fill("12345678");
         page.getByPlaceholder("Duas letras e seis números").fill("PT123456");
         page.getByPlaceholder("Conte-nos brevemente a sua motivação...")
-            .fill("Quero rentabilizar o meu carro.");
+                .fill("Quero rentabilizar o meu carro.");
     }
 
     @Quando("eu clico no botão {string}")

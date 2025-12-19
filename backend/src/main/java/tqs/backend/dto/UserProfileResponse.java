@@ -18,5 +18,7 @@ public class UserProfileResponse {
     private String email;
     private String phone;
     private String drivingLicense;
+    private String citizenCardNumber;
+    private String ownerMotivation;
     private UserRole role;
 }

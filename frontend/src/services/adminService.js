@@ -1,38 +1,28 @@
 import { authService } from './authService';
 import { API_BASE_URL } from '../config/api';
 
-const getHeaders = () => ({
-    'Authorization': `Bearer ${authService.getToken()}`,
-    'Content-Type': 'application/json'
-});
-
 export const adminService = {
-    // CORREGIDO: Añadido /api/admin
-    getPendingRequests: async () => {
-        const response = await fetch(`${API_BASE_URL}/api/admin/requests/pending`, {
-            headers: getHeaders()
-        });
-        if (!response.ok) throw new Error('Erro ao carregar pedidos pendentes');
-        return response.json();
-    },
+    async getDashboardStats() {
+        const token = authService.getToken();
+        if (!token) {
+            throw new Error('Não autenticado');
+        }
 
-    // ESTE ESTABA BIEN
-    approveRequest: async (userId) => {
-        const response = await fetch(`${API_BASE_URL}/api/admin/requests/${userId}/approve`, {
-            method: 'PUT',
-            headers: getHeaders()
+        const response = await fetch(`${API_BASE_URL}/api/admin/stats`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
         });
-        if (!response.ok) throw new Error('Erro ao aprovar pedido');
-        return response.json();
-    },
 
-    // CORREGIDO: Añadido /api/admin
-    rejectRequest: async (userId) => {
-        const response = await fetch(`${API_BASE_URL}/api/admin/requests/${userId}/reject`, {
-            method: 'PUT',
-            headers: getHeaders()
-        });
-        if (!response.ok) throw new Error('Erro ao rejeitar pedido');
-        return response.json();
+        if (!response.ok) {
+            if (response.status === 403) {
+                throw new Error('Acesso negado. Apenas administradores podem ver esta página.');
+            }
+            throw new Error('Erro ao obter estatísticas');
+        }
+
+        return await response.json();
     }
 };

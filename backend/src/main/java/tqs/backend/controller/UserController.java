@@ -4,16 +4,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import tqs.backend.dto.UpdateProfileRequest;
-import tqs.backend.dto.UpgradeOwnerRequest;
 import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.service.UserService;
 
@@ -41,19 +38,4 @@ public class UserController {
         UserProfileResponse updatedProfile = userService.updateUserProfile(email, request);
         return ResponseEntity.ok(updatedProfile);
     }
-
-    @PostMapping("/upgrade")
-    public ResponseEntity<Void> requestOwnerUpgrade(
-        @Valid @RequestBody UpgradeOwnerRequest request) {
-
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        String email = authentication.getName();
-
-        userService.requestOwnerUpgrade(email, request);
-
-        return ResponseEntity.ok().build();
-    }
-
 }

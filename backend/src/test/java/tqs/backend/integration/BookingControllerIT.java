@@ -109,6 +109,7 @@ class BookingControllerIT {
                 authToken = Objects.requireNonNull(authResponse.getBody()).getToken();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-15")
         @DisplayName("POST /bookings - Success with valid data")

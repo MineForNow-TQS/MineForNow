@@ -1,45 +1,67 @@
 package tqs.backend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import tqs.backend.dto.OwnerRequestDTO;
+import tqs.backend.dto.AdminStatsDTO;
+import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.UserRepository;
+import tqs.backend.repository.VehicleRepository;
+import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
-import tqs.backend.repository.UserRepository;
-
 import java.util.List;
-import java.util.stream.Collectors;
+
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class AdminService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final VehicleRepository vehicleRepository;
+    private final BookingRepository bookingRepository;
 
-    public List<OwnerRequestDTO> getPendingOwnerRequests() {
-        return userRepository.findByRole(UserRole.PENDING_OWNER)
-                .stream()
-                .map(user -> OwnerRequestDTO.builder()
+    public AdminStatsDTO getDashboardStats() {
+        long totalUsers = userRepository.count();
+        long totalCars = vehicleRepository.count();
+        long totalBookings = bookingRepository.count();
+        Double totalRevenue = bookingRepository.sumTotalPrice();
+
+        if (totalRevenue == null) {
+            totalRevenue = 0.0;
+        }
+
+        return AdminStatsDTO.builder()
+                .totalUsers(totalUsers)
+                .totalCars(totalCars)
+                .totalBookings(totalBookings)
+                .totalRevenue(totalRevenue)
+                .build();
+    }
+
+    public List<UserProfileResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> UserProfileResponse.builder()
                         .id(user.getId())
                         .fullName(user.getFullName())
                         .email(user.getEmail())
                         .phone(user.getPhone())
-                        .citizenCardNumber(user.getCitizenCardNumber())
                         .drivingLicense(user.getDrivingLicense())
-                        .motivation(user.getMotivation())
+                        .citizenCardNumber(user.getCitizenCardNumber())
+                        .ownerMotivation(user.getOwnerMotivation())
                         .role(user.getRole())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
     public void approveOwnerRequest(Long userId) {
+        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+
         if (user.getRole() != UserRole.PENDING_OWNER) {
-            throw new IllegalStateException("O utilizador não tem um pedido pendente.");
+            throw new IllegalStateException("Utilizador não tem pedido pendente");
         }
 
         user.setRole(UserRole.OWNER);
@@ -48,12 +70,16 @@ public class AdminService {
 
     @Transactional
     public void rejectOwnerRequest(Long userId) {
+        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
 
-        user.setRole(UserRole.RENTER); // Vuelve a ser Renter normal
-        // Limpiamos los datos de la solicitud fallida si lo deseas
-        user.setMotivation(null); 
+        if (user.getRole() != UserRole.PENDING_OWNER) {
+            throw new IllegalStateException("Utilizador não tem pedido pendente");
+        }
+
+        // Revert to RENTER
+        user.setRole(UserRole.RENTER);
         userRepository.save(user);
     }
 }

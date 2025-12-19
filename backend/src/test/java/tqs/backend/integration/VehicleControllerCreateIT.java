@@ -62,6 +62,7 @@ class VehicleControllerCreateIT {
         private String renterToken;
         private CreateVehicleRequest validRequest;
 
+        @SuppressWarnings("null")
         @BeforeEach
         void setUp() {
                 // Limpar repositórios na ordem correta (bookings primeiro devido a FK)
@@ -110,6 +111,7 @@ class VehicleControllerCreateIT {
                 validRequest.setDescription("Veículo confortável e económico");
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando owner autenticado cria veículo válido, deve retornar 201 e veículo criado")
@@ -129,6 +131,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).hasSize(1);
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando renter tenta criar veículo, deve retornar 400")
@@ -143,6 +146,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).isEmpty();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando não autenticado tenta criar veículo, deve retornar 401")
@@ -156,6 +160,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).isEmpty();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando request inválido (sem marca), deve retornar 400")
@@ -172,6 +177,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).isEmpty();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando request inválido (sem preço), deve retornar 400")
@@ -188,6 +194,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).isEmpty();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando cria múltiplos veículos, todos devem ser associados ao owner")

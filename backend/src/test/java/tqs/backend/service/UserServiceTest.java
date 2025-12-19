@@ -50,6 +50,7 @@ class UserServiceTest {
     @Requirement("SCRUM-37")
     class RegisterTests {
 
+        @SuppressWarnings("null")
         @Test
         void shouldRegisterUserSuccessfully() {
             RegisterRequest request = new RegisterRequest();
@@ -153,6 +154,7 @@ class UserServiceTest {
     @Requirement("SCRUM-46")
     class UpdateUserProfileTests {
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Should update phone and driving license successfully")
         void shouldUpdateProfileSuccessfully() {
@@ -181,6 +183,7 @@ class UserServiceTest {
             verify(userRepository).save(any(User.class));
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Should only update phone when only phone provided")
         void shouldUpdateOnlyPhone() {
@@ -229,6 +232,7 @@ class UserServiceTest {
     @Requirement("SCRUM-47")
     class RequestOwnerUpgradeTests {
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Should upgrade user to pending owner successfully")
         void shouldUpgradeUserSuccessfully() {
