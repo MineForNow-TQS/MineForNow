@@ -1,6 +1,3 @@
-BEGIN;
-
-
 
 CREATE TABLE IF NOT EXISTS users (
     id                      BIGSERIAL PRIMARY KEY,
@@ -193,7 +190,3 @@ CREATE TABLE IF NOT EXISTS vehicle_blocks (
 
 CREATE INDEX IF NOT EXISTS idx_vehicle_blocks_vehicle ON vehicle_blocks(vehicle_id);
 CREATE INDEX IF NOT EXISTS idx_vehicle_blocks_period  ON vehicle_blocks(start_date, end_date);
-
-
-
-COMMIT;

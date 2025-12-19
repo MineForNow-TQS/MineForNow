@@ -28,7 +28,7 @@ import tqs.backend.repository.VehicleRepository;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DisplayName("Authentication Integration Tests")
-class AuthControllerIT extends tqs.backend.AbstractPostgresTest {
+class AuthControllerIT extends tqs.backend.testsupport.AbstractPostgresTest {
 
     @LocalServerPort
     private int port;

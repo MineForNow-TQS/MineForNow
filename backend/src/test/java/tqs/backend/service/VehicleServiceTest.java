@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.backend.dto.CreateVehicleRequest;
 import tqs.backend.dto.VehicleDetailDTO;
+import tqs.backend.mapper.VehicleMapper;
 import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.UserRepository;
@@ -38,6 +40,10 @@ class VehicleServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    // ALTERAÇÃO: era @Mock; deve ser @Spy para não devolver null e estragar Optional.map(...)
+    @Spy
+    private VehicleMapper vehicleMapper;
 
     @InjectMocks
     private VehicleService vehicleService;
@@ -288,7 +294,7 @@ class VehicleServiceTest {
         assertThat(result.getModel()).isEqualTo("Corolla");
         assertThat(result.getYear()).isEqualTo(2022);
         assertThat(result.getType()).isEqualTo("Sedan");
-        assertThat(result.getPricePerDay()).isEqualTo(35.0);
+        assertThat(result.getPricePerDay()).isEqualByComparingTo(BigDecimal.valueOf(35.0));
         assertThat(result.getCity()).isEqualTo("Porto");
         assertThat(result.getFuelType()).isEqualTo("Híbrido");
         assertThat(result.getTransmission()).isEqualTo("Automático");
@@ -300,6 +306,7 @@ class VehicleServiceTest {
         assertThat(result.getLicensePlate()).isEqualTo("AA-12-BB");
         assertThat(result.getMileage()).isEqualTo(15000);
     }
+
     // ==================== TESTES PARA updateVehicle (SCRUM-7)
     // ====================
 
@@ -348,7 +355,7 @@ class VehicleServiceTest {
         assertThat(updatedVehicle.getBrand()).isEqualTo("Toyota");
         assertThat(updatedVehicle.getModel()).isEqualTo("Corolla");
         assertThat(updatedVehicle.getYear()).isEqualTo(2022);
-        assertThat(updatedVehicle.getPricePerDay()).isEqualTo(35.0);
+        assertThat(updatedVehicle.getPricePerDay()).isEqualByComparingTo(BigDecimal.valueOf(35.0));
         assertThat(updatedVehicle.getFuelType()).isEqualTo("Híbrido");
         assertThat(updatedVehicle.getCity()).isEqualTo("Porto");
         assertThat(updatedVehicle.getType()).isEqualTo("Sedan");

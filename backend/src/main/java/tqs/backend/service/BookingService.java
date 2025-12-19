@@ -36,32 +36,48 @@ public class BookingService {
         private UserRepository userRepository;
 
         @Transactional
-        public BookingDTO createBooking(BookingRequestDTO bookingRequest) {
-        Vehicle vehicle = vehicleRepository.findById(bookingRequest.getVehicleId())
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
-
-        User renter = userRepository.findByEmail(bookingRequest.getRenterEmail())
-                .orElseThrow(() -> new RuntimeException("Renter not found"));
-
-        long overlappingBookings = bookingRepository.countOverlappingBookings(
-                vehicle.getId(),
-                bookingRequest.getStartDate(),
-                bookingRequest.getEndDate()
-        );
-
-        if (overlappingBookings > 0) {
-                throw new RuntimeException("Vehicle is not available for the selected dates");
+        public BookingDTO createBooking(BookingRequestDTO request) {
+        // 0) Validate Dates first (fast-fail)
+        if (request.getStartDate() == null || request.getEndDate() == null) {
+                throw new IllegalArgumentException("Start date and end date are required");
+        }
+        if (request.getStartDate().isAfter(request.getEndDate())) {
+                throw new IllegalArgumentException("Start date must be before end date");
         }
 
-        long days = ChronoUnit.DAYS.between(bookingRequest.getStartDate(), bookingRequest.getEndDate());
+        // 1) Validate Vehicle
+        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
+
+        // 2) Validate User (by email or id)
+        User renter;
+        if (request.getRenterEmail() != null) {
+                renter = userRepository.findByEmail(request.getRenterEmail())
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        } else if (request.getRenterId() != null) {
+                renter = userRepository.findById(request.getRenterId())
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        } else {
+                throw new IllegalArgumentException("Renter information is required");
+        }
+
+        // 3) Check Availability (overlap)
+        long overlapping = bookingRepository.countOverlappingBookings(
+                request.getVehicleId(), request.getStartDate(), request.getEndDate());
+
+        if (overlapping > 0) {
+                throw new IllegalStateException("Vehicle is already booked for these dates");
+        }
+
+        long days = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate());
         if (days <= 0) days = 1;
 
         java.math.BigDecimal totalPrice = vehicle.getPricePerDay().multiply(java.math.BigDecimal.valueOf(days));
 
-        java.time.OffsetDateTime startDateTime = bookingRequest.getStartDate()
+        java.time.OffsetDateTime startDateTime = request.getStartDate()
                 .atStartOfDay()
                 .atOffset(java.time.ZoneOffset.UTC);
-        java.time.OffsetDateTime endDateTime = bookingRequest.getEndDate()
+        java.time.OffsetDateTime endDateTime = request.getEndDate()
                 .atStartOfDay()
                 .atOffset(java.time.ZoneOffset.UTC);
 
@@ -92,38 +108,20 @@ public class BookingService {
         );
         }
 
-        @Transactional
-        public BookingDTO confirmPayment(Long bookingId, PaymentDTO paymentData) {
-                // 1. Validate Booking exists
+        public BookingDTO confirmPayment(Long bookingId) {
                 Booking booking = bookingRepository.findById(bookingId)
-                                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+                        .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
 
-                // 2. Validate status is WAITING_PAYMENT
-                if (!"WAITING_PAYMENT".equals(booking.getStatus())) {
+                // Antes: "WAITING_PAYMENT"
+                if (!"PENDING".equals(booking.getStatus())) {
                         throw new IllegalStateException(
-                                        "Booking is not waiting for payment. Current status: " + booking.getStatus());
+                                "Booking is not waiting for payment. Current status: " + booking.getStatus()
+                        );
                 }
 
-                // 3. Mock payment processing (always succeeds for MVP)
-                logger.info("Processing payment for booking {}", bookingId);
-
-                // 4. Update booking status
                 booking.setStatus("CONFIRMED");
-                booking.setPaymentDate(LocalDateTime.now());
-                booking.setPaymentMethod("CREDIT_CARD");
-
-                Booking confirmed = bookingRepository.save(booking);
-
-                // 5. Simulate email confirmation (log only)
-                logger.info("=== EMAIL CONFIRMATION (SIMULATED) ===");
-                logger.info("Subject: Booking Confirmation #{}", confirmed.getId());
-                logger.info("Your booking for {} {} has been confirmed!",
-                                confirmed.getVehicle().getBrand(), confirmed.getVehicle().getModel());
-                logger.info("Pickup: {}, Return: {}", confirmed.getPickupDate(), confirmed.getReturnDate());
-                logger.info("Total: €{}", confirmed.getTotalPrice());
-                logger.info("======================================");
-
-                return toBookingDTO(confirmed);
+                Booking saved = bookingRepository.save(booking);
+                return toBookingDTO(saved);
         }
 
         public List<BookingDTO> getBookingsByUserEmail(String email) {

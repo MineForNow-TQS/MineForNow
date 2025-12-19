@@ -25,7 +25,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class VehicleSearchIT extends tqs.backend.AbstractPostgresTest {
+class VehicleSearchIT extends tqs.backend.testsupport.AbstractPostgresTest {
 
     @Autowired
     private TestRestTemplate restTemplate;

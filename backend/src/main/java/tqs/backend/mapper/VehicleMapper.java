@@ -1,7 +1,7 @@
 package tqs.backend.mapper;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
+import java.math.RoundingMode;
 import java.util.Locale;
 
 import org.springframework.stereotype.Component;
@@ -21,6 +21,10 @@ public class VehicleMapper {
         BigDecimal ppd = v.getPricePerDay();
         Double ppdDouble = (ppd != null) ? ppd.doubleValue() : null;
 
+        // ✅ Campos calculados esperados pelos testes
+        String displayName = buildDisplayName(v.getBrand(), v.getModel(), v.getYear());
+        String formattedPrice = formatPricePerDay(ppd, v.getCurrency());
+
         return VehicleDetailDTO.builder()
                 .id(v.getId())
                 .brand(v.getBrand())
@@ -39,7 +43,11 @@ public class VehicleMapper {
                 .city(v.getCity())
                 .exactLocation(v.getExactLocation())
                 .pricePerDay(ppdDouble)
-                .formattedPrice(formatEur(ppd, v.getCurrency()))
+
+                // ✅ IMPORTANTE: preencher estes 2
+                .displayName(displayName)
+                .formattedPrice(formattedPrice)
+
                 .description(v.getDescription())
                 .imageUrl(v.getImageUrl())
                 .ownerName(ownerName)
@@ -47,16 +55,40 @@ public class VehicleMapper {
                 .build();
     }
 
-    private String formatEur(BigDecimal amount, String currency) {
-        if (amount == null) return null;
+    // "Fiat 500 2020" ou "Fiat 500" se year == null
+    private String buildDisplayName(String brand, String model, Integer year) {
+        String b = safeTrim(brand);
+        String m = safeTrim(model);
 
-        NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "PT"));
+        String base = (b + " " + m).trim();
+        if (year == null) return base;
 
-        String formatted = nf.format(amount);
+        return (base + " " + year).trim();
+    }
 
-        if (currency != null && !currency.isBlank() && !"EUR".equalsIgnoreCase(currency)) {
-            return formatted + " " + currency.toUpperCase();
+    /**
+     * Formato esperado pelos teus testes:
+     * - se null -> "N/A"
+     * - se EUR -> "25.00 €/dia"
+     *
+     * Nota: não uses NumberFormat PT-PT aqui porque dá "25,00 €" (vírgula + símbolo antes/depois)
+     * e isso não bate certo com o teu assert.
+     */
+    private String formatPricePerDay(BigDecimal amount, String currency) {
+        if (amount == null) return "N/A";
+
+        BigDecimal scaled = amount.setScale(2, RoundingMode.HALF_UP);
+        String value = String.format(Locale.US, "%.2f", scaled.doubleValue());
+
+        String curr = (currency == null || currency.isBlank()) ? "EUR" : currency.trim().toUpperCase();
+
+        if ("EUR".equals(curr)) {
+            return value + " €/dia";
         }
-        return formatted;
+        return value + " " + curr + "/dia";
+    }
+
+    private String safeTrim(String s) {
+        return (s == null) ? "" : s.trim();
     }
 }

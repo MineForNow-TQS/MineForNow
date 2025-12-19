@@ -1,0 +1,9 @@
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=false
+
+# Garante que o Spring NÃO troca a datasource em @DataJpaTest
+spring.test.database.replace=none
+
+# Flyway em testes (tens V1__schema.sql)
+spring.flyway.enabled=true
+spring.flyway.locations=classpath:db/migration

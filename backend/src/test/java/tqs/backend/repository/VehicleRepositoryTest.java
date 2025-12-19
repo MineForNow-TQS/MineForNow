@@ -21,7 +21,7 @@ import tqs.backend.model.Vehicle;
 
 @DataJpaTest
 @ActiveProfiles("test")
-class VehicleRepositoryTest extends tqs.backend.AbstractPostgresTest {
+class VehicleRepositoryTest extends tqs.backend.testsupport.AbstractPostgresTest {
 
     @Autowired
     private VehicleRepository vehicleRepository;

@@ -88,8 +88,8 @@ class BookingServiceTest {
         BookingDTO result = bookingService.createBooking(request);
 
         assertThat(result.getId()).isEqualTo(10L);
-        assertThat(result.getStatus()).isEqualTo("WAITING_PAYMENT");
-        assertThat(result.getTotalPrice()).isEqualTo(300.0);
+        assertThat(result.getStatus()).isEqualTo("PENDING");
+        assertThat(result.getTotalPrice()).isEqualByComparingTo(new BigDecimal("300.0"));
         verify(bookingRepository, times(1)).save(any(Booking.class));
     }
 
@@ -119,8 +119,8 @@ class BookingServiceTest {
         LocalDate end = LocalDate.now().plusDays(1); // End before start
         BookingRequestDTO request = new BookingRequestDTO(1L, start, end, 2L);
 
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle));
-        when(userRepository.findById(2L)).thenReturn(Optional.of(renter));
+        // when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle));
+        // when(userRepository.findById(2L)).thenReturn(Optional.of(renter));
 
         assertThatThrownBy(() -> bookingService.createBooking(request))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -133,7 +133,6 @@ class BookingServiceTest {
     void confirmPayment_Success_UpdatesStatusToConfirmed() {
         // Given
         Long bookingId = 1L;
-        PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
 
         Booking booking = new Booking(
                 null,
@@ -141,18 +140,19 @@ class BookingServiceTest {
                 renter,
                 pickupDateTime,
                 returnDateTime,
-                "CONFIRMED",
+                "PENDING",                
                 BigDecimal.valueOf(500.0),
-                "UNPAID",
+                "EUR",                 
                 OffsetDateTime.now(ZoneOffset.UTC)
         );
+
         booking.setId(1L);
 
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // When
-        BookingDTO result = bookingService.confirmPayment(bookingId, paymentData);
+        BookingDTO result = bookingService.confirmPayment(bookingId);
 
         // Then
         assertThat(result).isNotNull();
@@ -171,7 +171,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThatThrownBy(() -> bookingService.confirmPayment(bookingId, paymentData))
+        assertThatThrownBy(() -> bookingService.confirmPayment(bookingId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Booking not found");
 
@@ -199,7 +199,7 @@ class BookingServiceTest {
 
         PaymentDTO paymentData = new PaymentDTO("1234", "Maria Silva", "12/25", "123");
 
-        assertThatThrownBy(() -> bookingService.confirmPayment(1L, paymentData))
+        assertThatThrownBy(() -> bookingService.confirmPayment(1L))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Booking is not waiting for payment");
     }

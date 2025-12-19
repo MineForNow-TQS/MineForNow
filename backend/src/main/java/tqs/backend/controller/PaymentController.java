@@ -23,7 +23,7 @@ public class PaymentController {
             @PathVariable Long id,
             @Valid @RequestBody PaymentDTO paymentData) {
         try {
-            BookingDTO confirmed = bookingService.confirmPayment(id, paymentData);
+            BookingDTO confirmed = bookingService.confirmPayment(id);
             return ResponseEntity.ok(confirmed);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
