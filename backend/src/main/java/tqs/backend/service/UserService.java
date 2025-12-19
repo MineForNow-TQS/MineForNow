@@ -11,6 +11,9 @@ import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.model.UserRole;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +56,8 @@ public class UserService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .drivingLicense(user.getDrivingLicense())
+                .citizenCardNumber(user.getCitizenCardNumber())
+                .ownerMotivation(user.getOwnerMotivation())
                 .role(user.getRole())
                 .build();
     }
@@ -77,6 +82,8 @@ public class UserService {
                 .email(savedUser.getEmail())
                 .phone(savedUser.getPhone())
                 .drivingLicense(savedUser.getDrivingLicense())
+                .citizenCardNumber(savedUser.getCitizenCardNumber())
+                .ownerMotivation(savedUser.getOwnerMotivation())
                 .role(savedUser.getRole())
                 .build();
     }
@@ -88,7 +95,7 @@ public class UserService {
 
         // Já é owner ou está pendente
         if (user.getRole() == UserRole.OWNER ||
-            user.getRole() == UserRole.PENDING_OWNER) {
+                user.getRole() == UserRole.PENDING_OWNER) {
             throw new IllegalStateException("Pedido já submetido ou utilizador já é Owner");
         }
 
@@ -104,4 +111,45 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public List<UserProfileResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> UserProfileResponse.builder()
+                        .id(user.getId())
+                        .fullName(user.getFullName())
+                        .email(user.getEmail())
+                        .phone(user.getPhone())
+                        .drivingLicense(user.getDrivingLicense())
+                        .citizenCardNumber(user.getCitizenCardNumber())
+                        .ownerMotivation(user.getOwnerMotivation())
+                        .role(user.getRole())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void approveOwnerRequest(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+
+        if (user.getRole() != UserRole.PENDING_OWNER) {
+            throw new IllegalStateException("Utilizador não tem pedido pendente");
+        }
+
+        user.setRole(UserRole.OWNER);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void rejectOwnerRequest(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+
+        if (user.getRole() != UserRole.PENDING_OWNER) {
+            throw new IllegalStateException("Utilizador não tem pedido pendente");
+        }
+
+        // Revert to RENTER
+        user.setRole(UserRole.RENTER);
+        userRepository.save(user);
+    }
 }

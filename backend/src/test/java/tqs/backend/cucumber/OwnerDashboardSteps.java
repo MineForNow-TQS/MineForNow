@@ -42,6 +42,7 @@ public class OwnerDashboardSteps {
     private String authToken;
     private ResponseEntity<Map> dashboardResponse;
 
+    @SuppressWarnings("null")
     @Dado("que existe um owner autenticado com email {string}")
     public void queExisteUmOwnerAutenticadoComEmail(String email) {
         // Use existing owner from TestDataInitializer
@@ -64,6 +65,7 @@ public class OwnerDashboardSteps {
         assertNotNull(authToken, "Auth token should not be null. Response: " + loginResponse.getBody());
     }
 
+    @SuppressWarnings("null")
     @Dado("que o owner tem {int} veículos cadastrados")
     public void queOOwnerTemVeiculosCadastrados(int numVehicles) {
         // Clear existing vehicles and their bookings for this owner

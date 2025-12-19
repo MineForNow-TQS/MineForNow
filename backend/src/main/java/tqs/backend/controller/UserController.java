@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import java.util.List;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import tqs.backend.dto.UpdateProfileRequest;
@@ -44,15 +47,34 @@ public class UserController {
 
     @PostMapping("/upgrade")
     public ResponseEntity<Void> requestOwnerUpgrade(
-        @Valid @RequestBody UpgradeOwnerRequest request) {
+            @Valid @RequestBody UpgradeOwnerRequest request) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String email = authentication.getName();
 
         userService.requestOwnerUpgrade(email, request);
 
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserProfileResponse>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @PutMapping("/{id}/approve-owner")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> approveOwnerRequest(@PathVariable Long id) {
+        userService.approveOwnerRequest(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/reject-owner")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> rejectOwnerRequest(@PathVariable Long id) {
+        userService.rejectOwnerRequest(id);
         return ResponseEntity.ok().build();
     }
 

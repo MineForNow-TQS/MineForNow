@@ -13,8 +13,8 @@ export function AuthProvider({ children }) {
     return {
       id: apiData.id,
       email: apiData.email,
-      fullName: apiData.fullName || apiData.full_name, 
-      role: apiData.role || apiData.user_role,        
+      fullName: apiData.fullName || apiData.full_name,
+      role: (apiData.role || apiData.user_role)?.toLowerCase(),
     };
   }, []);
 
@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
     try {
       const response = await userService.getCurrentUser();
       const updatedData = mapUserData(response.data);
-      
+
       setUser(updatedData);
       localStorage.setItem('user', JSON.stringify(updatedData));
       return updatedData;

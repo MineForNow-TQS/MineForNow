@@ -6,7 +6,7 @@ import { ownerRequestService } from '@/services/ownerRequestService';
 import { adminService } from '@/services/adminService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Crown, Car as CarIcon, Clock, Shield, Ban, Euro, Calendar } from 'lucide-react';
+import { Users, Crown, Car as CarIcon, Clock, Shield, Ban, Euro, Calendar, Check, X } from 'lucide-react';
 
 export default function AdminStatsDashboard() {
     const queryClient = useQueryClient();
@@ -45,13 +45,30 @@ export default function AdminStatsDashboard() {
         }
     );
 
-    // Mutation to block user
-    const blockUserMutation = useMutation(
-        (userId) => userService.toggleStatus(userId),
+
+
+    // Mutation to approve request
+    const approveRequestMutation = useMutation(
+        (userId) => ownerRequestService.approve(userId),
         {
             onSuccess: () => {
+                queryClient.invalidateQueries('allOwnerRequests');
                 queryClient.invalidateQueries('allUsers');
-            }
+                alert('Pedido aprovado com sucesso!');
+            },
+            onError: () => alert('Erro ao aprovar pedido.')
+        }
+    );
+
+    // Mutation to reject request
+    const rejectRequestMutation = useMutation(
+        (userId) => ownerRequestService.reject(userId),
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries('allOwnerRequests');
+                alert('Pedido rejeitado com sucesso!');
+            },
+            onError: () => alert('Erro ao rejeitar pedido.')
         }
     );
 
@@ -140,16 +157,38 @@ export default function AdminStatsDashboard() {
                                             <p className="text-xs text-slate-500 mt-1">Carta: {request.drivingLicense}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4 text-slate-400" />
-                                        <span className="text-sm text-slate-500">
-                                            {new Date(request.created_at).toLocaleDateString('pt-PT')}
-                                        </span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 text-sm text-slate-500 mr-4">
+                                        <Clock className="w-4 h-4" />
+                                        <span>{new Date(request.created_at).toLocaleDateString('pt-PT')}</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                            onClick={() => {
+                                                if (window.confirm('Aprovar este pedido?')) approveRequestMutation.mutate(request.id);
+                                            }}
+                                        >
+                                            <Check className="w-4 h-4 mr-1" /> Aprovar
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="border-red-200 text-red-600 hover:bg-red-50"
+                                            onClick={() => {
+                                                if (window.confirm('Rejeitar este pedido?')) rejectRequestMutation.mutate(request.id);
+                                            }}
+                                        >
+                                            <X className="w-4 h-4 mr-1" /> Rejeitar
+                                        </Button>
                                     </div>
                                 </div>
+
                             </Card>
                         ))}
-                </div>
+                </div >
             )}
 
             {/* User Management */}
@@ -161,13 +200,15 @@ export default function AdminStatsDashboard() {
                             <div className="flex items-center gap-4">
                                 {/* User Avatar */}
                                 <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center">
-                                    <Users className="w-6 h-6 text-slate-500" />
+                                    <span className="text-slate-600 text-lg font-bold">
+                                        {(user.fullName || user.full_name || user.name || '?')[0]?.toUpperCase()}
+                                    </span>
                                 </div>
 
                                 {/* User Info */}
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <h3 className="font-semibold text-slate-900">{user.full_name || user.name}</h3>
+                                        <h3 className="font-semibold text-slate-900">{user.fullName || user.full_name || user.name}</h3>
                                         {user.email === 'admin@minefornow.com' && (
                                             <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                                                 (Você)
