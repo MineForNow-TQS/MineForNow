@@ -8,6 +8,7 @@ import {
     Menu, Car, User, LogIn, ChevronDown, Crown, Shield,
     LayoutDashboard, LogOut, Search
 } from "lucide-react";
+import { Toaster } from 'sonner';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -147,6 +148,7 @@ export default function Layout({ children, currentPageName }) {
             <main className={currentPageName === 'Home' ? '' : 'pt-16'}>
                 {children}
             </main>
+            <Toaster position="top-right" richColors closeButton />
         </div>
     );
 }

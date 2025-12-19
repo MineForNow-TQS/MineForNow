@@ -19,7 +19,14 @@ import tqs.backend.repository.VehicleRepository;
 
 import java.time.LocalDateTime;
 
+import tqs.backend.repository.BookingRepository;
+import tqs.backend.dto.CreateReviewDTO;
+import tqs.backend.model.Booking; // Import Booking
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -42,12 +49,18 @@ class ReviewControllerIT {
     @Autowired
     private ReviewRepository reviewRepository;
 
+    @Autowired
+    private BookingRepository bookingRepository;
+
     private Vehicle testVehicle;
+    private Booking testBooking;
+    private User renterUser;
 
     @BeforeEach
     void setUp() {
         // Limpar dados de teste
         reviewRepository.deleteAll();
+        bookingRepository.deleteAll();
         vehicleRepository.deleteAll();
         userRepository.deleteAll();
 
@@ -66,7 +79,7 @@ class ReviewControllerIT {
                 .password("password")
                 .role(UserRole.RENTER)
                 .build();
-        renter = userRepository.save(renter);
+        renterUser = userRepository.save(renter);
 
         // Criar veículo de teste
         testVehicle = new Vehicle();
@@ -94,7 +107,7 @@ class ReviewControllerIT {
         // Criar 3 reviews para o veículo
         Review review1 = new Review();
         review1.setVehicle(testVehicle);
-        review1.setReviewer(renter);
+        review1.setReviewer(renterUser);
         review1.setRating(5);
         review1.setComment("Excelente carro! Experiência incrível de condução.");
         review1.setCreatedAt(LocalDateTime.now().minusDays(5));
@@ -110,11 +123,21 @@ class ReviewControllerIT {
 
         Review review3 = new Review();
         review3.setVehicle(testVehicle);
-        review3.setReviewer(renter);
+        review3.setReviewer(renterUser);
         review3.setRating(5);
         review3.setComment("Perfeito! Recomendo a todos.");
         review3.setCreatedAt(LocalDateTime.now().minusDays(1));
         reviewRepository.save(review3);
+
+        // Criar Booking COMPLETED para testar create review
+        testBooking = new Booking();
+        testBooking.setVehicle(testVehicle);
+        testBooking.setRenter(renterUser);
+        testBooking.setPickupDate(java.time.LocalDate.now().minusDays(10));
+        testBooking.setReturnDate(java.time.LocalDate.now().minusDays(5));
+        testBooking.setTotalPrice(500.0);
+        testBooking.setStatus("COMPLETED");
+        testBooking = bookingRepository.save(testBooking);
     }
 
     @Test
@@ -136,5 +159,19 @@ class ReviewControllerIT {
         mockMvc.perform(get("/api/vehicles/999/reviews"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Vehicle not found"));
+    }
+    @Test
+    @Requirement("SCRUM-28")
+    @WithMockUser(username = "renter@test.com")
+    void createReview_Success() throws Exception {
+        CreateReviewDTO createDto = new CreateReviewDTO(5, "Nova review de teste", testBooking.getId());
+
+        mockMvc.perform(post("/api/reviews")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.rating").value(5))
+                .andExpect(jsonPath("$.comment").value("Nova review de teste"))
+                .andExpect(jsonPath("$.reviewerName").value("Renter Test"));
     }
 }

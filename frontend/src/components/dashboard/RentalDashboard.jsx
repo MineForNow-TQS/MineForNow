@@ -8,6 +8,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ownerRequestService } from '@/services/ownerRequestService';
 import { bookingService } from '@/services/bookingService';
 import { carService } from '@/services/carService';
+import { reviewService } from '@/services/reviewService';
+import { ReviewModal } from '@/components/reviews/ReviewModal';
+import { toast } from 'sonner';
 
 export default function RentalDashboard() {
     const navigate = useNavigate();
@@ -36,6 +39,33 @@ export default function RentalDashboard() {
         req => req.user_email === user?.email && req.status === 'pending'
     );
 
+    // Review Modal State
+    const [isReviewModalOpen, setIsReviewModalOpen] = React.useState(false);
+    const [selectedBookingId, setSelectedBookingId] = React.useState(null);
+    const [isSubmittingReview, setIsSubmittingReview] = React.useState(false);
+
+    const handleOpenReviewModal = (bookingId) => {
+        setSelectedBookingId(bookingId);
+        setIsReviewModalOpen(true);
+    };
+
+    const handleSubmitReview = async (reviewData) => {
+        setIsSubmittingReview(true);
+        try {
+            await reviewService.create({
+                ...reviewData,
+                bookingId: selectedBookingId
+            });
+            toast.success('Avaliação submetida com sucesso!');
+            setIsReviewModalOpen(false);
+            // Optionally refetch bookings or invalidate query
+        } catch (error) {
+            toast.error(error.message || 'Erro ao submeter avaliação');
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
+
     // Calculate stats
     const stats = {
         total: bookings.length,
@@ -53,6 +83,8 @@ export default function RentalDashboard() {
         const badges = {
             'WAITING_PAYMENT': { text: 'Aguarda Pagamento', class: 'bg-orange-100 text-orange-700' },
             'CONFIRMED': { text: 'Confirmada', class: 'bg-green-100 text-green-700' },
+            'COMPLETED': { text: 'Concluída', class: 'bg-blue-100 text-blue-700' },
+            'CONCLUÍDO': { text: 'Concluída', class: 'bg-blue-100 text-blue-700' },
             'CANCELLED': { text: 'Cancelada', class: 'bg-gray-100 text-gray-700' }
         };
         const badge = badges[status] || { text: status, class: 'bg-gray-100 text-gray-700' };
@@ -115,7 +147,12 @@ export default function RentalDashboard() {
             ) : (
                 <div className="space-y-4 mb-8">
                     {bookings.map((booking) => (
-                        <BookingCard key={booking.id} booking={booking} getStatusBadge={getStatusBadge} />
+                        <BookingCard
+                            key={booking.id}
+                            booking={booking}
+                            getStatusBadge={getStatusBadge}
+                            onReview={() => handleOpenReviewModal(booking.id)}
+                        />
                     ))}
                 </div>
             )}
@@ -148,11 +185,18 @@ export default function RentalDashboard() {
                     </Button>
                 </div>
             </Card>
+
+            <ReviewModal
+                isOpen={isReviewModalOpen}
+                onClose={() => setIsReviewModalOpen(false)}
+                onSubmit={handleSubmitReview}
+                isSubmitting={isSubmittingReview}
+            />
         </>
     );
 }
 
-function BookingCard({ booking, getStatusBadge }) {
+function BookingCard({ booking, getStatusBadge, onReview }) {
     const navigate = useNavigate();
 
     // Fetch vehicle details
@@ -223,6 +267,18 @@ function BookingCard({ booking, getStatusBadge }) {
                         className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
                     >
                         Pagar Agora
+                    </Button>
+                </div>
+            )}
+
+            {(booking.status === 'COMPLETED' || booking.status === 'CONCLUÍDO') && (
+                <div className="flex gap-3 mt-4 pt-4 border-t border-slate-200">
+                    <Button
+                        onClick={onReview}
+                        variant="outline"
+                        className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50"
+                    >
+                        Avaliar Experiência
                     </Button>
                 </div>
             )}

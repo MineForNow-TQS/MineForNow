@@ -173,7 +173,28 @@ public class MinefornowApplication {
                         testBooking3.setRenter(renter);
                         bookingRepo.save(testBooking3);
 
-                        System.out.println("E2E Test data: 3 bookings created (2 CONFIRMED, 1 WAITING_PAYMENT)");
+                        // SCRUM-28: Completed booking for Mercedes review testing
+                        Booking completedBooking = new Booking();
+                        completedBooking.setPickupDate(LocalDate.now().minusDays(10));
+                        completedBooking.setReturnDate(LocalDate.now().minusDays(5));
+                        completedBooking.setStatus("COMPLETED");
+                        completedBooking.setTotalPrice(850.0);
+                        completedBooking.setVehicle(mercedes);
+                        completedBooking.setRenter(renter);
+                        bookingRepo.save(completedBooking);
+
+                        // SCRUM-28: Completed booking for Fiat 500 review testing (Car ID 1)
+                        Booking completedFiatBooking = new Booking();
+                        completedFiatBooking.setPickupDate(LocalDate.now().minusDays(20));
+                        completedFiatBooking.setReturnDate(LocalDate.now().minusDays(18));
+                        completedFiatBooking.setStatus("COMPLETED");
+                        completedFiatBooking.setTotalPrice(120.0);
+                        completedFiatBooking.setVehicle(fiat);
+                        completedFiatBooking.setRenter(renter);
+                        bookingRepo.save(completedFiatBooking);
+
+                        System.out.println(
+                                        "E2E Test data: 5 bookings created (2 CONFIRMED, 1 WAITING_PAYMENT, 2 COMPLETED)");
 
                         // === SCRUM-30: Sample Reviews for All Vehicles ===
 

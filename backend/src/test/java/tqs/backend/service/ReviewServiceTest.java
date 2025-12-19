@@ -13,6 +13,11 @@ import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.ReviewRepository;
 import tqs.backend.repository.VehicleRepository;
+import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.UserRepository;
+import tqs.backend.dto.CreateReviewDTO;
+import tqs.backend.dto.ReviewDTO;
+import tqs.backend.model.Booking;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -21,6 +26,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +37,12 @@ class ReviewServiceTest {
 
     @Mock
     private VehicleRepository vehicleRepository;
+
+    @Mock
+    private BookingRepository bookingRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private ReviewService reviewService;
@@ -167,5 +179,74 @@ class ReviewServiceTest {
 
         // Then
         assertThat(average).isEqualTo(0.0);
+    }
+
+    @Test
+    @Requirement("SCRUM-28")
+    void createReview_ValidData_ReturnsCreatedReview() {
+        // Given
+        CreateReviewDTO createDto = new CreateReviewDTO(5, "Amazing!", 1L);
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setStatus("COMPLETED");
+        booking.setVehicle(vehicle);
+        booking.setRenter(reviewer1);
+
+        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(reviewer1));
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(reviewRepository.save(any(Review.class))).thenAnswer(i -> {
+            Review r = i.getArgument(0);
+            r.setId(10L);
+            return r;
+        });
+
+        // When
+        ReviewDTO result = reviewService.createReview(createDto, "joao@example.com");
+
+        // Then
+        assertThat(result.getId()).isEqualTo(10L);
+        assertThat(result.getRating()).isEqualTo(5);
+        assertThat(result.getComment()).isEqualTo("Amazing!");
+        assertThat(result.getReviewerName()).isEqualTo("João Silva");
+    }
+
+    @Test
+    @Requirement("SCRUM-28")
+    void createReview_BookingNotCompleted_ThrowsException() {
+        // Given
+        CreateReviewDTO createDto = new CreateReviewDTO(5, "Amazing!", 1L);
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setStatus("CONFIRMED"); // Not COMPLETED
+        booking.setVehicle(vehicle);
+        booking.setRenter(reviewer1);
+
+        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(reviewer1));
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        // When & Then
+        assertThatThrownBy(() -> reviewService.createReview(createDto, "joao@example.com"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("You can only review completed bookings");
+    }
+
+    @Test
+    @Requirement("SCRUM-28")
+    void createReview_UserNotRenter_ThrowsException() {
+        // Given
+        CreateReviewDTO createDto = new CreateReviewDTO(5, "Amazing!", 1L);
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setStatus("COMPLETED");
+        booking.setVehicle(vehicle);
+        booking.setRenter(reviewer2); // reviewer2 implies booking belongs to someone else
+
+        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(reviewer1));
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        // When & Then
+        assertThatThrownBy(() -> reviewService.createReview(createDto, "joao@example.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("You can only review your own bookings");
     }
 }
