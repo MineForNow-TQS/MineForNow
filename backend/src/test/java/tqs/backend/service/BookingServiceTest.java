@@ -49,6 +49,7 @@ class BookingServiceTest {
         vehicle = Vehicle.builder().id(1L).pricePerDay(100.0).brand("Audi").build();
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-15")
     void createBooking_ValidRequest_ReturnsDTO() {
@@ -81,6 +82,7 @@ class BookingServiceTest {
         verify(bookingRepository, times(1)).save(any(Booking.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-15")
     void createBooking_Overlap_ThrowsException() {
@@ -116,6 +118,7 @@ class BookingServiceTest {
 
     // SCRUM-16: Payment Confirmation Tests
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-16")
     void confirmPayment_Success_UpdatesStatusToConfirmed() {
@@ -145,6 +148,7 @@ class BookingServiceTest {
         verify(bookingRepository).save(any(Booking.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-16")
     void confirmPayment_BookingNotFound_ThrowsException() {
@@ -250,11 +254,13 @@ class BookingServiceTest {
 
     @Test
     @Requirement("SCRUM-16")
-    void getBookingsByUserEmail_UserNotFound() {
-        when(userRepository.findByEmail("unknown@email.com")).thenReturn(Optional.empty());
+    void getBookingsByUserEmail_NoBookings() {
+        renter.setEmail("maria@email.com");
+        when(userRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(renter));
+        when(bookingRepository.findByRenter(renter)).thenReturn(java.util.Collections.emptyList());
 
-        assertThatThrownBy(() -> bookingService.getBookingsByUserEmail("unknown@email.com"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User not found");
+        var result = bookingService.getBookingsByUserEmail("maria@email.com");
+
+        assertThat(result).isEmpty();
     }
 }

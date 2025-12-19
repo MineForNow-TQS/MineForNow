@@ -3,34 +3,34 @@ package tqs.backend.service;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tqs.backend.dto.BookingDTO;
 import tqs.backend.dto.DashboardStatsDTO;
 import tqs.backend.model.Booking;
-import tqs.backend.model.User;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
-import java.util.List;
-
 @Service
 public class DashboardService {
 
-        @Autowired
-        private UserRepository userRepository;
+        private final UserRepository userRepository;
 
-        @Autowired
-        private VehicleRepository vehicleRepository;
+        private final VehicleRepository vehicleRepository;
 
-        @Autowired
-        private BookingRepository bookingRepository;
+        private final BookingRepository bookingRepository;
+
+        public DashboardService(UserRepository userRepository, VehicleRepository vehicleRepository,
+                        BookingRepository bookingRepository) {
+                this.userRepository = userRepository;
+                this.vehicleRepository = vehicleRepository;
+                this.bookingRepository = bookingRepository;
+        }
 
         public DashboardStatsDTO getOwnerStats(String ownerEmail) {
                 // 1. Find owner by email
-                User owner = userRepository.findByEmail(ownerEmail)
+                userRepository.findByEmail(ownerEmail)
                                 .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
 
                 // 2. Get all vehicles owned by this user

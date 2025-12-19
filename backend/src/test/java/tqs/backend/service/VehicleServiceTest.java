@@ -205,6 +205,7 @@ class VehicleServiceTest {
     // ==================== TESTES PARA createVehicle (SCRUM-10)
     // ====================
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-10")
     @DisplayName("Quando owner válido cria veículo, deve retornar veículo criado")
@@ -237,6 +238,7 @@ class VehicleServiceTest {
         verify(vehicleRepository).save(any(Vehicle.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-10")
     @DisplayName("Quando user não existe, deve lançar IllegalArgumentException")
@@ -252,6 +254,7 @@ class VehicleServiceTest {
         verify(vehicleRepository, never()).save(any(Vehicle.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-10")
     @DisplayName("Quando user não é OWNER, deve lançar IllegalArgumentException")
@@ -267,6 +270,7 @@ class VehicleServiceTest {
         verify(vehicleRepository, never()).save(any(Vehicle.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-10")
     @DisplayName("Quando criar veículo, deve mapear todos os campos corretamente")
@@ -302,6 +306,7 @@ class VehicleServiceTest {
     // ==================== TESTES PARA updateVehicle (SCRUM-7)
     // ====================
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-10")
     @DisplayName("Quando atualizar veículo inexistente, deve lançar exceção")
@@ -317,6 +322,7 @@ class VehicleServiceTest {
         verify(vehicleRepository, never()).save(any(Vehicle.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-10")
     @DisplayName("Quando não owner tenta atualizar, deve lançar exceção")
@@ -332,6 +338,7 @@ class VehicleServiceTest {
         verify(vehicleRepository, never()).save(any(Vehicle.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-10")
     @DisplayName("Quando atualizar veículo com sucesso, deve atualizar campos e salvar")
@@ -364,6 +371,7 @@ class VehicleServiceTest {
         verify(vehicleRepository).save(testVehicle);
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-10")
     @DisplayName("Quando eliminar veículo inexistente, deve lançar exceção")
@@ -379,6 +387,7 @@ class VehicleServiceTest {
         verify(vehicleRepository, never()).delete(any(Vehicle.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-10")
     @DisplayName("Quando não owner tenta eliminar, deve lançar exceção")
@@ -394,6 +403,7 @@ class VehicleServiceTest {
         verify(vehicleRepository, never()).delete(any(Vehicle.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     @Requirement("SCRUM-7")
     @DisplayName("Quando eliminar veículo com sucesso, deve chamar delete do repositório")

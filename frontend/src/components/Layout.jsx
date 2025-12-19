@@ -4,9 +4,9 @@ import { createPageUrl } from '@/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { 
-    Menu, Car, User, LogIn, ChevronDown, Crown, Shield, 
-    LayoutDashboard, LogOut, Search 
+import {
+    Menu, Car, User, LogIn, ChevronDown, Crown, Shield,
+    LayoutDashboard, LogOut, Search
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -31,8 +31,8 @@ export default function Layout({ children, currentPageName }) {
     }, []);
 
     const isHome = currentPageName === 'Home';
-    const headerBg = isHome && !isScrolled 
-        ? 'bg-transparent' 
+    const headerBg = isHome && !isScrolled
+        ? 'bg-transparent'
         : 'bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200';
     const textColor = isHome && !isScrolled ? 'text-white' : 'text-slate-900';
 
@@ -45,8 +45,8 @@ export default function Layout({ children, currentPageName }) {
         navigate('/');
     };
 
-    const isOwner = user?.user_role === 'owner' || user?.user_role === 'admin';
-    const isAdmin = user?.user_role === 'admin';
+    const isOwner = user?.role === 'owner' || user?.role === 'admin';
+    const isAdmin = user?.role === 'admin';
 
     return (
         <div className="min-h-screen bg-white">
@@ -66,7 +66,7 @@ export default function Layout({ children, currentPageName }) {
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-6">
-                            <Link 
+                            <Link
                                 to="/cars"
                                 className={`flex items-center gap-2 ${textColor} hover:text-indigo-600 transition-colors`}
                             >
@@ -80,10 +80,10 @@ export default function Layout({ children, currentPageName }) {
                                         <Button variant="ghost" className={`${textColor} hover:bg-white/10`}>
                                             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
                                                 <span className="text-indigo-600 font-medium">
-                                                    {user.full_name?.[0]?.toUpperCase() || 'U'}
+                                                    {(user.fullName || user.full_name)?.[0]?.toUpperCase()}
                                                 </span>
                                             </div>
-                                            {user.full_name?.split(' ')[0]}
+                                            {user.fullName || user.full_name}
                                             <ChevronDown className="w-4 h-4 ml-1" />
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -120,7 +120,7 @@ export default function Layout({ children, currentPageName }) {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             ) : (
-                                <Button 
+                                <Button
                                     onClick={handleLogin}
                                     className="bg-indigo-600 hover:bg-indigo-700 text-white"
                                 >
@@ -131,9 +131,9 @@ export default function Layout({ children, currentPageName }) {
                         </nav>
 
                         {/* Mobile Menu Trigger */}
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className={`md:hidden ${textColor}`}
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         >
