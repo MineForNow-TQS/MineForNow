@@ -45,8 +45,8 @@ export default function Layout({ children, currentPageName }) {
         navigate('/');
     };
 
-    const isOwner = user?.user_role === 'owner' || user?.user_role === 'admin';
-    const isAdmin = user?.user_role === 'admin';
+    const isOwner = user?.role === 'OWNER' || user?.user_role === 'ADMIN';
+    const isAdmin = user?.role === 'ADMIN';
 
     return (
         <div className="min-h-screen bg-white">

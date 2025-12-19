@@ -14,8 +14,8 @@ import AdminOwnerRequests from '@/components/dashboard/AdminOwnerRequests';
 export default function Dashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const isAdmin = user?.user_role === 'admin';
-    const isOwner = user?.user_role === 'owner' || user?.user_role === 'admin';
+    const isAdmin = user?.role === 'ADMIN';
+    const isOwner = user?.role === 'OWNER' || user?.user_role === 'ADMIN';
     
     // Set default tab based on role
     const getDefaultTab = () => {
@@ -192,20 +192,7 @@ export default function Dashboard() {
                                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-900"></div>
                                 )}
                             </button>
-                            <button
-                                onClick={() => setActiveTab('definicoes')}
-                                className={`pb-3 px-2 font-medium transition-colors relative ${
-                                    activeTab === 'definicoes'
-                                        ? 'text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
-                            >
-                                <Settings className="w-4 h-4 inline-block mr-2" />
-                                Definições
-                                {activeTab === 'definicoes' && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-900"></div>
-                                )}
-                            </button>
+                        
                         </>
                     )}
                 </div>

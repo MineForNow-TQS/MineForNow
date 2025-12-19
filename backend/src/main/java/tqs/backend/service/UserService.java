@@ -9,8 +9,8 @@ import tqs.backend.dto.UpdateProfileRequest;
 import tqs.backend.dto.UpgradeOwnerRequest;
 import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
-import tqs.backend.repository.UserRepository;
 import tqs.backend.model.UserRole;
+import tqs.backend.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -96,7 +96,7 @@ public class UserService {
         user.setPhone(request.getPhone());
         user.setCitizenCardNumber(request.getCitizenCardNumber());
         user.setDrivingLicense(request.getDrivingLicense());
-        user.setOwnerMotivation(request.getMotivation());
+        user.setMotivation(request.getMotivation());
 
         // Estado intermédio
         user.setRole(UserRole.PENDING_OWNER);
