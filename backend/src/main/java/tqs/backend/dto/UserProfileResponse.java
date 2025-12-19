@@ -21,4 +21,5 @@ public class UserProfileResponse {
     private String citizenCardNumber;
     private String ownerMotivation;
     private UserRole role;
+    private boolean active;
 }

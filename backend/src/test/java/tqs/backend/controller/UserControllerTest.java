@@ -187,5 +187,33 @@ class UserControllerTest {
                                         .andExpect(jsonPath("$.message").value("Utilizador não encontrado"));
                 }
         }
+        @Nested
+        @DisplayName("PUT /api/users/{id}/block.")
+        class AdminManagementTests {
+
+                @Test
+                @WithMockUser(roles = "ADMIN")
+                @DisplayName("Should toggle user status (block/unblock)")
+                void whenToggleBlock_thenReturnsOk() throws Exception {
+                        // Simula o sucesso da operação no serviço
+                        mockMvc.perform(put("/api/users/1/block"))
+                                        .andExpect(status().isOk());
+                }
+
+                @Test
+                @WithMockUser(roles = "ADMIN")
+                @DisplayName("Should return 400 when blocking non-existent user")
+                void whenBlockUnknownUser_thenReturns400() throws Exception {
+                        // Simula erro de utilizador não encontrado
+                        org.mockito.Mockito.doThrow(new IllegalArgumentException("Utilizador não encontrado"))
+                                        .when(userService).toggleUserStatus(99L);
+
+                        mockMvc.perform(put("/api/users/99/block"))
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(jsonPath("$.message").value("Utilizador não encontrado"));
+                }
+
+                
+        }
 
 }

@@ -1,5 +1,7 @@
 package tqs.backend.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -9,8 +11,8 @@ import tqs.backend.dto.UpdateProfileRequest;
 import tqs.backend.dto.UpgradeOwnerRequest;
 import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
-import tqs.backend.repository.UserRepository;
 import tqs.backend.model.UserRole;
+import tqs.backend.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -107,6 +109,22 @@ public class UserService {
         // Estado intermédio
         user.setRole(UserRole.PENDING_OWNER);
 
+        userRepository.save(user);
+    }
+
+    public List<User> getAllUsers(String searchQuery) {
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            return userRepository.searchUsers(searchQuery);
+        }
+        return userRepository.findAll();
+    }
+
+    // Método para Bloquear/Desbloquear
+    public void toggleUserStatus(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
+        
+        user.setActive(!user.isActive()); // Inverte o estado atual
         userRepository.save(user);
     }
 

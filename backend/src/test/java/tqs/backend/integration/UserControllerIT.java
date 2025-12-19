@@ -453,4 +453,94 @@ class UserControllerIT {
                 }
         }
 
+        @Nested
+        @DisplayName("User Management (Admin)")
+        @Requirement("SCRUM-78")
+        class UserManagement {
+
+                private String adminToken;
+
+                @BeforeEach
+                void setUpAdmin() {
+                        // Criar um Administrador específico para estes testes
+                        User admin = User.builder()
+                                        .email("admin_it@test.com")
+                                        .fullName("Admin Global")
+                                        .password(passwordEncoder.encode("admin123"))
+                                        .role(UserRole.ADMIN)
+                                        .active(true)
+                                        .build();
+                        userRepository.save(admin);
+
+                        // Obter Token de Admin
+                        LoginRequest login = new LoginRequest();
+                        login.setEmail("admin_it@test.com");
+                        login.setPassword("admin123");
+                        
+                        ResponseEntity<AuthResponse> response = restTemplate.postForEntity(
+                                        baseUrl + "/api/auth/login", login, AuthResponse.class);
+                        adminToken = Objects.requireNonNull(response.getBody()).getToken();
+                }
+
+                @Test
+                @DisplayName("Should list and search users when admin")
+                void whenAdminListsUsers_thenReturns200AndList() {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setBearerAuth(adminToken);
+                        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+                        // Testar listagem geral
+                        ResponseEntity<UserProfileResponse[]> response = restTemplate.exchange(
+                                        baseUrl + "/api/users",
+                                        HttpMethod.GET,
+                                        request,
+                                        UserProfileResponse[].class);
+
+                        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                        assertThat(response.getBody()).isNotEmpty();
+                        
+                        // Testar pesquisa por nome
+                        ResponseEntity<UserProfileResponse[]> searchResponse = restTemplate.exchange(
+                                        baseUrl + "/api/users?search=Test User",
+                                        HttpMethod.GET,
+                                        request,
+                                        UserProfileResponse[].class);
+
+                        assertThat(searchResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+                        assertThat(Objects.requireNonNull(searchResponse.getBody())[0].getFullName()).isEqualTo("Test User");
+                }
+
+                @Test
+                @DisplayName("Should toggle user active status and prevent login")
+                void whenAdminBlocksUser_thenUserCannotLogin() {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setBearerAuth(adminToken);
+                        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+                        // 1. Bloquear o testUser (id criado no setUp global)
+                        ResponseEntity<Void> blockResponse = restTemplate.exchange(
+                                        baseUrl + "/api/users/" + testUser.getId() + "/block",
+                                        HttpMethod.PUT,
+                                        request,
+                                        Void.class);
+
+                        assertThat(blockResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+                        // 2. Tentar login com o utilizador bloqueado
+                        LoginRequest loginRequest = new LoginRequest();
+                        loginRequest.setEmail("testuser@test.com");
+                        loginRequest.setPassword("password123");
+
+                        ResponseEntity<String> loginResponse = restTemplate.postForEntity(
+                                        baseUrl + "/api/auth/login",
+                                        loginRequest,
+                                        String.class);
+
+                        // Deve retornar FORBIDDEN (conforme o teu ExceptionHandler) ou UNAUTHORIZED
+                        assertThat(loginResponse.getStatusCode()).isIn(HttpStatus.FORBIDDEN, HttpStatus.UNAUTHORIZED);
+                        assertThat(loginResponse.getBody()).contains("bloqueada");
+                }
+
+        }
+
 }

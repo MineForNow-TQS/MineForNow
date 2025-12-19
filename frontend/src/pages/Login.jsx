@@ -28,23 +28,22 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
+    
         if (!email || !password) {
             setError('Por favor, preencha todos os campos');
             return;
         }
-
+    
         setLoading(true);
         try {
             await login(email, password);
             navigate('/dashboard');
         } catch (err) {
-            setError('Email ou password incorretos');
+            setError(err.message || 'Email ou password incorretos');
         } finally {
             setLoading(false);
         }
     };
-
     return (
         <div className="min-h-screen flex">
             {/* Left - Image */}

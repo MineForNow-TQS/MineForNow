@@ -1,5 +1,6 @@
 package tqs.backend.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,6 +28,7 @@ import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
 import tqs.backend.repository.UserRepository;
+
 
 @XrayTest(key = "SCRUM-37")
 class UserServiceTest {
@@ -326,6 +328,75 @@ class UserServiceTest {
                     () -> userService.requestOwnerUpgrade("pending@email.com", request));
 
             assertEquals("Pedido já submetido ou utilizador já é Owner", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Admin Management Logic Tests")
+    @Requirement("SCRUM-78")
+    class AdminManagementLogicTests {
+
+        @Test
+        @DisplayName("Should return list of users when searching")
+        void shouldReturnUsersOnSearch() {
+            User user1 = User.builder().fullName("João Silva").email("joao@test.com").build();
+            User user2 = User.builder().fullName("Maria Silva").email("maria@test.com").build();
+
+            when(userRepository.searchUsers("Silva")).thenReturn(java.util.List.of(user1, user2));
+
+            List<User> result = userService.getAllUsers("Silva");
+
+            assertEquals(2, result.size());
+            assertEquals("João Silva", result.get(0).getFullName());
+            verify(userRepository).searchUsers("Silva");
+        }
+
+        @Test
+        @DisplayName("Should return all users when search query is null")
+        void shouldReturnAllUsersWhenNoQuery() {
+            User user1 = User.builder().fullName("João Silva").build();
+            when(userRepository.findAll()).thenReturn(java.util.List.of(user1));
+
+            List<User> result = userService.getAllUsers(null);
+
+            assertEquals(1, result.size());
+            verify(userRepository).findAll();
+        }
+
+        @Test
+        @DisplayName("Should toggle user active status from true to false")
+        void shouldBlockUser() {
+            User activeUser = User.builder()
+                    .id(1L)
+                    .email("active@test.com")
+                    .active(true)
+                    .build();
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(activeUser));
+            when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
+
+            userService.toggleUserStatus(1L);
+
+            assertEquals(false, activeUser.isActive());
+            verify(userRepository).save(activeUser);
+        }
+
+        @Test
+        @DisplayName("Should toggle user active status from false to true")
+        void shouldUnblockUser() {
+            User blockedUser = User.builder()
+                    .id(1L)
+                    .email("blocked@test.com")
+                    .active(false)
+                    .build();
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(blockedUser));
+            when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
+
+            userService.toggleUserStatus(1L);
+
+            assertEquals(true, blockedUser.isActive());
+            verify(userRepository).save(blockedUser);
         }
     }
 

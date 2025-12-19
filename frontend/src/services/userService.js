@@ -75,14 +75,20 @@ export const userService = {
     const data = await response.json();
     return { data };
   },
-  async list() {
-    const response = await fetch(`${API_BASE_URL}/api/admin`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
-
-    if (!response.ok) throw new Error('Erro ao listar utilizadores');
+  async list(query = '') {
+    const url = query 
+      ? `${API_BASE_URL}/api/users?search=${encodeURIComponent(query)}` 
+      : `${API_BASE_URL}/api/users`;
+    const response = await fetch(url, { headers: getAuthHeaders() });
     const data = await response.json();
     return { data };
+  },
+
+  async toggleStatus(userId) {
+    await fetch(`${API_BASE_URL}/api/users/${userId}/block`, {
+      method: 'PUT',
+      headers: getAuthHeaders()
+    });
+    return true;
   }
 };

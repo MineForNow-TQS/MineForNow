@@ -17,10 +17,13 @@ export const authService = {
         });
 
         if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('Email ou password incorretos');
+                        // Dentro do if (!response.ok) no authService.js
+            const errorData = await response.json().catch(() => ({}));
+
+            if (errorData.message) {
+                throw new Error(errorData.message);
             }
-            throw new Error('Erro ao fazer login');
+            throw new Error('Erro nas credenciais');
         }
 
         const data = await response.json();

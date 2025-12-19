@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -53,4 +54,12 @@ public class GlobalExceptionHandler {
         response.put(MESSAGE, "Credenciais inválidas");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<Map<String, String>> handleDisabledException(DisabledException ex) {
+        Map<String, String> response = new HashMap<>();
+        // Esta mensagem será enviada para o Frontend
+        response.put(MESSAGE, "Esta conta foi bloqueada. Por favor, contacte o administrador.");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+}
 }
