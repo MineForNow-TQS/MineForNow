@@ -175,33 +175,135 @@ public class MinefornowApplication {
 
                         System.out.println("E2E Test data: 3 bookings created (2 CONFIRMED, 1 WAITING_PAYMENT)");
 
-                        // === SCRUM-30: Sample Reviews ===
-                        // Add reviews for Mercedes (for testing review visualization)
-                        tqs.backend.model.Review review1 = new tqs.backend.model.Review();
-                        review1.setVehicle(mercedes);
-                        review1.setReviewer(renter);
-                        review1.setRating(5);
-                        review1.setComment("Excelente carro! Experiência incrível de condução.");
-                        review1.setCreatedAt(java.time.LocalDateTime.now().minusDays(5));
-                        reviewRepo.save(review1);
+                        // === SCRUM-30: Sample Reviews for All Vehicles ===
 
-                        tqs.backend.model.Review review2 = new tqs.backend.model.Review();
-                        review2.setVehicle(mercedes);
-                        review2.setReviewer(admin);
-                        review2.setRating(4);
-                        review2.setComment("Muito bom, mas um pouco caro para o meu orçamento.");
-                        review2.setCreatedAt(java.time.LocalDateTime.now().minusDays(2));
-                        reviewRepo.save(review2);
+                        // Reviews for Fiat 500 (car 1)
+                        tqs.backend.model.Review fiatReview1 = new tqs.backend.model.Review();
+                        fiatReview1.setVehicle(fiat);
+                        fiatReview1.setReviewer(renter);
+                        fiatReview1.setRating(5);
+                        fiatReview1.setComment("Excelente carro! Muito confortável e económico. Recomendo a todos.");
+                        fiatReview1.setCreatedAt(java.time.LocalDateTime.now().minusDays(15));
+                        reviewRepo.save(fiatReview1);
 
-                        tqs.backend.model.Review review3 = new tqs.backend.model.Review();
-                        review3.setVehicle(mercedes);
-                        review3.setReviewer(renter);
-                        review3.setRating(5);
-                        review3.setComment("Perfeito! Recomendo a todos.");
-                        review3.setCreatedAt(java.time.LocalDateTime.now().minusDays(1));
-                        reviewRepo.save(review3);
+                        tqs.backend.model.Review fiatReview2 = new tqs.backend.model.Review();
+                        fiatReview2.setVehicle(fiat);
+                        fiatReview2.setReviewer(admin);
+                        fiatReview2.setRating(4);
+                        fiatReview2.setComment("Bom carro, mas podia ter mais espaço na bagageira.");
+                        fiatReview2.setCreatedAt(java.time.LocalDateTime.now().minusDays(20));
+                        reviewRepo.save(fiatReview2);
 
-                        System.out.println("SCRUM-30 Test data: 3 reviews created for Mercedes (avg rating: 4.67)");
+                        tqs.backend.model.Review fiatReview3 = new tqs.backend.model.Review();
+                        fiatReview3.setVehicle(fiat);
+                        fiatReview3.setReviewer(owner);
+                        fiatReview3.setRating(5);
+                        fiatReview3.setComment("Perfeito para viagens longas. O ar condicionado funciona muito bem.");
+                        fiatReview3.setCreatedAt(java.time.LocalDateTime.now().minusDays(25));
+                        reviewRepo.save(fiatReview3);
+
+                        // Reviews for Nissan Juke (car 2)
+                        tqs.backend.model.Review nissanReview1 = new tqs.backend.model.Review();
+                        nissanReview1.setVehicle(nissan);
+                        nissanReview1.setReviewer(renter);
+                        nissanReview1.setRating(4);
+                        nissanReview1.setComment("Carro muito bonito e confortável. A transmissão automática é ótima.");
+                        nissanReview1.setCreatedAt(java.time.LocalDateTime.now().minusDays(18));
+                        reviewRepo.save(nissanReview1);
+
+                        tqs.backend.model.Review nissanReview2 = new tqs.backend.model.Review();
+                        nissanReview2.setVehicle(nissan);
+                        nissanReview2.setReviewer(admin);
+                        nissanReview2.setRating(5);
+                        nissanReview2.setComment("Adorei a experiência! Carro impecável e atendimento excelente.");
+                        nissanReview2.setCreatedAt(java.time.LocalDateTime.now().minusDays(22));
+                        reviewRepo.save(nissanReview2);
+
+                        tqs.backend.model.Review nissanReview3 = new tqs.backend.model.Review();
+                        nissanReview3.setVehicle(nissan);
+                        nissanReview3.setReviewer(owner);
+                        nissanReview3.setRating(5);
+                        nissanReview3.setComment("Muito espaçoso e potente. Ideal para a família.");
+                        nissanReview3.setCreatedAt(java.time.LocalDateTime.now().minusDays(27));
+                        reviewRepo.save(nissanReview3);
+
+                        // Reviews for Tesla Model 3 (car 3)
+                        tqs.backend.model.Review teslaReview1 = new tqs.backend.model.Review();
+                        teslaReview1.setVehicle(tesla);
+                        teslaReview1.setReviewer(renter);
+                        teslaReview1.setRating(4);
+                        teslaReview1.setComment("Carro desportivo incrível! A aceleração é fantástica.");
+                        teslaReview1.setCreatedAt(java.time.LocalDateTime.now().minusDays(16));
+                        reviewRepo.save(teslaReview1);
+
+                        tqs.backend.model.Review teslaReview2 = new tqs.backend.model.Review();
+                        teslaReview2.setVehicle(tesla);
+                        teslaReview2.setReviewer(admin);
+                        teslaReview2.setRating(5);
+                        teslaReview2.setComment("Simplesmente perfeito. Design moderno e muito conforto.");
+                        teslaReview2.setCreatedAt(java.time.LocalDateTime.now().minusDays(21));
+                        reviewRepo.save(teslaReview2);
+
+                        // Reviews for Mercedes-Benz AMG GT (car 4)
+                        tqs.backend.model.Review mercedesReview1 = new tqs.backend.model.Review();
+                        mercedesReview1.setVehicle(mercedes);
+                        mercedesReview1.setReviewer(renter);
+                        mercedesReview1.setRating(5);
+                        mercedesReview1.setComment("Excelente carro! Experiência incrível de condução.");
+                        mercedesReview1.setCreatedAt(java.time.LocalDateTime.now().minusDays(5));
+                        reviewRepo.save(mercedesReview1);
+
+                        tqs.backend.model.Review mercedesReview2 = new tqs.backend.model.Review();
+                        mercedesReview2.setVehicle(mercedes);
+                        mercedesReview2.setReviewer(admin);
+                        mercedesReview2.setRating(4);
+                        mercedesReview2.setComment("Muito bom, mas um pouco caro para o meu orçamento.");
+                        mercedesReview2.setCreatedAt(java.time.LocalDateTime.now().minusDays(2));
+                        reviewRepo.save(mercedesReview2);
+
+                        tqs.backend.model.Review mercedesReview3 = new tqs.backend.model.Review();
+                        mercedesReview3.setVehicle(mercedes);
+                        mercedesReview3.setReviewer(renter);
+                        mercedesReview3.setRating(5);
+                        mercedesReview3.setComment("Perfeito! Recomendo a todos.");
+                        mercedesReview3.setCreatedAt(java.time.LocalDateTime.now().minusDays(1));
+                        reviewRepo.save(mercedesReview3);
+
+                        // Reviews for Ferrari Roma (car 5)
+                        tqs.backend.model.Review ferrariReview1 = new tqs.backend.model.Review();
+                        ferrariReview1.setVehicle(ferrari);
+                        ferrariReview1.setReviewer(renter);
+                        ferrariReview1.setRating(5);
+                        ferrariReview1.setComment("SUV fantástico! Muito espaço e conforto para toda a família.");
+                        ferrariReview1.setCreatedAt(java.time.LocalDateTime.now().minusDays(17));
+                        reviewRepo.save(ferrariReview1);
+
+                        tqs.backend.model.Review ferrariReview2 = new tqs.backend.model.Review();
+                        ferrariReview2.setVehicle(ferrari);
+                        ferrariReview2.setReviewer(admin);
+                        ferrariReview2.setRating(4);
+                        ferrariReview2.setComment("Bom carro para viagens. O GPS integrado é muito útil.");
+                        ferrariReview2.setCreatedAt(java.time.LocalDateTime.now().minusDays(23));
+                        reviewRepo.save(ferrariReview2);
+
+                        // Reviews for Mercedes-Benz AMG GT R (car 6)
+                        tqs.backend.model.Review mercedesGTRReview1 = new tqs.backend.model.Review();
+                        mercedesGTRReview1.setVehicle(mercedesGTR);
+                        mercedesGTRReview1.setReviewer(renter);
+                        mercedesGTRReview1.setRating(5);
+                        mercedesGTRReview1.setComment("Carro luxuoso e potente. Valeu cada euro!");
+                        mercedesGTRReview1.setCreatedAt(java.time.LocalDateTime.now().minusDays(15));
+                        reviewRepo.save(mercedesGTRReview1);
+
+                        tqs.backend.model.Review mercedesGTRReview2 = new tqs.backend.model.Review();
+                        mercedesGTRReview2.setVehicle(mercedesGTR);
+                        mercedesGTRReview2.setReviewer(admin);
+                        mercedesGTRReview2.setRating(5);
+                        mercedesGTRReview2.setComment("Simplesmente perfeito. Design elegante e muito confortável.");
+                        mercedesGTRReview2.setCreatedAt(java.time.LocalDateTime.now().minusDays(20));
+                        reviewRepo.save(mercedesGTRReview2);
+
+                        System.out.println("SCRUM-30 Test data: 14 reviews created across all vehicles");
                 };
         }
 }
