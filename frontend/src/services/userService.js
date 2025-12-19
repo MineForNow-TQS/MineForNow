@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../config/api';
 const getAuthHeaders = () => {
   const token = authService.getToken();
   if (!token) throw new Error('Sessão expirada. Por favor, faça login novamente.');
-  
+
   return {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
@@ -12,7 +12,7 @@ const getAuthHeaders = () => {
 };
 
 export const userService = {
-  
+
 
   async getCurrentUser() {
     const response = await fetch(`${API_BASE_URL}/api/users/me`, {
@@ -21,7 +21,7 @@ export const userService = {
     });
 
     if (!response.ok) throw new Error('Erro ao obter dados do utilizador');
-    
+
     const data = await response.json();
     return { data };
   },
@@ -45,7 +45,7 @@ export const userService = {
 
 
   async requestOwnerUpgrade(upgradeData) {
-    const response = await fetch(`${API_BASE_URL}/api/users/upgrade`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/upgrade`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -63,7 +63,7 @@ export const userService = {
 
     return { success: true };
   },
- 
+
   async getByEmail(email) {
     const response = await fetch(`${API_BASE_URL}/api/users/me`, {
       method: 'GET',
@@ -71,12 +71,12 @@ export const userService = {
     });
 
     if (!response.ok) throw new Error('Utilizador não encontrado no servidor');
-    
+
     const data = await response.json();
-    return { data }; 
+    return { data };
   },
   async list() {
-    const response = await fetch(`${API_BASE_URL}/api/users`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin`, {
       method: 'GET',
       headers: getAuthHeaders(),
     });

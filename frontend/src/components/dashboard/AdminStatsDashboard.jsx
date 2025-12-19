@@ -35,18 +35,6 @@ export default function AdminStatsDashboard() {
         () => ownerRequestService.list().then(res => res.data)
     );
 
-    // Mutation to change user role
-    const changeRoleMutation = useMutation(
-        ({ userId, newRole }) => userService.updateRole(userId, newRole),
-        {
-            onSuccess: () => {
-                queryClient.invalidateQueries('allUsers');
-            }
-        }
-    );
-
-
-
     // Mutation to approve request
     const approveRequestMutation = useMutation(
         (userId) => ownerRequestService.approve(userId),
@@ -80,15 +68,7 @@ export default function AdminStatsDashboard() {
     const totalRevenue = stats?.totalRevenue || 0;
     const pendingRequestsCount = ownerRequests.filter(r => r.status === 'pending').length;
 
-    const handleChangeRole = (userId, currentRole) => {
-        const roles = ['rental', 'owner', 'admin'];
-        const currentIndex = roles.indexOf(currentRole);
-        const nextRole = roles[(currentIndex + 1) % roles.length];
 
-        if (window.confirm(`Alterar role para "${nextRole}"?`)) {
-            changeRoleMutation.mutate({ userId, newRole: nextRole });
-        }
-    };
 
     const handleBlockUser = (userId, userName) => {
         if (window.confirm(`Tem certeza que deseja bloquear/desbloquear "${userName}"?`)) {
@@ -227,15 +207,7 @@ export default function AdminStatsDashboard() {
 
                                 {user.email !== 'admin@minefornow.com' && ( // Don't show actions for current admin
                                     <div className="flex gap-2">
-                                        <Button
-                                            onClick={() => handleChangeRole(user.id, user.role)}
-                                            variant="outline"
-                                            size="sm"
-                                            className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                                        >
-                                            <Shield className="w-4 h-4 mr-1" />
-                                            Alterar Role
-                                        </Button>
+
                                         <Button
                                             onClick={() => handleBlockUser(user.id, user.full_name || user.name)}
                                             variant="outline"

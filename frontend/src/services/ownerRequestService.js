@@ -36,7 +36,7 @@ export const ownerRequestService = {
 
   async create(formData) {
     const token = authService.getToken();
-    const response = await fetch(`${API_BASE_URL}/api/users/upgrade`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/upgrade`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -59,7 +59,7 @@ export const ownerRequestService = {
 
   async approve(userId) {
     const token = authService.getToken();
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}/approve-owner`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/${userId}/approve-owner`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -73,7 +73,7 @@ export const ownerRequestService = {
 
   async reject(userId) {
     const token = authService.getToken();
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}/reject-owner`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/${userId}/reject-owner`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
