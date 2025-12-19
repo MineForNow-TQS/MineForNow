@@ -1,7 +1,6 @@
 package tqs.backend.service;
 
 import java.util.Optional;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -14,14 +13,16 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import tqs.backend.dto.RegisterRequest;
 import tqs.backend.dto.UpdateProfileRequest;
+import tqs.backend.dto.UpgradeOwnerRequest;
 import tqs.backend.dto.UserProfileResponse;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
@@ -49,6 +50,7 @@ class UserServiceTest {
     @Requirement("SCRUM-37")
     class RegisterTests {
 
+        @SuppressWarnings("null")
         @Test
         void shouldRegisterUserSuccessfully() {
             RegisterRequest request = new RegisterRequest();
@@ -152,6 +154,7 @@ class UserServiceTest {
     @Requirement("SCRUM-46")
     class UpdateUserProfileTests {
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Should update phone and driving license successfully")
         void shouldUpdateProfileSuccessfully() {
@@ -180,6 +183,7 @@ class UserServiceTest {
             verify(userRepository).save(any(User.class));
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Should only update phone when only phone provided")
         void shouldUpdateOnlyPhone() {
@@ -222,4 +226,107 @@ class UserServiceTest {
             assertEquals("Utilizador não encontrado", ex.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("Request Owner Upgrade Tests")
+    @Requirement("SCRUM-47")
+    class RequestOwnerUpgradeTests {
+
+        @SuppressWarnings("null")
+        @Test
+        @DisplayName("Should upgrade user to pending owner successfully")
+        void shouldUpgradeUserSuccessfully() {
+            User existingUser = User.builder()
+                    .id(1L)
+                    .fullName("João Silva")
+                    .email("joao@email.com")
+                    .role(UserRole.RENTER)
+                    .build();
+
+            UpgradeOwnerRequest request = new UpgradeOwnerRequest();
+            request.setPhone("+351912345678");
+            request.setCitizenCardNumber("12345678");
+            request.setDrivingLicense("AB123456");
+            request.setMotivation("Quero ser proprietário");
+
+            when(userRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(existingUser));
+            when(userRepository.save(any(User.class))).thenAnswer(i -> (User) i.getArguments()[0]);
+
+            userService.requestOwnerUpgrade("joao@email.com", request);
+
+            assertEquals(UserRole.PENDING_OWNER, existingUser.getRole());
+            assertEquals("+351912345678", existingUser.getPhone());
+            assertEquals("12345678", existingUser.getCitizenCardNumber());
+            assertEquals("AB123456", existingUser.getDrivingLicense());
+            assertEquals("Quero ser proprietário", existingUser.getOwnerMotivation());
+            verify(userRepository).save(existingUser);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when user not found")
+        void shouldThrowWhenUserNotFound() {
+            UpgradeOwnerRequest request = new UpgradeOwnerRequest();
+            request.setPhone("+351912345678");
+            request.setCitizenCardNumber("12345678");
+            request.setDrivingLicense("AB123456");
+            request.setMotivation("Motivação");
+
+            when(userRepository.findByEmail("unknown@email.com")).thenReturn(Optional.empty());
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> userService.requestOwnerUpgrade("unknown@email.com", request));
+
+            assertEquals("Utilizador não encontrado", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when user already owner")
+        void shouldThrowWhenUserAlreadyOwner() {
+            User existingUser = User.builder()
+                    .id(1L)
+                    .email("owner@email.com")
+                    .role(UserRole.OWNER)
+                    .build();
+
+            UpgradeOwnerRequest request = new UpgradeOwnerRequest();
+            request.setPhone("+351912345678");
+            request.setCitizenCardNumber("12345678");
+            request.setDrivingLicense("AB123456");
+            request.setMotivation("Motivação");
+
+            when(userRepository.findByEmail("owner@email.com")).thenReturn(Optional.of(existingUser));
+
+            IllegalStateException ex = assertThrows(
+                    IllegalStateException.class,
+                    () -> userService.requestOwnerUpgrade("owner@email.com", request));
+
+            assertEquals("Pedido já submetido ou utilizador já é Owner", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when user already pending owner")
+        void shouldThrowWhenUserAlreadyPendingOwner() {
+            User existingUser = User.builder()
+                    .id(1L)
+                    .email("pending@email.com")
+                    .role(UserRole.PENDING_OWNER)
+                    .build();
+
+            UpgradeOwnerRequest request = new UpgradeOwnerRequest();
+            request.setPhone("+351912345678");
+            request.setCitizenCardNumber("12345678");
+            request.setDrivingLicense("AB123456");
+            request.setMotivation("Motivação");
+
+            when(userRepository.findByEmail("pending@email.com")).thenReturn(Optional.of(existingUser));
+
+            IllegalStateException ex = assertThrows(
+                    IllegalStateException.class,
+                    () -> userService.requestOwnerUpgrade("pending@email.com", request));
+
+            assertEquals("Pedido já submetido ou utilizador já é Owner", ex.getMessage());
+        }
+    }
+
 }

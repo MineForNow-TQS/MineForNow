@@ -12,5 +12,15 @@ export default defineConfig({
   server: {
     port: 3000,
     open: !process.env.CI,
+    // Proxy API requests in development
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_URL || 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
+  define: {
+    __API_BASE_URL__: JSON.stringify(process.env.VITE_API_URL || ''),
   },
 });
