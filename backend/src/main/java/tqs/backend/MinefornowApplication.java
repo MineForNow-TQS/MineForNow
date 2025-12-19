@@ -2,13 +2,13 @@ package tqs.backend;
 
 import java.time.LocalDate;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import tqs.backend.model.Booking;
@@ -37,6 +37,12 @@ public class MinefornowApplication {
                         UserRepository userRepo, PasswordEncoder passwordEncoder,
                         @Value("${minefornow.app.defaultPassword}") String defaultPassword) {
                 return args -> {
+                        // Check if data already exists
+                        if (userRepo.findByEmail("owner@minefornow.com").isPresent()) {
+                                System.out.println("✅ Test data already exists - skipping initialization");
+                                return;
+                        }
+
                         // --- CRIAR USERS ---
                         User admin = Objects.requireNonNull(User.builder()
                                         .email("admin@minefornow.com")
@@ -136,6 +142,37 @@ public class MinefornowApplication {
                         LocalDate dropoff = today.plusDays(15); // Daqui a 15 dias
 
                         bookingRepo.save(new Booking(null, pickup, dropoff, mercedes));
+
+                        // === E2E Test Bookings ===
+                        // Create 3 bookings for owner dashboard E2E tests
+                        Booking testBooking1 = new Booking();
+                        testBooking1.setPickupDate(LocalDate.of(2025, 12, 22));
+                        testBooking1.setReturnDate(LocalDate.of(2025, 12, 25));
+                        testBooking1.setStatus("CONFIRMED");
+                        testBooking1.setTotalPrice(850.0);
+                        testBooking1.setVehicle(mercedes);
+                        testBooking1.setRenter(renter);
+                        bookingRepo.save(testBooking1);
+
+                        Booking testBooking2 = new Booking();
+                        testBooking2.setPickupDate(LocalDate.of(2025, 12, 26));
+                        testBooking2.setReturnDate(LocalDate.of(2025, 12, 27));
+                        testBooking2.setStatus("CONFIRMED");
+                        testBooking2.setTotalPrice(1700.0);
+                        testBooking2.setVehicle(mercedes);
+                        testBooking2.setRenter(renter);
+                        bookingRepo.save(testBooking2);
+
+                        Booking testBooking3 = new Booking();
+                        testBooking3.setPickupDate(LocalDate.of(2025, 12, 28));
+                        testBooking3.setReturnDate(LocalDate.of(2025, 12, 30));
+                        testBooking3.setStatus("WAITING_PAYMENT");
+                        testBooking3.setTotalPrice(1100.0);
+                        testBooking3.setVehicle(mercedes);
+                        testBooking3.setRenter(renter);
+                        bookingRepo.save(testBooking3);
+
+                        System.out.println("E2E Test data: 3 bookings created (2 CONFIRMED, 1 WAITING_PAYMENT)");
                 };
         }
 }
