@@ -33,14 +33,14 @@ public class RenterViewReviewsSteps {
         this.vehicleId = id;
     }
 
-    @Quando("acedo ao endpoint {string}")
-    public void acedoAoEndpoint(String endpoint) {
+    @Quando("acedo ao endpoint de reviews {string}")
+    public void acedoAoEndpointDeReviews(String endpoint) {
         String url = "http://localhost:" + port + endpoint;
         response = restTemplate.getForEntity(url, VehicleReviewsDTO.class);
     }
 
-    @Então("devo receber status {int}")
-    public void devoReceberStatus(int expectedStatus) {
+    @Então("devo receber status de reviews {int}")
+    public void devoReceberStatusDeReviews(int expectedStatus) {
         assertThat(response.getStatusCode().value(), is(expectedStatus));
     }
 

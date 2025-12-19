@@ -14,6 +14,7 @@ import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.ReviewRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
@@ -41,6 +42,9 @@ class AdminControllerIT {
         private BookingRepository bookingRepository;
 
         @Autowired
+        private ReviewRepository reviewRepository;
+
+        @Autowired
         private PasswordEncoder passwordEncoder;
 
         @SuppressWarnings("null")
@@ -48,6 +52,7 @@ class AdminControllerIT {
         void setUp() {
                 // Clean DB
                 bookingRepository.deleteAll();
+                reviewRepository.deleteAll();
                 vehicleRepository.deleteAll();
                 userRepository.deleteAll();
 

@@ -22,12 +22,15 @@ export default function CarDetails() {
     });
 
     const { data: reviewsData } = useQuery(['reviews', id], async () => {
-        const response = await fetch(`http://localhost:8080/api/vehicles/${id}/reviews`);
-        if (!response.ok) {
-            if (response.status === 404) return { averageRating: 0, totalReviews: 0, reviews: [] };
-            throw new Error('Failed to fetch reviews');
+        try {
+            return await reviewService.getVehicleReviews(id);
+        } catch (error) {
+            // If vehicle not found, return empty reviews
+            if (error.message === 'Veículo não encontrado') {
+                return { averageRating: 0, totalReviews: 0, reviews: [] };
+            }
+            throw error;
         }
-        return response.json();
     });
 
     if (isLoading) {
