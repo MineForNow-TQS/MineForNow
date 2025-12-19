@@ -47,24 +47,6 @@ jobs:
         mvn clean package -DskipTests
 
     # --- 5. DEPLOY LOCAL (Diretamente na VM) ---
-    - name: Iniciar Base de Dados (Docker)
-      run: |
-        echo "[DB] A iniciar PostgreSQL em Docker..."
-        cd /home/xpto/minefornow || cd ~/minefornow || cd .
-        docker compose up -d db
-        sleep 10
-        
-        # Verifica se BD está pronta
-        echo "[DB] A verificar se a BD está pronta..."
-        docker compose exec -T db pg_isready -U minefornow -d minefornow
-        if [ $? -eq 0 ]; then
-          echo "[DB] PostgreSQL está READY!"
-        else
-          echo "[ERROR] PostgreSQL falhou!"
-          docker compose logs db
-          exit 1
-        fi
-
     - name: Parar Serviço Antigo
       run: |
         echo "[DEPLOY] A parar o serviço anterior..."
