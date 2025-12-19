@@ -83,7 +83,7 @@ class AdminControllerTest {
 
         @Test
         @WithMockUser(roles = "ADMIN")
-        @Requirement("SCRUM-75")
+        @Requirement("SCRUM-75") // Example requirement ID
         void whenGetMetadata_thenReturnAdminStats() throws Exception {
                 AdminStatsDTO stats = new AdminStatsDTO(10L, 5L, 20L, 1500.0);
                 when(adminService.getDashboardStats()).thenReturn(stats);
