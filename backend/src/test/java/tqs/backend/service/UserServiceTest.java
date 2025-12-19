@@ -254,7 +254,7 @@ class UserServiceTest {
             assertEquals("+351912345678", existingUser.getPhone());
             assertEquals("12345678", existingUser.getCitizenCardNumber());
             assertEquals("AB123456", existingUser.getDrivingLicense());
-            assertEquals("Quero ser proprietário", existingUser.getMotivation());
+            assertEquals("Quero ser proprietário", existingUser.getOwnerMotivation());
             verify(userRepository).save(existingUser);
         }
 

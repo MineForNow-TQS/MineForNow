@@ -266,7 +266,7 @@ class UserControllerIT {
             User updated = userRepository.findByEmail("testuser@test.com").orElseThrow();
             assertThat(updated.getRole()).isEqualTo(UserRole.PENDING_OWNER);
             assertThat(updated.getCitizenCardNumber()).isEqualTo("12345678");
-            assertThat(updated.getMotivation()).isEqualTo("Quero ser proprietário");
+            assertThat(updated.getOwnerMotivation()).isEqualTo("Quero ser proprietário");
         }
 
         @Test
