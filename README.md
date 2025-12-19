@@ -23,10 +23,9 @@
 | Recurso | Link |
 | :--- | :--- |
 | **Project Backlog / Gestão de Tarefas** | [Jira](https://tqs-team-minefornow.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog) |
-| **Documentação da API** (Swagger, etc.) | `[Link para a documentação da API REST]` |
-| **Dashboard de Análise Estática** (SonarQube) | `[Link para o dashboard do SonarQube]` |
-| **Pipeline CI/CD** | `[Link para o dashboard/pipelines (GitLab CI)]` |
-| **Dashboard de Observabilidade/Metrics** | `[Link para o dashboard de monitorização (ex: Grafana)]` |
+| **Dashboard de Análise Estática** (SonarQube) | `[SonarCloud](https://sonarcloud.io/summary/overall?id=MineForNow-TQS_MineForNow&branch=develop)` |
+| **Pipeline CI/CD** | `.github/workflows` |
+| **Dashboard de Observabilidade/Metrics** | `[Grafana](http://deti-tqs-18.ua.pt:3000)` |
 | **Relatório: Especificação Técnica** | `[Link direto para /docs/Project_Specification_Report.pdf]` |
 | **Relatório: Manual de QA** | `[Link direto para /docs/QA_Manual.pdf]` |
 
