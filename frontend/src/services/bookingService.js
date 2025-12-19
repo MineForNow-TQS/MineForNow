@@ -12,7 +12,7 @@ export const bookingService = {
             console.log('Creating booking with token:', token ? 'Token exists' : 'No token');
             console.log('Booking data:', bookingData);
 
-            const response = await fetch(`${API_BASE_URL}/bookings`, {
+            const response = await fetch(`${API_BASE_URL}/api/bookings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ export const bookingService = {
                 throw new Error('Não autenticado. Por favor, faça login novamente.');
             }
 
-            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+            const response = await fetch(`${API_BASE_URL}/api/bookings/my-bookings`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

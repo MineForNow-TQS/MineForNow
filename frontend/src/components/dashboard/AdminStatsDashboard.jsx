@@ -3,12 +3,19 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { carService } from '@/services/carService';
 import { userService } from '@/services/userService';
 import { ownerRequestService } from '@/services/ownerRequestService';
+import { adminService } from '@/services/adminService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Crown, Car as CarIcon, Clock, Shield, Ban } from 'lucide-react';
+import { Users, Crown, Car as CarIcon, Clock, Shield, Ban, Euro, Calendar, Check, X } from 'lucide-react';
 
 export default function AdminStatsDashboard() {
     const queryClient = useQueryClient();
+
+    // Fetch dashboard stats from backend
+    const { data: stats } = useQuery(
+        'adminStats',
+        () => adminService.getDashboardStats().then(data => data)
+    );
 
     // Fetch all users
     const { data: users = [] } = useQuery(
@@ -28,41 +35,40 @@ export default function AdminStatsDashboard() {
         () => ownerRequestService.list().then(res => res.data)
     );
 
-    // Mutation to change user role
-    const changeRoleMutation = useMutation(
-        ({ userId, newRole }) => userService.updateRole(userId, newRole),
+    // Mutation to approve request
+    const approveRequestMutation = useMutation(
+        (userId) => ownerRequestService.approve(userId),
         {
             onSuccess: () => {
+                queryClient.invalidateQueries('allOwnerRequests');
                 queryClient.invalidateQueries('allUsers');
-            }
+                alert('Pedido aprovado com sucesso!');
+            },
+            onError: () => alert('Erro ao aprovar pedido.')
         }
     );
 
-    // Mutation to block user
-    const blockUserMutation = useMutation(
-        (userId) => userService.toggleStatus(userId),
+    // Mutation to reject request
+    const rejectRequestMutation = useMutation(
+        (userId) => ownerRequestService.reject(userId),
         {
             onSuccess: () => {
-                queryClient.invalidateQueries('allUsers');
-            }
+                queryClient.invalidateQueries('allOwnerRequests');
+                alert('Pedido rejeitado com sucesso!');
+            },
+            onError: () => alert('Erro ao rejeitar pedido.')
         }
     );
 
     // Calculate stats
-    const totalUsers = users.length;
-    const totalOwners = users.filter(u => u.role === 'owner' || u.role === 'admin').length;
-    const totalCars = cars.length;
+    const totalUsers = stats?.totalUsers || 0;
+    const totalOwners = users.filter(u => u.role === 'owner' || u.role === 'admin').length; // Keep utilizing user list for now as backend doesn't separate owners yet
+    const totalCars = stats?.totalCars || 0;
+    const totalBookings = stats?.totalBookings || 0;
+    const totalRevenue = stats?.totalRevenue || 0;
     const pendingRequestsCount = ownerRequests.filter(r => r.status === 'pending').length;
 
-    const handleChangeRole = (userId, currentRole) => {
-        const roles = ['rental', 'owner', 'admin'];
-        const currentIndex = roles.indexOf(currentRole);
-        const nextRole = roles[(currentIndex + 1) % roles.length];
-        
-        if (window.confirm(`Alterar role para "${nextRole}"?`)) {
-            changeRoleMutation.mutate({ userId, newRole: nextRole });
-        }
-    };
+
 
     const handleBlockUser = (userId, userName) => {
         if (window.confirm(`Tem certeza que deseja bloquear/desbloquear "${userName}"?`)) {
@@ -86,22 +92,25 @@ export default function AdminStatsDashboard() {
     return (
         <>
             {/* Stats Cards */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-slate-900 mb-1">{totalUsers}</div>
                     <div className="text-sm text-slate-500">Utilizadores</div>
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
-                    <div className="text-3xl font-bold text-amber-600 mb-1">{totalOwners}</div>
-                    <div className="text-sm text-slate-500">Owners</div>
-                </Card>
-                <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-blue-600 mb-1">{totalCars}</div>
                     <div className="text-sm text-slate-500">Carros</div>
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
-                    <div className="text-3xl font-bold text-orange-500 mb-1">{pendingRequestsCount}</div>
-                    <div className="text-sm text-slate-500">Pedidos Pendentes</div>
+                    <div className="text-3xl font-bold text-amber-600 mb-1">{totalBookings}</div>
+                    <div className="text-sm text-slate-500">Reservas</div>
+                </Card>
+                <Card className="p-6 text-center border border-slate-200">
+                    <div className="text-3xl font-bold text-emerald-600 mb-1">
+                        {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(totalRevenue)}
+                    </div>
+                    <div className="text-sm text-slate-500">Receita Total</div>
                 </Card>
             </div>
 
@@ -128,16 +137,38 @@ export default function AdminStatsDashboard() {
                                             <p className="text-xs text-slate-500 mt-1">Carta: {request.drivingLicense}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4 text-slate-400" />
-                                        <span className="text-sm text-slate-500">
-                                            {new Date(request.created_at).toLocaleDateString('pt-PT')}
-                                        </span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 text-sm text-slate-500 mr-4">
+                                        <Clock className="w-4 h-4" />
+                                        <span>{new Date(request.created_at).toLocaleDateString('pt-PT')}</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                            onClick={() => {
+                                                if (window.confirm('Aprovar este pedido?')) approveRequestMutation.mutate(request.id);
+                                            }}
+                                        >
+                                            <Check className="w-4 h-4 mr-1" /> Aprovar
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="border-red-200 text-red-600 hover:bg-red-50"
+                                            onClick={() => {
+                                                if (window.confirm('Rejeitar este pedido?')) rejectRequestMutation.mutate(request.id);
+                                            }}
+                                        >
+                                            <X className="w-4 h-4 mr-1" /> Rejeitar
+                                        </Button>
                                     </div>
                                 </div>
+
                             </Card>
                         ))}
-                </div>
+                </div >
             )}
 
             {/* User Management */}
@@ -149,13 +180,15 @@ export default function AdminStatsDashboard() {
                             <div className="flex items-center gap-4">
                                 {/* User Avatar */}
                                 <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center">
-                                    <Users className="w-6 h-6 text-slate-500" />
+                                    <span className="text-slate-600 text-lg font-bold">
+                                        {(user.fullName || user.full_name || user.name || '?')[0]?.toUpperCase()}
+                                    </span>
                                 </div>
-                                
+
                                 {/* User Info */}
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <h3 className="font-semibold text-slate-900">{user.full_name || user.name}</h3>
+                                        <h3 className="font-semibold text-slate-900">{user.fullName || user.full_name || user.name}</h3>
                                         {user.email === 'admin@minefornow.com' && (
                                             <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                                                 (Você)
@@ -171,18 +204,10 @@ export default function AdminStatsDashboard() {
                                 <span className={`px-3 py-1 rounded-md text-sm font-medium ${getRoleBadgeColor(user.role)}`}>
                                     {user.role}
                                 </span>
-                                
+
                                 {user.email !== 'admin@minefornow.com' && ( // Don't show actions for current admin
                                     <div className="flex gap-2">
-                                        <Button
-                                            onClick={() => handleChangeRole(user.id, user.role)}
-                                            variant="outline"
-                                            size="sm"
-                                            className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                                        >
-                                            <Shield className="w-4 h-4 mr-1" />
-                                            Alterar Role
-                                        </Button>
+
                                         <Button
                                             onClick={() => handleBlockUser(user.id, user.full_name || user.name)}
                                             variant="outline"

@@ -3,28 +3,91 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { carService } from '@/services/carService';
 import { reviewService } from '@/services/reviewService';
+import { bookingService } from '@/services/bookingService';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Star, MapPin, Fuel, Users, Calendar, Shield, Check, ArrowLeft, ChevronLeft, ChevronRight, Car, Snowflake, Bluetooth as BluetoothIcon, Navigation2 } from "lucide-react";
 import { formatCurrency } from '@/utils';
+import { ReviewModal } from '@/components/reviews/ReviewModal';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CarDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+
+    // Review Modal State
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     const { data, isLoading } = useQuery(['car', id], async () => {
         const result = await carService.get(id);
         return result.data;
     });
 
-    const { data: reviewsData } = useQuery(['reviews', id], async () => {
-        const result = await reviewService.list({ car_id: id });
-        return result.data;
+    const { data: reviewsData, refetch: refetchReviews } = useQuery(['reviews', id], async () => {
+        try {
+            return await reviewService.getVehicleReviews(id);
+        } catch (error) {
+            // If vehicle not found, return empty reviews
+            if (error.message === 'Veículo não encontrado') {
+                return { averageRating: 0, totalReviews: 0, reviews: [] };
+            }
+            throw error;
+        }
     });
+
+    // Fetch confirmed/completed bookings for this car to enable review button
+    const { data: userBookings = [] } = useQuery(
+        ['myBookings', user?.email],
+        () => bookingService.getMyBookings(),
+        {
+            enabled: !!user
+        }
+    );
+
+    // Find a valid booking to review (Completed and not reviewed yet - simplified logic for now)
+    // NOTE: In a real app we should check if the specific booking was already reviewed. 
+    // For now, we allow reviewing if there is at least one COMPLETED booking.
+    const eligibleBooking = userBookings.find(b =>
+        (b.status === 'COMPLETED' || b.status === "CONCLUÍDO") &&
+        String(b.vehicleId) === String(id)
+    );
+
+    const handleOpenReviewModal = () => {
+        setIsReviewModalOpen(true);
+    };
+
+    const handleSubmitReview = async (reviewData) => {
+        // Attempt to submit. If no booking exists, we can either block here or let backend fail.
+        // User requirements asked for "validation on submit". 
+        // Since backend throws 500 on null ID, we catch it here for a better UX.
+        if (!eligibleBooking) {
+            toast.error("Erro: Você precisa ter uma reserva concluída para avaliar este carro.");
+            return;
+        }
+
+        setIsSubmittingReview(true);
+        try {
+            await reviewService.create({
+                ...reviewData,
+                bookingId: eligibleBooking.id
+            });
+            toast.success('Avaliação submetida com sucesso!');
+            setIsReviewModalOpen(false);
+            refetchReviews(); // Update reviews list
+        } catch (error) {
+            console.error(error); // Debug
+            toast.error(error.response?.data?.message || error.message || 'Erro ao submeter avaliação');
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -54,7 +117,11 @@ export default function CarDetails() {
     // O adapter já garante que car.images[0] tem uma URL válida (imagem real ou placeholder)
     const baseImage = car.images?.[0] || car.image_url || '/Images/photo-1494976388531-d1058494cdd8.jpeg';
     const images = [baseImage, baseImage, baseImage];
-    const reviews = reviewsData || [];
+
+    // Reviews data from backend API
+    const reviews = reviewsData?.reviews || [];
+    const averageRating = reviewsData?.averageRating || 0;
+    const totalReviews = reviewsData?.totalReviews || 0;
 
     const nextImage = () => {
         setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -235,11 +302,11 @@ export default function CarDetails() {
                                     </span>
                                     <span className="text-slate-500">/dia</span>
                                 </div>
-                                {car.average_rating > 0 && (
+                                {averageRating > 0 && (
                                     <div className="flex items-center gap-1 mt-2">
                                         <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-                                        <span className="font-semibold text-slate-900">{car.average_rating.toFixed(1)}</span>
-                                        <span className="text-sm text-slate-500">({car.total_reviews} avaliações)</span>
+                                        <span className="font-semibold text-slate-900">{averageRating.toFixed(1)}</span>
+                                        <span className="text-sm text-slate-500">({totalReviews} {totalReviews === 1 ? 'avaliação' : 'avaliações'})</span>
                                     </div>
                                 )}
                             </div>
@@ -305,9 +372,14 @@ export default function CarDetails() {
                                     Avaliações ({reviews.length})
                                 </h2>
                             </div>
-                            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                                Escrever Avaliação
-                            </Button>
+                            {user && (
+                                <Button
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                    onClick={handleOpenReviewModal}
+                                >
+                                    Escrever Avaliação
+                                </Button>
+                            )}
                         </div>
 
                         {reviews.length > 0 ? (
@@ -316,8 +388,8 @@ export default function CarDetails() {
                                     <div key={review.id} className="pb-4 border-b border-slate-200 last:border-0 last:pb-0">
                                         <div className="flex items-start justify-between mb-2">
                                             <div>
-                                                <h3 className="font-semibold text-slate-900">{review.user_name}</h3>
-                                                <p className="text-sm text-slate-500">{formatDate(review.created_at)}</p>
+                                                <h3 className="font-semibold text-slate-900">{review.reviewerName}</h3>
+                                                <p className="text-sm text-slate-500">{formatDate(review.createdAt)}</p>
                                             </div>
                                             <div className="flex items-center gap-0.5">
                                                 {[...Array(5)].map((_, i) => (
@@ -347,6 +419,13 @@ export default function CarDetails() {
                     </div>
                 </div>
             </div>
+
+            <ReviewModal
+                isOpen={isReviewModalOpen}
+                onClose={() => setIsReviewModalOpen(false)}
+                onSubmit={handleSubmitReview}
+                isSubmitting={isSubmittingReview}
+            />
         </div>
     );
 }

@@ -19,6 +19,7 @@ import tqs.backend.model.Booking;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.ReviewRepository;
 import tqs.backend.model.UserRole;
 import java.util.Objects;
 
@@ -46,11 +47,15 @@ class VehicleSearchIT {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
     @BeforeEach
     void setUp() {
         // Limpar e preparar dados determinísticos para os testes de integração
         bookingRepository.deleteAll();
-        vehicleRepository.deleteAll();
+        reviewRepository.deleteAll();
+                vehicleRepository.deleteAll();
         userRepository.deleteAll();
 
         User owner = userRepository.save(Objects.requireNonNull(User.builder()

@@ -50,6 +50,7 @@ public class PaymentSteps {
         userRepository.deleteAll();
     }
 
+    @SuppressWarnings("null")
     @Dado("que existe um veículo disponível com ID {int}")
     public void existeVeiculoDisponivel(int vehicleId) {
         // Create owner
@@ -73,6 +74,7 @@ public class PaymentSteps {
         testVehicle = vehicleRepository.save(testVehicle);
     }
 
+    @SuppressWarnings("null")
     @Dado("que existe uma reserva com ID {int} no estado {string}")
     public void existeReservaComEstado(int bookingId, String status) {
         // Create renter if not exists
@@ -140,6 +142,7 @@ public class PaymentSteps {
         // Wait a bit for the backend to update
         bookingSteps.getPage().waitForTimeout(1000);
 
+        @SuppressWarnings("null")
         Booking booking = bookingRepository.findById(testBooking.getId()).orElseThrow();
         assert booking.getStatus().equals(estado) : "Expected status " + estado + " but got " + booking.getStatus();
     }

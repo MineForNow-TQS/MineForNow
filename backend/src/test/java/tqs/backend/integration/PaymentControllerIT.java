@@ -23,6 +23,7 @@ import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.ReviewRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
@@ -34,169 +35,174 @@ import java.util.Objects;
 @DisplayName("Payment Integration Tests")
 class PaymentControllerIT {
 
-    @LocalServerPort
-    private int port;
+        @LocalServerPort
+        private int port;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+        @Autowired
+        private TestRestTemplate restTemplate;
 
-    @Autowired
-    private UserRepository userRepository;
+        @Autowired
+        private UserRepository userRepository;
 
-    @Autowired
-    private VehicleRepository vehicleRepository;
+        @Autowired
+        private VehicleRepository vehicleRepository;
 
-    @Autowired
-    private BookingRepository bookingRepository;
+        @Autowired
+        private BookingRepository bookingRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+        @Autowired
+        private ReviewRepository reviewRepository;
 
-    private String baseUrl;
-    private String authToken;
-    private Long testBookingId;
+        @Autowired
+        private PasswordEncoder passwordEncoder;
 
-    @BeforeEach
-    void setUp() {
-        baseUrl = "http://localhost:" + port + "/api/bookings";
+        private String baseUrl;
+        private String authToken;
+        private Long testBookingId;
 
-        // Clean up DB
-        bookingRepository.deleteAll();
-        vehicleRepository.deleteAll();
-        userRepository.deleteAll();
+        @BeforeEach
+        void setUp() {
+                baseUrl = "http://localhost:" + port + "/api/bookings";
 
-        // Create test users
-        User renter = User.builder()
-                .email("renter@test.com")
-                .fullName("Test Renter")
-                .password(passwordEncoder.encode("password123"))
-                .role(UserRole.RENTER)
-                .build();
-        renter = userRepository.save(Objects.requireNonNull(renter));
+                // Clean up DB
+                bookingRepository.deleteAll();
+                reviewRepository.deleteAll();
+                vehicleRepository.deleteAll();
+                userRepository.deleteAll();
 
-        User owner = User.builder()
-                .email("owner@test.com")
-                .fullName("Test Owner")
-                .password(passwordEncoder.encode("password123"))
-                .role(UserRole.OWNER)
-                .build();
-        owner = userRepository.save(Objects.requireNonNull(owner));
+                // Create test users
+                User renter = User.builder()
+                                .email("renter@test.com")
+                                .fullName("Test Renter")
+                                .password(passwordEncoder.encode("password123"))
+                                .role(UserRole.RENTER)
+                                .build();
+                renter = userRepository.save(Objects.requireNonNull(renter));
 
-        // Create test vehicle
-        Vehicle vehicle = new Vehicle();
-        vehicle.setOwner(owner);
-        vehicle.setBrand("Test");
-        vehicle.setModel("Car");
-        vehicle.setYear(2020);
-        vehicle.setLicensePlate("TEST-123");
-        vehicle.setPricePerDay(50.0);
-        vehicle.setCity("Test Location");
-        vehicle = vehicleRepository.save(vehicle);
+                User owner = User.builder()
+                                .email("owner@test.com")
+                                .fullName("Test Owner")
+                                .password(passwordEncoder.encode("password123"))
+                                .role(UserRole.OWNER)
+                                .build();
+                owner = userRepository.save(Objects.requireNonNull(owner));
 
-        // Create test booking
-        Booking booking = new Booking(
-                LocalDate.now().plusDays(1),
-                LocalDate.now().plusDays(5),
-                vehicle,
-                renter,
-                "WAITING_PAYMENT",
-                200.0);
-        booking = bookingRepository.save(booking);
-        testBookingId = booking.getId();
+                // Create test vehicle
+                Vehicle vehicle = new Vehicle();
+                vehicle.setOwner(owner);
+                vehicle.setBrand("Test");
+                vehicle.setModel("Car");
+                vehicle.setYear(2020);
+                vehicle.setLicensePlate("TEST-123");
+                vehicle.setPricePerDay(50.0);
+                vehicle.setCity("Test Location");
+                vehicle = vehicleRepository.save(vehicle);
 
-        // Login to get auth token
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail("renter@test.com");
-        loginRequest.setPassword("password123");
+                // Create test booking
+                Booking booking = new Booking(
+                                LocalDate.now().plusDays(1),
+                                LocalDate.now().plusDays(5),
+                                vehicle,
+                                renter,
+                                "WAITING_PAYMENT",
+                                200.0);
+                booking = bookingRepository.save(booking);
+                testBookingId = booking.getId();
 
-        ResponseEntity<AuthResponse> authResponse = restTemplate.postForEntity(
-                "http://localhost:" + port + "/api/auth/login",
-                loginRequest,
-                AuthResponse.class);
+                // Login to get auth token
+                LoginRequest loginRequest = new LoginRequest();
+                loginRequest.setEmail("renter@test.com");
+                loginRequest.setPassword("password123");
 
-        authToken = Objects.requireNonNull(authResponse.getBody()).getToken();
-    }
+                ResponseEntity<AuthResponse> authResponse = restTemplate.postForEntity(
+                                "http://localhost:" + port + "/api/auth/login",
+                                loginRequest,
+                                AuthResponse.class);
 
-    @Test
-    @Requirement("SCRUM-16")
-    @DisplayName("POST /bookings/{id}/confirm-payment - Success with valid payment data")
-    void whenConfirmPaymentWithValidData_thenReturns200() {
-        PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
+                authToken = Objects.requireNonNull(authResponse.getBody()).getToken();
+        }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + authToken);
-        HttpEntity<PaymentDTO> entity = new HttpEntity<>(paymentData, headers);
+        @SuppressWarnings("null")
+        @Test
+        @Requirement("SCRUM-16")
+        @DisplayName("POST /bookings/{id}/confirm-payment - Success with valid payment data")
+        void whenConfirmPaymentWithValidData_thenReturns200() {
+                PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
 
-        ResponseEntity<BookingDTO> response = restTemplate.exchange(
-                baseUrl + "/" + testBookingId + "/confirm-payment",
-                HttpMethod.POST,
-                entity,
-                BookingDTO.class);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Bearer " + authToken);
+                HttpEntity<PaymentDTO> entity = new HttpEntity<>(paymentData, headers);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        BookingDTO body = response.getBody();
-        assertThat(body).isNotNull();
-        assertThat(body.getStatus()).isEqualTo("CONFIRMED");
-    }
+                ResponseEntity<BookingDTO> response = restTemplate.exchange(
+                                baseUrl + "/" + testBookingId + "/confirm-payment",
+                                HttpMethod.POST,
+                                entity,
+                                BookingDTO.class);
 
-    @Test
-    @Requirement("SCRUM-16")
-    @DisplayName("POST /bookings/{id}/confirm-payment - Failure without authentication")
-    void whenConfirmPaymentWithoutAuth_thenReturns401() {
-        PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                BookingDTO body = response.getBody();
+                assertThat(body).isNotNull();
+                assertThat(body.getStatus()).isEqualTo("CONFIRMED");
+        }
 
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                baseUrl + "/" + testBookingId + "/confirm-payment",
-                paymentData,
-                String.class);
+        @Test
+        @Requirement("SCRUM-16")
+        @DisplayName("POST /bookings/{id}/confirm-payment - Failure without authentication")
+        void whenConfirmPaymentWithoutAuth_thenReturns401() {
+                PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
+                ResponseEntity<String> response = restTemplate.postForEntity(
+                                baseUrl + "/" + testBookingId + "/confirm-payment",
+                                paymentData,
+                                String.class);
 
-    @Test
-    @Requirement("SCRUM-16")
-    @DisplayName("POST /bookings/{id}/confirm-payment - Failure with non-existent booking")
-    void whenConfirmPaymentForNonExistentBooking_thenReturns404() {
-        PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + authToken);
-        HttpEntity<PaymentDTO> entity = new HttpEntity<>(paymentData, headers);
+        @Test
+        @Requirement("SCRUM-16")
+        @DisplayName("POST /bookings/{id}/confirm-payment - Failure with non-existent booking")
+        void whenConfirmPaymentForNonExistentBooking_thenReturns404() {
+                PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                baseUrl + "/999/confirm-payment",
-                HttpMethod.POST,
-                entity,
-                String.class);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Bearer " + authToken);
+                HttpEntity<PaymentDTO> entity = new HttpEntity<>(paymentData, headers);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
+                ResponseEntity<String> response = restTemplate.exchange(
+                                baseUrl + "/999/confirm-payment",
+                                HttpMethod.POST,
+                                entity,
+                                String.class);
 
-    @Test
-    @Requirement("SCRUM-16")
-    @DisplayName("POST /bookings/{id}/confirm-payment - Failure with already confirmed booking")
-    void whenConfirmPaymentForAlreadyConfirmedBooking_thenReturns400() {
-        // First confirmation
-        PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + authToken);
-        HttpEntity<PaymentDTO> entity = new HttpEntity<>(paymentData, headers);
+        @Test
+        @Requirement("SCRUM-16")
+        @DisplayName("POST /bookings/{id}/confirm-payment - Failure with already confirmed booking")
+        void whenConfirmPaymentForAlreadyConfirmedBooking_thenReturns400() {
+                // First confirmation
+                PaymentDTO paymentData = new PaymentDTO("1234", "John Doe", "12/25", "123");
 
-        restTemplate.exchange(
-                baseUrl + "/" + testBookingId + "/confirm-payment",
-                HttpMethod.POST,
-                entity,
-                BookingDTO.class);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Bearer " + authToken);
+                HttpEntity<PaymentDTO> entity = new HttpEntity<>(paymentData, headers);
 
-        // Try to confirm again
-        ResponseEntity<String> response = restTemplate.exchange(
-                baseUrl + "/" + testBookingId + "/confirm-payment",
-                HttpMethod.POST,
-                entity,
-                String.class);
+                restTemplate.exchange(
+                                baseUrl + "/" + testBookingId + "/confirm-payment",
+                                HttpMethod.POST,
+                                entity,
+                                BookingDTO.class);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).contains("not waiting for payment");
-    }
+                // Try to confirm again
+                ResponseEntity<String> response = restTemplate.exchange(
+                                baseUrl + "/" + testBookingId + "/confirm-payment",
+                                HttpMethod.POST,
+                                entity,
+                                String.class);
+
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                assertThat(response.getBody()).contains("not waiting for payment");
+        }
 }

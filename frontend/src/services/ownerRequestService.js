@@ -1,68 +1,87 @@
-// Mock data para pedidos de proprietário
-const mockOwnerRequests = [];
+import { authService } from './authService';
+import { userService } from './userService';
 
-// Simular delay de rede
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+import { API_BASE_URL } from '../config/api';
 
-// Serviço de API para pedidos de proprietário
 export const ownerRequestService = {
-  // Listar todos os pedidos com filtros opcionais
-  async list(filters = {}) {
-    await delay(300);
-    let requests = [...mockOwnerRequests];
+  async list() {
+    try {
+      // Fetch all users using the admin endpoint
+      const { data: users } = await userService.list();
 
-    if (filters.user_email) {
-      requests = requests.filter(r => r.user_email === filters.user_email);
-    }
-    if (filters.status) {
-      requests = requests.filter(r => r.status === filters.status);
-    }
+      // Filter users with PENDING_OWNER or OWNER role
+      const relevantUsers = users.filter(user =>
+        user.role === 'PENDING_OWNER' || user.role === 'OWNER'
+      );
 
-    return { data: requests };
+      // Map to the format expected by the dashboard
+      const requests = relevantUsers.map(user => ({
+        id: user.id,
+        user_name: user.fullName,
+        user_email: user.email,
+        phone: user.phone,
+        citizenCardNumber: user.citizenCardNumber,
+        drivingLicense: user.drivingLicense,
+        motivation: user.ownerMotivation,
+        status: user.role === 'OWNER' ? 'approved' : 'pending',
+        created_at: new Date().toISOString() // Fallback as we don't track request date yet
+      }));
+
+      return { data: requests };
+    } catch (error) {
+      console.error('Error fetching owner requests:', error);
+      return { data: [] };
+    }
   },
 
-  // Obter um pedido específico
-  async get(id) {
-    await delay(200);
-    const request = mockOwnerRequests.find(r => r.id === id);
-    if (!request) {
-      throw new Error('Pedido não encontrado');
+  async create(formData) {
+    const token = authService.getToken();
+    const response = await fetch(`${API_BASE_URL}/api/admin/upgrade`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone: formData.phone,
+        citizenCardNumber: formData.citizenCardNumber,
+        drivingLicense: formData.drivingLicense,
+        motivation: formData.motivation
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Erro ao processar upgrade');
     }
-    return { data: request };
+    return response;
   },
 
-  // Criar um novo pedido
-  async create(requestData) {
-    await delay(300);
-    const newRequest = {
-      id: Date.now().toString(),
-      ...requestData,
-      status: 'pending',
-      created_at: new Date().toISOString(),
-    };
-    mockOwnerRequests.push(newRequest);
-    return { data: newRequest };
+  async approve(userId) {
+    const token = authService.getToken();
+    const response = await fetch(`${API_BASE_URL}/api/admin/${userId}/approve-owner`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) throw new Error('Erro ao aprovar pedido');
+    return response;
   },
 
-  // Atualizar um pedido
-  async update(id, requestData) {
-    await delay(300);
-    const index = mockOwnerRequests.findIndex(r => r.id === id);
-    if (index === -1) {
-      throw new Error('Pedido não encontrado');
-    }
-    mockOwnerRequests[index] = { ...mockOwnerRequests[index], ...requestData };
-    return { data: mockOwnerRequests[index] };
-  },
+  async reject(userId) {
+    const token = authService.getToken();
+    const response = await fetch(`${API_BASE_URL}/api/admin/${userId}/reject-owner`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-  // Deletar um pedido
-  async delete(id) {
-    await delay(300);
-    const index = mockOwnerRequests.findIndex(r => r.id === id);
-    if (index === -1) {
-      throw new Error('Pedido não encontrado');
-    }
-    mockOwnerRequests.splice(index, 1);
-    return { success: true };
-  },
+    if (!response.ok) throw new Error('Erro ao rejeitar pedido');
+    return response;
+  }
 };

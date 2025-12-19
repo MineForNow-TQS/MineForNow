@@ -12,11 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import tqs.backend.dto.CreateVehicleRequest;
 import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
+import tqs.backend.repository.ReviewRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 import tqs.backend.security.JwtUtils;
@@ -33,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Transactional
 @DisplayName("Vehicle Creation Integration Tests")
 class VehicleControllerCreateIT {
 
@@ -50,6 +49,12 @@ class VehicleControllerCreateIT {
         private VehicleRepository vehicleRepository;
 
         @Autowired
+        private tqs.backend.repository.BookingRepository bookingRepository;
+
+        @Autowired
+        private ReviewRepository reviewRepository;
+
+        @Autowired
         private PasswordEncoder passwordEncoder;
 
         @Autowired
@@ -61,9 +66,12 @@ class VehicleControllerCreateIT {
         private String renterToken;
         private CreateVehicleRequest validRequest;
 
+        @SuppressWarnings("null")
         @BeforeEach
         void setUp() {
-                // Limpar repositórios
+                // Limpar repositórios na ordem correta (bookings primeiro devido a FK)
+                bookingRepository.deleteAll();
+                reviewRepository.deleteAll();
                 vehicleRepository.deleteAll();
                 userRepository.deleteAll();
 
@@ -108,6 +116,7 @@ class VehicleControllerCreateIT {
                 validRequest.setDescription("Veículo confortável e económico");
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando owner autenticado cria veículo válido, deve retornar 201 e veículo criado")
@@ -127,6 +136,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).hasSize(1);
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando renter tenta criar veículo, deve retornar 400")
@@ -141,6 +151,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).isEmpty();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando não autenticado tenta criar veículo, deve retornar 401")
@@ -154,6 +165,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).isEmpty();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando request inválido (sem marca), deve retornar 400")
@@ -170,6 +182,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).isEmpty();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando request inválido (sem preço), deve retornar 400")
@@ -186,6 +199,7 @@ class VehicleControllerCreateIT {
                 assertThat(vehicleRepository.findAll()).isEmpty();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-10")
         @DisplayName("Quando cria múltiplos veículos, todos devem ser associados ao owner")

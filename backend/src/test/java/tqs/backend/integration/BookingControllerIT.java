@@ -22,6 +22,7 @@ import tqs.backend.model.User;
 import tqs.backend.model.UserRole;
 import tqs.backend.model.Vehicle;
 import tqs.backend.repository.BookingRepository;
+import tqs.backend.repository.ReviewRepository;
 import tqs.backend.repository.UserRepository;
 import tqs.backend.repository.VehicleRepository;
 
@@ -48,6 +49,9 @@ class BookingControllerIT {
         @Autowired
         private BookingRepository bookingRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
         @Autowired
         private PasswordEncoder passwordEncoder;
 
@@ -62,6 +66,7 @@ class BookingControllerIT {
 
                 // Clean up DB strictly in order to avoid FK violations
                 bookingRepository.deleteAll();
+                reviewRepository.deleteAll();
                 vehicleRepository.deleteAll();
                 userRepository.deleteAll();
 
@@ -109,6 +114,7 @@ class BookingControllerIT {
                 authToken = Objects.requireNonNull(authResponse.getBody()).getToken();
         }
 
+        @SuppressWarnings("null")
         @Test
         @Requirement("SCRUM-15")
         @DisplayName("POST /bookings - Success with valid data")

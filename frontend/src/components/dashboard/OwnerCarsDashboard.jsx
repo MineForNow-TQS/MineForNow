@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { carService } from '@/services/carService';
+import { dashboardService } from '@/services/dashboardService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Car, Plus, Edit, Trash2, MapPin, Eye } from 'lucide-react';
@@ -11,10 +12,39 @@ export default function OwnerCarsDashboard() {
     const queryClient = useQueryClient();
 
     // Fetch cars owned by this user (using JWT token)
-    const { data: cars = [], isLoading } = useQuery(
+    const { data: cars = [], isLoading: carsLoading } = useQuery(
         ['ownerCars'],
         () => carService.getCarsByOwner().then(res => res.data)
     );
+
+    // Fetch dashboard statistics
+    const { data: stats, isLoading: statsLoading, error: statsError } = useQuery(
+        ['ownerStats'],
+        () => dashboardService.getOwnerStats(),
+        {
+            retry: 1,
+            onError: (error) => {
+                console.error('Failed to fetch dashboard stats:', error);
+            }
+        }
+    );
+
+    // Fetch active bookings list (confirmed rentals)
+    const { data: activeBookingsList = [], isLoading: activeLoading } = useQuery(
+        ['ownerActiveBookings'],
+        () => dashboardService.getActiveBookings(),
+        {
+            retry: 1,
+            onError: (error) => {
+                console.error('Failed to fetch active bookings:', error);
+            },
+            onSuccess: (data) => {
+                console.log('✅ Active bookings fetched:', data);
+            }
+        }
+    );
+
+    console.log('🔍 activeBookingsList:', activeBookingsList, 'loading:', activeLoading);
 
     // Mutation to delete car
     const deleteMutation = useMutation(
@@ -22,6 +52,7 @@ export default function OwnerCarsDashboard() {
         {
             onSuccess: () => {
                 queryClient.invalidateQueries(['ownerCars']);
+                queryClient.invalidateQueries(['ownerStats']);
             }
         }
     );
@@ -32,11 +63,13 @@ export default function OwnerCarsDashboard() {
         }
     };
 
-    // Calculate stats
-    const totalCars = cars.length;
-    const pendingReservations = 0; // TODO: Get from reservations
-    const completedReservations = 0; // TODO: Get from reservations
-    const totalEarnings = 0; // TODO: Calculate from reservations
+    // Use stats from API or fallback to defaults
+    const totalCars = stats?.activeVehicles ?? cars.length;
+    const pendingReservations = stats?.pendingBookings ?? 0;
+    const completedReservations = stats?.completedBookings ?? 0;
+    const totalEarnings = stats?.totalRevenue ?? 0;
+
+    const isLoading = carsLoading || statsLoading;
 
     if (isLoading) {
         return <div className="text-center py-8">A carregar...</div>;
@@ -56,7 +89,7 @@ export default function OwnerCarsDashboard() {
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-green-500 mb-1">{completedReservations}</div>
-                    <div className="text-sm text-slate-500">Completadas</div>
+                    <div className="text-sm text-slate-500">Pagas</div>
                 </Card>
                 <Card className="p-6 text-center border border-slate-200">
                     <div className="text-3xl font-bold text-blue-500 mb-1">{totalEarnings.toFixed(2)} €</div>
@@ -64,11 +97,67 @@ export default function OwnerCarsDashboard() {
                 </Card>
             </div>
 
-            {/* Pending Reservations */}
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Reservas Pendentes</h2>
-            <Card className="p-8 text-center border border-slate-200 mb-8">
-                <p className="text-slate-500">Nenhuma reserva pendente.</p>
-            </Card>
+            {/* Active Reservations */}
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Reservas em Curso</h2>
+            {activeLoading ? (
+                <Card className="p-8 text-center border border-slate-200 mb-8">
+                    <p className="text-slate-500">A carregar reservas...</p>
+                </Card>
+            ) : activeBookingsList.length === 0 ? (
+                <Card className="p-8 text-center border border-slate-200 mb-8">
+                    <p className="text-slate-500">Nenhuma reserva em curso.</p>
+                </Card>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    {activeBookingsList.map((booking) => {
+                        const vehicle = cars.find(c => c.id === booking.vehicleId);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const pickupDate = new Date(booking.pickupDate);
+                        const returnDate = new Date(booking.returnDate);
+
+                        // Determine booking status based on dates
+                        const isFuture = pickupDate > today;
+                        const isCompleted = returnDate < today;
+                        const isInProgress = !isFuture && !isCompleted;
+                        const isPaid = booking.status === 'CONFIRMED';
+
+                        let statusText = 'Em Curso';
+                        let statusColor = 'bg-blue-500';
+                        if (isFuture) {
+                            statusText = 'Futura';
+                            statusColor = 'bg-purple-500';
+                        } else if (isCompleted) {
+                            statusText = 'Completa';
+                            statusColor = 'bg-gray-500';
+                        }
+
+                        return (
+                            <Card key={booking.id} className={`p-4 border ${isPaid ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-slate-900">
+                                            {vehicle ? `${vehicle.brand} ${vehicle.model}` : `Veículo #${booking.vehicleId}`}
+                                        </p>
+                                        <p className="text-sm text-slate-600">
+                                            {new Date(booking.pickupDate).toLocaleDateString('pt-PT')} - {new Date(booking.returnDate).toLocaleDateString('pt-PT')}
+                                        </p>
+                                        <p className="text-lg font-bold text-slate-900 mt-2">{booking.totalPrice.toFixed(2)} €</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 items-end">
+                                        <span className={`px-2 py-1 text-xs rounded ${isPaid ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'}`}>
+                                            {isPaid ? 'Paga' : 'Pendente'}
+                                        </span>
+                                        <span className={`px-2 py-1 text-xs rounded ${statusColor} text-white`}>
+                                            {statusText}
+                                        </span>
+                                    </div>
+                                </div>
+                            </Card>
+                        );
+                    })}
+                </div>
+            )}
 
             {/* My Cars Section */}
             <div className="flex items-center justify-between mb-4">
